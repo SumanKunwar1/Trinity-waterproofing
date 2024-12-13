@@ -64,7 +64,7 @@ const Newsletter = () => {
               onClick={() => {}}
               variant="primary"
               size="md"
-              className="whitespace-nowrap"
+              className="h-12"
             >
               Subscribe Now
             </Button>

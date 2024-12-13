@@ -1,6 +1,7 @@
 import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
 import Newsletter from "./Newsletter";
 import { Link } from "react-router-dom";
+import BackToTopButton from "../common/BackToTopButton";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -136,6 +137,7 @@ const Footer = () => {
           <p>© {currentYear} Trinity Waterproofing. All rights reserved.</p>
         </div>
       </div>
+      <BackToTopButton />
     </footer>
   );
 };
