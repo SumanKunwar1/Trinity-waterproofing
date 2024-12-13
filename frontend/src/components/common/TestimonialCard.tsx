@@ -1,14 +1,15 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
-import { FaStar, FaStarHalfAlt } from "react-icons/fa"; // Using react-icons for full and half stars
-import Pagination from "./Pagination"; // Assuming Pagination component is in the same folder
+import { useState, useEffect, useRef } from "react";
+import { FaStar, FaStarHalfAlt, FaFilter } from "react-icons/fa";
+import { IoChevronDownOutline } from "react-icons/io5";
+import Pagination from "./Pagination";
 
 interface Review {
   id: string;
   name: string;
   content: string;
   rating: number;
-  date: string; // e.g., '2024-12-12'
+  date: string;
 }
 
 interface TestimonialCardProps {
@@ -17,14 +18,40 @@ interface TestimonialCardProps {
 
 const TestimonialCard = ({ reviews }: TestimonialCardProps) => {
   const [sortOption, setSortOption] = useState<string>("latest");
+  const [ratingFilter, setRatingFilter] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const reviewsPerPage = 5;
 
-  // Sorting logic
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState<boolean>(false);
+  const [isRatingDropdownOpen, setIsRatingDropdownOpen] =
+    useState<boolean>(false);
+
+  const sortRef = useRef<HTMLDivElement>(null);
+  const ratingRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        sortRef.current &&
+        !sortRef.current.contains(event.target as Node) &&
+        ratingRef.current &&
+        !ratingRef.current.contains(event.target as Node)
+      ) {
+        setIsSortDropdownOpen(false);
+        setIsRatingDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const sortedReviews = [...reviews].sort((a, b) => {
     if (sortOption === "latest") {
       return new Date(b.date).getTime() - new Date(a.date).getTime();
-    } else if (sortOption === "oldest") {
+    } else if (sortOption === "recent") {
       return new Date(a.date).getTime() - new Date(b.date).getTime();
     } else if (sortOption === "highest") {
       return b.rating - a.rating;
@@ -34,34 +61,33 @@ const TestimonialCard = ({ reviews }: TestimonialCardProps) => {
     return 0;
   });
 
-  // Pagination Logic
+  const filteredReviews = ratingFilter
+    ? sortedReviews.filter((review) => review.rating === ratingFilter)
+    : sortedReviews;
+
   const indexOfLastReview = currentPage * reviewsPerPage;
   const indexOfFirstReview = indexOfLastReview - reviewsPerPage;
-  const currentReviews = sortedReviews.slice(
+  const currentReviews = filteredReviews.slice(
     indexOfFirstReview,
     indexOfLastReview
   );
 
-  // Handle page change
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  // Calculate the average rating
   const totalRatings = reviews.reduce((acc, review) => acc + review.rating, 0);
   const averageRating = totalRatings / reviews.length;
 
-  // Count the number of reviews for each rating (1-5)
-  const ratingCounts = [0, 0, 0, 0, 0]; // Count for ratings 1 through 5
+  const ratingCounts = [0, 0, 0, 0, 0];
   reviews.forEach((review) => {
     ratingCounts[review.rating - 1] += 1;
   });
 
-  // Function to render full, half, or empty stars based on rating
   const renderStars = (rating: number) => {
-    const fullStars = Math.floor(rating); // Full stars based on the integer part
-    const hasHalfStar = rating % 1 >= 0.5; // Check if the rating has a half star
-    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0); // Empty stars to make total 5
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
 
     const stars = [];
     for (let i = 0; i < fullStars; i++) {
@@ -98,42 +124,34 @@ const TestimonialCard = ({ reviews }: TestimonialCardProps) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="mb-6">
-        <h2 className="text-2xl font-semibold mb-4">Customer Reviews</h2>
+        <h2 className="text-2xl font-semibold mb-4 flex justify-between items-center">
+          Customer Reviews
+        </h2>
+
         <div className="space-y-6">
-          {/* Display overall rating progress bars */}
           <div className="mb-6">
-            <h3 className="text-xl font-semibold mb-4">
-              Overall Product Rating
-            </h3>
             <div className="flex items-center space-x-6 mb-4"></div>
           </div>
 
-          {/* Display progress bars for each rating (1-5 stars) */}
-          <div className=" flex gap-4">
-            {/* Average Rating & Stars */}
-            <div className="flex items-center flex-col gap-4 ">
+          <div className="flex gap-4">
+            <div className="flex items-center flex-col gap-4">
               <span className="flex text-3xl font-semibold text-brand align-middle text-center">
                 {averageRating.toFixed(1)}
                 <span className="text-xl mr-4 font-semibold text-brand text-center">
                   / 5
                 </span>
               </span>
-              <div className="flex">
-                {renderStars(averageRating)}{" "}
-                {/* Render stars based on average rating */}
-              </div>
+              <div className="flex">{renderStars(averageRating)}</div>
             </div>
             <div className="max-w-lg w-full space-y-4">
               {ratingCounts.map((count, index) => {
                 const percentage = (count / reviews.length) * 100;
                 return (
                   <div key={index} className="flex items-center space-x-4">
-                    {/* Stars for the current rating */}
                     <div className="flex-shrink-0">
                       <div className="flex">{renderStars(5 - index)}</div>
                     </div>
 
-                    {/* Progress bar for the current rating */}
                     <div className="flex-grow bg-gray-200 rounded-full h-4">
                       <div
                         className="bg-yellow-500 h-4 rounded-full transition-all duration-300"
@@ -141,7 +159,6 @@ const TestimonialCard = ({ reviews }: TestimonialCardProps) => {
                       />
                     </div>
 
-                    {/* Number of reviews for the current rating */}
                     <div className="w-12 text-sm text-gray-600">{count}</div>
                   </div>
                 );
@@ -149,7 +166,92 @@ const TestimonialCard = ({ reviews }: TestimonialCardProps) => {
             </div>
           </div>
 
-          {/* Display individual reviews */}
+          <div className="flex items-center p-3 border-t border-b gap-4 space-y-3 my-4 justify-between">
+            <div className="flex ">
+              <span className="text-brand font-semibold text-xl">
+                Product Reviews
+              </span>
+            </div>
+            <div className="flex space-y-0 mt-0 gap-2">
+              <div className="relative" ref={sortRef}>
+                <button
+                  onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                  className="flex items-center text-gray-700 p-2 hover:bg-gray-200 rounded-md"
+                >
+                  <FaFilter className="mr-2" />
+                  Sort: {sortOption === "latest" ? "Relevance" : sortOption}
+                  <IoChevronDownOutline className="ml-2" />
+                </button>
+                {isSortDropdownOpen && (
+                  <div className="absolute right-0 w-48 bg-white border border-gray-300 shadow-lg mt-2 rounded-md z-10">
+                    <div
+                      onClick={() => {
+                        setSortOption("latest");
+                        setIsSortDropdownOpen(false);
+                      }}
+                      className="p-2 cursor-pointer hover:bg-gray-100"
+                    >
+                      Relevance
+                    </div>
+                    <div
+                      onClick={() => {
+                        setSortOption("recent");
+                        setIsSortDropdownOpen(false);
+                      }}
+                      className="p-2 cursor-pointer hover:bg-gray-100"
+                    >
+                      Recent
+                    </div>
+                    <div
+                      onClick={() => {
+                        setSortOption("highest");
+                        setIsSortDropdownOpen(false);
+                      }}
+                      className="p-2 cursor-pointer hover:bg-gray-100"
+                    >
+                      Highest Rating
+                    </div>
+                    <div
+                      onClick={() => {
+                        setSortOption("lowest");
+                        setIsSortDropdownOpen(false);
+                      }}
+                      className="p-2 cursor-pointer hover:bg-gray-100"
+                    >
+                      Lowest Rating
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="relative" ref={ratingRef}>
+                <button
+                  onClick={() => setIsRatingDropdownOpen(!isRatingDropdownOpen)}
+                  className="flex items-center text-gray-700  p-2 hover:bg-gray-200 rounded-md"
+                >
+                  Filter: {ratingFilter ? `${ratingFilter} Stars` : "All Stars"}
+                  <IoChevronDownOutline className="ml-2" />
+                </button>
+                {isRatingDropdownOpen && (
+                  <div className="absolute right-0 w-48 bg-white border border-gray-300 shadow-lg mt-2 rounded-md z-10">
+                    {[5, 4, 3, 2, 1].map((rating) => (
+                      <div
+                        key={rating}
+                        onClick={() => {
+                          setRatingFilter(rating);
+                          setIsRatingDropdownOpen(false);
+                        }}
+                        className="p-2 cursor-pointer hover:bg-gray-100"
+                      >
+                        {rating} Stars
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
           {currentReviews.map((review) => (
             <motion.div
               key={review.id}
@@ -165,8 +267,7 @@ const TestimonialCard = ({ reviews }: TestimonialCardProps) => {
               </div>
 
               <div className="flex items-center mb-2">
-                {renderStars(review.rating)}{" "}
-                {/* Render stars based on individual review rating */}
+                {renderStars(review.rating)}
               </div>
 
               <blockquote className="text-gray-600 italic text-sm">
@@ -176,10 +277,9 @@ const TestimonialCard = ({ reviews }: TestimonialCardProps) => {
           ))}
         </div>
 
-        {/* Pagination */}
         <Pagination
           currentPage={currentPage}
-          totalPages={Math.ceil(sortedReviews.length / reviewsPerPage)}
+          totalPages={Math.ceil(filteredReviews.length / reviewsPerPage)}
           onPageChange={handlePageChange}
         />
       </div>

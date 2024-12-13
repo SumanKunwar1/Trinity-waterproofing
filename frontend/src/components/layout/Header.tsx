@@ -7,9 +7,10 @@ import { FaChevronDown } from "react-icons/fa";
 import { IoSearchOutline, IoCloseOutline } from "react-icons/io5";
 import { FaRegHeart } from "react-icons/fa"; // Import wishlist icon
 import { navigationItems } from "../../constants/navigation";
-import ProductDropdown from "./ProductDropdown";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext"; // Import the useWishlist hook
+import ProductDropdown from "./ProductDropdown";
+import { categories } from "../../constants/categories";
 
 const Header: React.FC = () => {
   const { cartItems } = useCart();
@@ -17,12 +18,13 @@ const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isProductDropdownOpen, setIsProductDropdownOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const cartItemCount = cartItems.length;
   const wishlistItemCount = wishlist.length; // Get the number of items in the wishlist
 
   return (
-    <header className="bg-brand shadow-md">
+    <header className="bg-brand shadow-md relative">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center">
           <Link to="/" className="h-16 w-16 sm:block hidden">
@@ -32,7 +34,9 @@ const Header: React.FC = () => {
               className="h-16 w-16"
             />
           </Link>
-          <Link to="/">
+
+          {/* Brand name - Only visible on medium (md) and larger screens */}
+          <Link to="/" className="hidden md:block">
             <span className="text-2xl font-bold text-hover">
               Trinity Waterproofing
             </span>
@@ -55,6 +59,7 @@ const Header: React.FC = () => {
                   <button
                     key={item.id}
                     className="text-white font-semibold hover:text-secondary transition-colors duration-300 flex items-center"
+                    style={{}}
                     onClick={() => setIsProductDropdownOpen(true)}
                   >
                     {item.title}
@@ -177,6 +182,14 @@ const Header: React.FC = () => {
         </div>
       </div>
 
+      {/* Product Dropdown */}
+      {isProductDropdownOpen && (
+        <ProductDropdown
+          isOpen={isProductDropdownOpen}
+          onClose={() => setIsProductDropdownOpen(false)}
+        />
+      )}
+
       {isOpen && !isSearchOpen && (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -211,11 +224,6 @@ const Header: React.FC = () => {
           </nav>
         </motion.div>
       )}
-
-      <ProductDropdown
-        isOpen={isProductDropdownOpen}
-        onClose={() => setIsProductDropdownOpen(false)}
-      />
     </header>
   );
 };

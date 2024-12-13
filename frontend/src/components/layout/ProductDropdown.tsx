@@ -19,7 +19,7 @@ const ProductDropdown: React.FC<ProductDropdownProps> = ({
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="fixed inset-0 bg-hover z-50 overflow-y-auto"
+      className="absolute left-0 right-0 top-full bg-hover shadow-md z-50"
     >
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
