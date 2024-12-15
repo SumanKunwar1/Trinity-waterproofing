@@ -16,7 +16,7 @@ export const products: Product[] = [
     ],
     categoryId: 1,
     subcategoryId: 101,
-    rating: 4.5,
+    averageRating: 4.5,
     ratingCount: 30,
     features: [
       "Deep penetration into concrete",
@@ -66,7 +66,7 @@ export const products: Product[] = [
     ],
     categoryId: 2,
     subcategoryId: 201,
-    rating: 4,
+    averageRating: 4,
     ratingCount: 25,
     features: [
       "Extends roof life",
@@ -116,7 +116,7 @@ export const products: Product[] = [
     ],
     categoryId: 3,
     subcategoryId: 301,
-    rating: 3.5,
+    averageRating: 3.5,
     ratingCount: 15,
     features: [
       "Highly flexible",
@@ -166,7 +166,7 @@ export const products: Product[] = [
     ],
     categoryId: 4,
     subcategoryId: 401,
-    rating: 4.5,
+    averageRating: 4.5,
     ratingCount: 40,
     features: [
       "Easy installation",
@@ -211,7 +211,7 @@ export const products: Product[] = [
     image: [],
     categoryId: 2,
     subcategoryId: 202,
-    rating: 4,
+    averageRating: 4,
     ratingCount: 20,
     features: [
       "Bridges hairline cracks",
@@ -255,7 +255,7 @@ export const products: Product[] = [
     image: [],
     categoryId: 3,
     subcategoryId: 303,
-    rating: 3,
+    averageRating: 3,
     ratingCount: 10,
     features: [
       "No torch required",

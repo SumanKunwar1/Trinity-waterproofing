@@ -25,7 +25,7 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6">Related Products</h2>
+      <h2 className="text-2xl font-bold my-8">Related Products</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {relatedProducts.map((product) => (
           <motion.div
