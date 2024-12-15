@@ -1,15 +1,24 @@
-import express, { Request, Response } from 'express';
-import routes from './routers'; 
-import { handleResponse } from './middlewares';
+import express, { Request, Response, NextFunction } from 'express';
+import cors from 'cors';  // Ensure CORS is imported
+import routes from './routers';
 
 const app = express();
 
+// Middleware
 app.use(express.json());
+app.use(cors());
 
-app.use('/api', routes);  
+// Route handlers
+app.use('/api', routes);
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Hello, welcome to the Express + TypeScript app!');
+});
+
+// Global Error Handler
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something went wrong!' });
 });
 
 export default app;
