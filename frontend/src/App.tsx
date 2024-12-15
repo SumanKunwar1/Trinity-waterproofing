@@ -16,30 +16,39 @@ import { CartProvider } from "./context/CartContext";
 import { WishlistProvider } from "./context/WishlistContext";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import Wishlist from "./pages/Wishlist";
+import AdminApp from "./admin/AdminApp";
 
 function App() {
+  const isAdmin = false;
   return (
     <ErrorBoundary>
-      <CartProvider>
-        <WishlistProvider>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/products" element={<ProductListing />} />
-              <Route path="/product/:id" element={<ProductDetail />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/wishlist" element={<Wishlist />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Layout>
-          <ToastContainer />
-        </WishlistProvider>
-      </CartProvider>
+      {isAdmin ? (
+        <AdminApp />
+      ) : (
+        <>
+          <CartProvider>
+            <WishlistProvider>
+              <Layout>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/products" element={<ProductListing />} />
+                  <Route path="/product/:id" element={<ProductDetail />} />
+                  <Route path="/cart" element={<Cart />} />
+                  <Route path="/wishlist" element={<Wishlist />} />
+                  <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Layout>
+              <ToastContainer />
+            </WishlistProvider>
+          </CartProvider>
+        </>
+      )}
+      ;
     </ErrorBoundary>
   );
 }

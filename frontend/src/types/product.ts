@@ -21,8 +21,8 @@ export interface Product {
   variants: {
     color?: string; // Optional field for color of the variant
     volume?: string; // Optional field for volume (if applicable)
-    label: string; // Description of the variant, e.g., "Color: Red", "Size: 500ml"
-    value: string; // Specific value of the variant, e.g., "#FF0000" for color, "500ml" for size
+    label?: string; // Description of the variant, e.g., "Color: Red", "Size: 500ml"
+    value?: string; // Specific value of the variant, e.g., "#FF0000" for color, "500ml" for size
     price: number; // Price of the specific variant
     image?: string; // Optional image for the variant
   }[]; // Array of product variants, including color, volume, and price
