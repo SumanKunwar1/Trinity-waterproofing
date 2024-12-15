@@ -111,7 +111,7 @@ const Header: React.FC = () => {
 
                 {/* User Icon */}
                 <Link
-                  to="/customer/dashboard"
+                  to="/login"
                   className="p-2 hover:bg-slate-400 rounded-full"
                 >
                   <FiUser

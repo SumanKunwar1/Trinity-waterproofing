@@ -25,7 +25,7 @@ import { ReturnAndCancelPage } from "./pages/customer-profile/return-and-cancel/
 import AddressBookPage from "./pages/customer-profile/address-book/page";
 
 function App() {
-  const isAdmin = false;
+  const isAdmin = true;
   return (
     <ErrorBoundary>
       {isAdmin ? (

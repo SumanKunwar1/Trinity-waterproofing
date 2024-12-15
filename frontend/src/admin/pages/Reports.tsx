@@ -200,7 +200,7 @@ const Reports: React.FC = () => {
               <Button variant="secondary" onClick={handleDownload}>
                 <FaDownload className="mr-2" /> Download Report
               </Button>
-              <Link to="/generate-report">
+              <Link to="/admin/generate-report">
                 <Button variant="outline">
                   <FaFileAlt className="mr-2" /> Generate Custom Report
                 </Button>
