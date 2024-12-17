@@ -4,7 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 const validateUser = (req: Request, res: Response, next: NextFunction):void => {
   // Define Joi validation schema
   const schema = Joi.object({
-    name: Joi.string().required().messages({
+    fullName: Joi.string().required().messages({
       'string.base': 'Name must be a string',
       'any.required': 'Name is required',
     }),
