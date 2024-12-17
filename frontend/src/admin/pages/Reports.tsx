@@ -34,6 +34,8 @@ import { Link } from "react-router-dom";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable"; // Ensure this import is here
 import { toast } from "react-toastify";
+import Sidebar from "../components/Sidebar";
+import Topbar from "../components/Topbar";
 
 ChartJS.register(
   CategoryScale,
@@ -48,6 +50,11 @@ ChartJS.register(
 );
 
 const Reports: React.FC = () => {
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => !prev);
+  };
   const [selectedReport, setSelectedReport] = useState<string>("sales");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
@@ -161,96 +168,111 @@ const Reports: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold">Reports</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 md:space-x-4 mb-6">
-              <Select value={selectedReport} onValueChange={setSelectedReport}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="Select report type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sales">Sales Report</SelectItem>
-                  <SelectItem value="product-performance">
-                    Product Performance
-                  </SelectItem>
-                  <SelectItem value="customer-analytics">
-                    Customer Analytics
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+    <div>
+      <div className="flex bg-gray-100">
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Topbar toggleSidebar={toggleSidebar} />
+          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+            <div className="space-y-6">
+              <motion.div
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-2xl font-bold">
+                      Reports
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 md:space-x-4 mb-6">
+                      <Select
+                        value={selectedReport}
+                        onValueChange={setSelectedReport}
+                      >
+                        <SelectTrigger className="w-[200px]">
+                          <SelectValue placeholder="Select report type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="sales">Sales Report</SelectItem>
+                          <SelectItem value="product-performance">
+                            Product Performance
+                          </SelectItem>
+                          <SelectItem value="customer-analytics">
+                            Customer Analytics
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
 
-              {/* Date Picker component */}
-              <DatePicker
-                selected={selectedDate}
-                onChange={(date: Date | null) => setSelectedDate(date)}
-                dateFormat="yyyy/MM/dd"
-                placeholderText="Select Date"
-                className="w-48 p-2 rounded-md"
-              />
+                      {/* Date Picker component */}
+                      <DatePicker
+                        selected={selectedDate}
+                        onChange={(date: Date | null) => setSelectedDate(date)}
+                        dateFormat="yyyy/MM/dd"
+                        placeholderText="Select Date"
+                        className="w-48 p-2 rounded-md"
+                      />
 
-              <Button variant="secondary" onClick={handleDownload}>
-                <FaDownload className="mr-2" /> Download Report
-              </Button>
-              <Link to="/admin/generate-report">
-                <Button variant="outline">
-                  <FaFileAlt className="mr-2" /> Generate Custom Report
-                </Button>
-              </Link>
+                      <Button variant="secondary" onClick={handleDownload}>
+                        <FaDownload className="mr-2" /> Download Report
+                      </Button>
+                      <Link to="/admin/generate-report">
+                        <Button variant="outline">
+                          <FaFileAlt className="mr-2" /> Generate Custom Report
+                        </Button>
+                      </Link>
+                    </div>
+                    <div className="h-[400px]">{renderChart()}</div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-xl font-semibold">
+                      Report Details
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="font-semibold">Report Type:</h3>
+                        <p>
+                          {selectedReport.charAt(0).toUpperCase() +
+                            selectedReport.slice(1).replace("-", " ")}
+                        </p>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">Selected Date:</h3>
+                        <p>
+                          {selectedDate
+                            ? selectedDate.toLocaleDateString()
+                            : "Not selected"}
+                        </p>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">Key Insights:</h3>
+                        <ul className="list-disc pl-5">
+                          <li>Total Revenue: $44,000</li>
+                          <li>Best Selling Product: Product A</li>
+                          <li>New Customer Growth: 15%</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
             </div>
-            <div className="h-[400px]">{renderChart()}</div>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold">
-              Report Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <h3 className="font-semibold">Report Type:</h3>
-                <p>
-                  {selectedReport.charAt(0).toUpperCase() +
-                    selectedReport.slice(1).replace("-", " ")}
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold">Selected Date:</h3>
-                <p>
-                  {selectedDate
-                    ? selectedDate.toLocaleDateString()
-                    : "Not selected"}
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold">Key Insights:</h3>
-                <ul className="list-disc pl-5">
-                  <li>Total Revenue: $44,000</li>
-                  <li>Best Selling Product: Product A</li>
-                  <li>New Customer Growth: 15%</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+          </main>
+        </div>
+      </div>
     </div>
   );
 };

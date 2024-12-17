@@ -32,6 +32,8 @@ import {
 } from "../components/ui/tabs"; // ShadCN Tabs
 import Table from "../components/ui/table";
 import FormikForm from "../components/FormikForm";
+import Sidebar from "../components/Sidebar";
+import Topbar from "../components/Topbar";
 
 interface User {
   id: number;
@@ -55,6 +57,11 @@ const userSchema = Yup.object().shape({
 });
 
 const Users: React.FC = () => {
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => !prev);
+  };
   const [users, setUsers] = useState<User[]>([
     {
       id: 1,
@@ -194,82 +201,95 @@ const Users: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold">Users</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="all">
-              <TabsList>
-                <TabsTrigger value="all">All Users</TabsTrigger>
-                <TabsTrigger value="b2c">B2C Users</TabsTrigger>
-                <TabsTrigger value="b2b">B2B Users</TabsTrigger>
-                <TabsTrigger value="admins">Admins</TabsTrigger>
-              </TabsList>
-              <TabsContent value="all">
-                <Table columns={columns} data={users} />
-              </TabsContent>
-              <TabsContent value="b2c">
-                <Table
-                  columns={columns}
-                  data={users.filter((u) => u.type === "B2C")}
-                />
-              </TabsContent>
-              <TabsContent value="b2b">
-                <Table
-                  columns={columns}
-                  data={users.filter((u) => u.type === "B2B")}
-                />
-              </TabsContent>
-              <TabsContent value="admins">
-                <Table
-                  columns={columns}
-                  data={users.filter((u) => u.role === "admin")}
-                />
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-      </motion.div>
+    <div>
+      <div className="flex bg-gray-100">
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Topbar toggleSidebar={toggleSidebar} />
+          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+            <div className="space-y-6">
+              <motion.div
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-2xl font-bold">Users</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Tabs defaultValue="all">
+                      <TabsList>
+                        <TabsTrigger value="all">All Users</TabsTrigger>
+                        <TabsTrigger value="b2c">B2C Users</TabsTrigger>
+                        <TabsTrigger value="b2b">B2B Users</TabsTrigger>
+                        <TabsTrigger value="admins">Admins</TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="all">
+                        <Table columns={columns} data={users} />
+                      </TabsContent>
+                      <TabsContent value="b2c">
+                        <Table
+                          columns={columns}
+                          data={users.filter((u) => u.type === "B2C")}
+                        />
+                      </TabsContent>
+                      <TabsContent value="b2b">
+                        <Table
+                          columns={columns}
+                          data={users.filter((u) => u.type === "B2B")}
+                        />
+                      </TabsContent>
+                      <TabsContent value="admins">
+                        <Table
+                          columns={columns}
+                          data={users.filter((u) => u.role === "admin")}
+                        />
+                      </TabsContent>
+                    </Tabs>
+                  </CardContent>
+                </Card>
+              </motion.div>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogTrigger asChild>
-          <Button variant="secondary" onClick={() => setEditingUser(null)}>
-            <FaPlus className="mr-2" /> Add New User
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogTitle>
-            {editingUser ? "Edit User" : "Add New User"}
-          </DialogTitle>
-          <DialogDescription>
-            {editingUser
-              ? "Edit the details of the user."
-              : "Add a new user to the system."}
-          </DialogDescription>
-          <FormikForm
-            initialValues={
-              editingUser || {
-                name: "",
-                email: "",
-                role: "customer",
-                type: "B2C",
-                password: "",
-              }
-            }
-            validationSchema={userSchema}
-            onSubmit={handleSubmit}
-            fields={formFields}
-            submitButtonText={editingUser ? "Update User" : "Add User"}
-          />
-        </DialogContent>
-      </Dialog>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setEditingUser(null)}
+                  >
+                    <FaPlus className="mr-2" /> Add New User
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogTitle>
+                    {editingUser ? "Edit User" : "Add New User"}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {editingUser
+                      ? "Edit the details of the user."
+                      : "Add a new user to the system."}
+                  </DialogDescription>
+                  <FormikForm
+                    initialValues={
+                      editingUser || {
+                        name: "",
+                        email: "",
+                        role: "customer",
+                        type: "B2C",
+                        password: "",
+                      }
+                    }
+                    validationSchema={userSchema}
+                    onSubmit={handleSubmit}
+                    fields={formFields}
+                    submitButtonText={editingUser ? "Update User" : "Add User"}
+                  />
+                </DialogContent>
+              </Dialog>
+            </div>
+          </main>
+        </div>
+      </div>
     </div>
   );
 };

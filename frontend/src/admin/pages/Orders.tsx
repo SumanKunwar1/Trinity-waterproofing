@@ -23,6 +23,8 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import Table from "../components/ui/table";
+import Sidebar from "../components/Sidebar";
+import Topbar from "../components/Topbar";
 
 interface OrderItem {
   id: number;
@@ -41,6 +43,11 @@ interface Order {
 }
 
 const Orders: React.FC = () => {
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => !prev);
+  };
   const [orders, setOrders] = useState<Order[]>([
     {
       id: 1,
@@ -155,73 +162,89 @@ const Orders: React.FC = () => {
   }, []);
 
   return (
-    <div className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold">Orders</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table
-              columns={columns}
-              data={data}
-              onRowClick={(row) => handleViewOrder(row)}
-              itemsPerPage={5}
-            />
-          </CardContent>
-        </Card>
-      </motion.div>
+    <div>
+      <div className="flex bg-gray-100">
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Topbar toggleSidebar={toggleSidebar} />
+          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+            <div className="space-y-6">
+              <motion.div
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-2xl font-bold">Orders</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Table
+                      columns={columns}
+                      data={data}
+                      onRowClick={(row) => handleViewOrder(row)}
+                      itemsPerPage={5}
+                    />
+                  </CardContent>
+                </Card>
+              </motion.div>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogTitle>Order Details</DialogTitle>
-          <DialogDescription>View and manage order details.</DialogDescription>
-          {selectedOrder && (
-            <div className="space-y-4">
-              <div>
-                <h3 className="font-semibold">Order ID: {selectedOrder.id}</h3>
-                <p>Customer: {selectedOrder.customerName}</p>
-                <p>Date: {selectedOrder.orderDate}</p>
-                <p>Total: ${selectedOrder.total.toFixed(2)}</p>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Items:</h4>
-                <ul className="list-disc pl-5">
-                  {selectedOrder.items.map((item) => (
-                    <li key={item.id}>
-                      {item.productName} - Quantity: {item.quantity}, Price: $
-                      {item.price.toFixed(2)}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="font-semibold">Status:</span>
-                <Select
-                  value={selectedOrder.status}
-                  onValueChange={(value: Order["status"]) =>
-                    handleStatusChange(selectedOrder.id, value)
-                  }
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Pending">Pending</SelectItem>
-                    <SelectItem value="Processing">Processing</SelectItem>
-                    <SelectItem value="Shipped">Shipped</SelectItem>
-                    <SelectItem value="Delivered">Delivered</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogContent className="sm:max-w-[600px]">
+                  <DialogTitle>Order Details</DialogTitle>
+                  <DialogDescription>
+                    View and manage order details.
+                  </DialogDescription>
+                  {selectedOrder && (
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="font-semibold">
+                          Order ID: {selectedOrder.id}
+                        </h3>
+                        <p>Customer: {selectedOrder.customerName}</p>
+                        <p>Date: {selectedOrder.orderDate}</p>
+                        <p>Total: ${selectedOrder.total.toFixed(2)}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold mb-2">Items:</h4>
+                        <ul className="list-disc pl-5">
+                          {selectedOrder.items.map((item) => (
+                            <li key={item.id}>
+                              {item.productName} - Quantity: {item.quantity},
+                              Price: ${item.price.toFixed(2)}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className="font-semibold">Status:</span>
+                        <Select
+                          value={selectedOrder.status}
+                          onValueChange={(value: Order["status"]) =>
+                            handleStatusChange(selectedOrder.id, value)
+                          }
+                        >
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Pending">Pending</SelectItem>
+                            <SelectItem value="Processing">
+                              Processing
+                            </SelectItem>
+                            <SelectItem value="Shipped">Shipped</SelectItem>
+                            <SelectItem value="Delivered">Delivered</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
+                </DialogContent>
+              </Dialog>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </main>
+        </div>
+      </div>
     </div>
   );
 };

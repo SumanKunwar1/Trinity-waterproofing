@@ -1,4 +1,4 @@
-import React from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Card,
@@ -6,8 +6,15 @@ import {
   CardTitle,
   CardContent,
 } from "../components/ui/card"; // ShadCN Card components
+import Sidebar from "../components/Sidebar";
+import Topbar from "../components/Topbar";
 
 const Solutions: React.FC = () => {
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => !prev);
+  };
   const solutions = [
     {
       title: "Residential Waterproofing",
@@ -32,33 +39,43 @@ const Solutions: React.FC = () => {
   ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">
-            Our Waterproofing Solutions
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {solutions.map((solution, index) => (
-              <Card key={index}>
+    <div>
+      <div className="flex bg-gray-100">
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Topbar toggleSidebar={toggleSidebar} />
+          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Card>
                 <CardHeader>
-                  <CardTitle>{solution.title}</CardTitle>
+                  <CardTitle className="text-2xl font-bold">
+                    Our Waterproofing Solutions
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p>{solution.description}</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {solutions.map((solution, index) => (
+                      <Card key={index}>
+                        <CardHeader>
+                          <CardTitle>{solution.title}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p>{solution.description}</p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+            </motion.div>
+          </main>
+        </div>
+      </div>
+    </div>
   );
 };
 

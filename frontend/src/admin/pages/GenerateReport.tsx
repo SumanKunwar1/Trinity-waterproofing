@@ -5,6 +5,8 @@ import { jsPDF } from "jspdf";
 import "jspdf-autotable"; // Ensure this import is here
 import * as XLSX from "xlsx";
 import { Button } from "../components/ui/button";
+import Sidebar from "../components/Sidebar";
+import Topbar from "../components/Topbar";
 
 interface DateRange {
   from: Date | null;
@@ -12,6 +14,11 @@ interface DateRange {
 }
 
 const GenerateReport: React.FC = () => {
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => !prev);
+  };
   const [reportType, setReportType] = useState<string>("orders");
   const [dateRange, setDateRange] = useState<DateRange>({
     from: null,
@@ -135,93 +142,107 @@ const GenerateReport: React.FC = () => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6">Generate Report</h2>
-      <div className="space-y-4">
-        {/* Report Type Dropdown */}
-        <div>
-          <label
-            htmlFor="report-type"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Report Type
-          </label>
-          <select
-            id="report-type"
-            value={reportType}
-            onChange={(e) => setReportType(e.target.value)}
-            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-          >
-            <option value="orders">Orders Report</option>
-            <option value="products">Products Report</option>
-            <option value="categories">Categories Report</option>
-          </select>
-        </div>
+    <div>
+      <div className="flex bg-gray-100">
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Topbar toggleSidebar={toggleSidebar} />
+          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h2 className="text-2xl font-bold mb-6">Generate Report</h2>
+              <div className="space-y-4">
+                {/* Report Type Dropdown */}
+                <div>
+                  <label
+                    htmlFor="report-type"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Report Type
+                  </label>
+                  <select
+                    id="report-type"
+                    value={reportType}
+                    onChange={(e) => setReportType(e.target.value)}
+                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                  >
+                    <option value="orders">Orders Report</option>
+                    <option value="products">Products Report</option>
+                    <option value="categories">Categories Report</option>
+                  </select>
+                </div>
 
-        {/* Date Range Inputs */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Date Range
-          </label>
-          <div className="mt-1 flex space-x-2">
-            <input
-              type="date"
-              value={
-                dateRange.from ? dateRange.from.toISOString().split("T")[0] : ""
-              }
-              onChange={(e) =>
-                setDateRange((prev) => ({
-                  ...prev,
-                  from: new Date(e.target.value),
-                }))
-              }
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-            <input
-              type="date"
-              value={
-                dateRange.to ? dateRange.to.toISOString().split("T")[0] : ""
-              }
-              onChange={(e) =>
-                setDateRange((prev) => ({
-                  ...prev,
-                  to: new Date(e.target.value),
-                }))
-              }
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          </div>
-        </div>
+                {/* Date Range Inputs */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Date Range
+                  </label>
+                  <div className="mt-1 flex space-x-2">
+                    <input
+                      type="date"
+                      value={
+                        dateRange.from
+                          ? dateRange.from.toISOString().split("T")[0]
+                          : ""
+                      }
+                      onChange={(e) =>
+                        setDateRange((prev) => ({
+                          ...prev,
+                          from: new Date(e.target.value),
+                        }))
+                      }
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    />
+                    <input
+                      type="date"
+                      value={
+                        dateRange.to
+                          ? dateRange.to.toISOString().split("T")[0]
+                          : ""
+                      }
+                      onChange={(e) =>
+                        setDateRange((prev) => ({
+                          ...prev,
+                          to: new Date(e.target.value),
+                        }))
+                      }
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    />
+                  </div>
+                </div>
 
-        {/* File Format Radio Buttons */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            File Format
-          </label>
-          <div className="mt-2 space-x-4">
-            {["pdf", "csv", "excel"].map((format) => (
-              <label key={format} className="inline-flex items-center">
-                <input
-                  type="radio"
-                  value={format}
-                  checked={fileFormat === format}
-                  onChange={(e) => setFileFormat(e.target.value)}
-                  className="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
-                />
-                <span className="ml-2">{format.toUpperCase()}</span>
-              </label>
-            ))}
-          </div>
-        </div>
+                {/* File Format Radio Buttons */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    File Format
+                  </label>
+                  <div className="mt-2 space-x-4">
+                    {["pdf", "csv", "excel"].map((format) => (
+                      <label key={format} className="inline-flex items-center">
+                        <input
+                          type="radio"
+                          value={format}
+                          checked={fileFormat === format}
+                          onChange={(e) => setFileFormat(e.target.value)}
+                          className="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
+                        />
+                        <span className="ml-2">{format.toUpperCase()}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
 
-        {/* Generate Report Button */}
-        <Button
-          onClick={handleGenerateReport}
-          variant="secondary"
-          className="w-full"
-        >
-          <FaFileAlt className="mr-2" /> Generate Report
-        </Button>
+                {/* Generate Report Button */}
+                <Button
+                  onClick={handleGenerateReport}
+                  variant="secondary"
+                  className="w-full"
+                >
+                  <FaFileAlt className="mr-2" /> Generate Report
+                </Button>
+              </div>
+            </div>
+          </main>
+        </div>
       </div>
     </div>
   );
