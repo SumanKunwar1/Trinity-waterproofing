@@ -4,10 +4,17 @@ import routes from './routers';
 
 const app = express();
 
+declare global {
+  namespace Express {
+    interface Request {
+      email?: string;
+      role?: string;
+    }
+  }
+}
 // Middleware
 app.use(express.json());
 app.use(cors());
-
 // Route handlers
 app.use('/api', routes);
 
