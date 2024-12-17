@@ -177,9 +177,9 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
                     key={option}
                     className={`flex items-center gap-3 cursor-pointer ${
                       selectedVariants[type] === option
-                        ? "ring-0 focus:scale-125"
+                        ? "ring-1 ring-blue-500 scale-110"
                         : ""
-                    }`}
+                    } p-2 rounded-md transition-all duration-200`}
                   >
                     <input
                       type="radio"
@@ -192,10 +192,10 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
                     {isColorType ? (
                       // Render color boxes for 'color' type
                       <span
-                        className={`w-8 h-8 rounded-full border-2 ${
+                        className={`w-8 h-8 rounded-full ${
                           selectedVariants[type] === option
-                            ? "border-blue-500"
-                            : "border-gray-300"
+                            ? "ring-0 border-0"
+                            : "ring-0"
                         }`}
                         style={{ backgroundColor: option }}
                         title={option} // Tooltip for the color name

@@ -23,7 +23,10 @@ const ProductListing: React.FC = () => {
       handleFilter({
         category: category || "",
         subcategory: subcategory || "",
-        priceRange: "",
+        minPrice: 0,
+        maxPrice: 1000,
+        rating: [],
+        inStock: false,
       });
     }
   }, [location]);
@@ -43,15 +46,19 @@ const ProductListing: React.FC = () => {
       );
     }
 
-    if (filters.priceRange) {
-      const [min, max] = filters.priceRange.split("-").map(Number);
-      filtered = filtered.filter((product) => {
-        if (max) {
-          return product.price >= min && product.price <= max;
-        } else {
-          return product.price >= min;
-        }
-      });
+    filtered = filtered.filter(
+      (product) =>
+        product.price >= filters.minPrice && product.price <= filters.maxPrice
+    );
+
+    if (filters.rating.length > 0) {
+      filtered = filtered.filter((product) =>
+        filters.rating.includes(Math.floor(product.averageRating))
+      );
+    }
+
+    if (filters.inStock) {
+      filtered = filtered.filter((product) => product.inStock);
     }
 
     setFilteredProducts(filtered);
