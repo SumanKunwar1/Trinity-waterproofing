@@ -47,7 +47,7 @@ export class UserService {
       );
 
       // Return the token
-      return { token };
+      return { token, user };
     } catch (error) {
       throw error;
     }

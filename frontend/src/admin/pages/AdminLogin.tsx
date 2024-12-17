@@ -14,12 +14,11 @@ interface LoginFormValues {
 }
 
 const AdminLogin = () => {
-  const navigate = useNavigate(); // Get the navigate function for navigation
+  const navigate = useNavigate();
 
-  // Hardcoded credentials for the mock login
   const mockCredentials = {
-    email: "admin@gmail.com", // Set your mock email here
-    password: "admin123", // Set your mock password here
+    email: "admin@gmail.com", 
+    password: "admin123", 
   };
 
   // Validation schema using Yup
