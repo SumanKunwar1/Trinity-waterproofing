@@ -11,14 +11,19 @@ import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext"; // Import the useWishlist hook
 import ProductDropdown from "./ProductDropdown";
 import { categories } from "../../constants/categories";
+import {
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardContent,
+} from "../ui/hover-card"; // Import Shadcn HoverCard components
 
 const Header: React.FC = () => {
   const { cartItems } = useCart();
   const { wishlist } = useWishlist(); // Access wishlist items from WishlistContext
   const [isOpen, setIsOpen] = useState(false);
-  const [isProductDropdownOpen, setIsProductDropdownOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isProductDropdownOpen, setIsProductDropdownOpen] = useState(false); // Added state for product dropdown
 
   const cartItemCount = cartItems.length;
   const wishlistItemCount = wishlist.length; // Get the number of items in the wishlist
@@ -56,15 +61,24 @@ const Header: React.FC = () => {
             >
               {navigationItems.map((item) =>
                 item.title === "Products" ? (
-                  <button
+                  <HoverCard
                     key={item.id}
-                    className="text-white font-semibold hover:text-secondary transition-colors duration-300 flex items-center"
-                    style={{}}
-                    onClick={() => setIsProductDropdownOpen(true)}
+                    open={isHovered}
+                    onOpenChange={setIsHovered}
                   >
-                    {item.title}
-                    <FaChevronDown className="ml-1" />
-                  </button>
+                    <HoverCardTrigger>
+                      <button className="text-white font-semibold hover:text-secondary transition-colors duration-300 flex items-center">
+                        {item.title}
+                        <FaChevronDown className="ml-1" />
+                      </button>
+                    </HoverCardTrigger>
+                    <HoverCardContent className="border-0 shadow-lg rounded-md  w-screen">
+                      <ProductDropdown
+                        isOpen={isHovered}
+                        onClose={() => setIsHovered(false)}
+                      />
+                    </HoverCardContent>
+                  </HoverCard>
                 ) : (
                   <Link
                     key={item.id}
@@ -109,17 +123,6 @@ const Header: React.FC = () => {
                   <IoSearchOutline size={25} />
                 </button>
 
-                {/* User Icon */}
-                <Link
-                  to="/customer/dashboard"
-                  className="p-2 hover:bg-slate-400 rounded-full"
-                >
-                  <FiUser
-                    size={25}
-                    className="text-hover hover:text-secondary transition-all duration-300"
-                  />
-                </Link>
-
                 {/* Cart Icon */}
                 <Link
                   to="/cart"
@@ -150,6 +153,16 @@ const Header: React.FC = () => {
                       {wishlistItemCount}
                     </span>
                   )}
+                </Link>
+                {/* User Icon */}
+                <Link
+                  to="/login"
+                  className="p-2 hover:bg-slate-400 rounded-full"
+                >
+                  <FiUser
+                    size={25}
+                    className="text-hover hover:text-secondary transition-all duration-300"
+                  />
                 </Link>
 
                 {/* Mobile Menu Toggle */}
@@ -183,13 +196,6 @@ const Header: React.FC = () => {
       </div>
 
       {/* Product Dropdown */}
-      {isProductDropdownOpen && (
-        <ProductDropdown
-          isOpen={isProductDropdownOpen}
-          onClose={() => setIsProductDropdownOpen(false)}
-        />
-      )}
-
       {isOpen && !isSearchOpen && (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -202,13 +208,17 @@ const Header: React.FC = () => {
               item.title === "Products" ? (
                 <button
                   key={item.id}
-                  className="text-gray-600 hover:text-blue-600 py-2 transition-colors duration-300 text-left"
-                  onClick={() => {
-                    setIsProductDropdownOpen(true);
-                    setIsOpen(false);
-                  }}
+                  className="text-gray-600 hover:text-blue-600 py-2 transition-colors duration-300 text-left flex items-center justify-between w-full"
+                  onClick={() =>
+                    setIsProductDropdownOpen(!isProductDropdownOpen)
+                  }
                 >
                   {item.title}
+                  <FaChevronDown
+                    className={`ml-2 transition-transform duration-300 ${
+                      isProductDropdownOpen ? "rotate-180" : ""
+                    }`}
+                  />
                 </button>
               ) : (
                 <Link
@@ -220,6 +230,19 @@ const Header: React.FC = () => {
                   {item.title}
                 </Link>
               )
+            )}
+            {isProductDropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="bg-white shadow-inner"
+              >
+                <ProductDropdown
+                  isOpen={isProductDropdownOpen}
+                  onClose={() => setIsProductDropdownOpen(false)}
+                />
+              </motion.div>
             )}
           </nav>
         </motion.div>
