@@ -5,7 +5,8 @@ export const products: Product[] = [
     id: 1,
     name: "Premium Concrete Waterproofing Solution",
     description: "High-quality waterproofing solution for concrete structures.",
-    price: 49.99,
+    retailPrice: 49.99,
+    wholeSalePrice: 39.99,
     productImage:
       "https://hardwarepasal.com/src/img/product/2024-07-12-15-07-35_zWMABNsiGXproduct.jpeg",
     image: [
@@ -55,7 +56,8 @@ export const products: Product[] = [
     name: "Advanced Roof Coating",
     description:
       "Durable roof coating that provides excellent waterproofing and UV protection.",
-    price: 89.99,
+    retailPrice: 89.99,
+    wholeSalePrice: 79.99,
     productImage:
       "https://hardwarepasal.com/src/img/product/2024-07-12-15-07-35_zWMABNsiGXproduct.jpeg",
     image: [
@@ -105,7 +107,8 @@ export const products: Product[] = [
     name: "Flexible Sheet Membrane",
     description:
       "High-performance waterproof sheet membrane for foundations and basements.",
-    price: 149.99,
+    retailPrice: 149.99,
+    wholeSalePrice: 139.99,
     productImage:
       "https://hardwarepasal.com/src/img/product/2024-07-12-15-07-35_zWMABNsiGXproduct.jpeg",
     image: [
@@ -155,7 +158,8 @@ export const products: Product[] = [
     name: "Smart French Drain System",
     description:
       "Innovative French drain system that efficiently manages water flow and prevents water damage.",
-    price: 199.99,
+    retailPrice: 149.99,
+    wholeSalePrice: 129.99,
     productImage:
       "https://hardwarepasal.com/src/img/product/2024-07-12-15-07-35_zWMABNsiGXproduct.jpeg",
     image: [
@@ -205,7 +209,8 @@ export const products: Product[] = [
     name: "Elastomeric Wall Coating",
     description:
       "Flexible and durable wall coating for waterproofing and protection.",
-    price: 69.99,
+    retailPrice: 69.99,
+    wholeSalePrice: 49.99,
     productImage:
       "https://hardwarepasal.com/src/img/product/2024-07-12-15-07-35_zWMABNsiGXproduct.jpeg",
     image: [],
@@ -249,7 +254,8 @@ export const products: Product[] = [
     name: "Self-Adhesive Roofing Membrane",
     description:
       "Easy-to-install self-adhesive membrane for roof waterproofing.",
-    price: 129.99,
+    retailPrice: 49.99,
+    wholeSalePrice: 39.99,
     productImage:
       "https://hardwarepasal.com/src/img/product/2024-07-12-15-07-35_zWMABNsiGXproduct.jpeg",
     image: [],

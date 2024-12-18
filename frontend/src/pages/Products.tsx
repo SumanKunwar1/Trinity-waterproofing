@@ -18,6 +18,8 @@ import {
 import { Button } from "../components/ui/button";
 import FormikForm from "../components/FormikForm"; // Your custom form component
 import Table from "../components/ui/table"; // Reusable Table Component
+import Footer from "../components/layout/Footer";
+import Header from "../components/layout/Header";
 
 interface Product {
   id: number;
@@ -139,52 +141,58 @@ const Products: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-2xl font-bold">Products</CardTitle>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button onClick={() => setEditingProduct(null)}>
-                  Add New Product
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogTitle>
-                  {editingProduct ? "Edit Product" : "Add New Product"}
-                </DialogTitle>
-                <FormikForm
-                  initialValues={
-                    editingProduct || {
-                      name: "",
-                      category: "",
-                      subcategory: "",
-                      brand: "",
-                      price: 0,
-                      stock: 0,
-                      description: "",
-                    }
-                  }
-                  validationSchema={productSchema}
-                  onSubmit={handleSubmit}
-                  fields={formFields}
-                  submitButtonText={
-                    editingProduct ? "Update Product" : "Add Product"
-                  }
-                />
-              </DialogContent>
-            </Dialog>
-          </CardHeader>
-          <CardContent>
-            <Table columns={columns} data={products} />
-          </CardContent>
-        </Card>
-      </motion.div>
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <main className="flex-grow">
+        <div className="space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-2xl font-bold">Products</CardTitle>
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button onClick={() => setEditingProduct(null)}>
+                      Add New Product
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogTitle>
+                      {editingProduct ? "Edit Product" : "Add New Product"}
+                    </DialogTitle>
+                    <FormikForm
+                      initialValues={
+                        editingProduct || {
+                          name: "",
+                          category: "",
+                          subcategory: "",
+                          brand: "",
+                          price: 0,
+                          stock: 0,
+                          description: "",
+                        }
+                      }
+                      validationSchema={productSchema}
+                      onSubmit={handleSubmit}
+                      fields={formFields}
+                      submitButtonText={
+                        editingProduct ? "Update Product" : "Add Product"
+                      }
+                    />
+                  </DialogContent>
+                </Dialog>
+              </CardHeader>
+              <CardContent>
+                <Table columns={columns} data={products} />
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 };

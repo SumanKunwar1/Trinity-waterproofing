@@ -5,10 +5,10 @@ import { Product } from "../../types/product";
 import Button from "./Button";
 import { useWishlist } from "../../context/WishlistContext";
 import { FaHeart } from "react-icons/fa";
-import Ratings from "./Ratings"; // Import Ratings component
+import Ratings from "./Ratings";
 import { FiEye } from "react-icons/fi";
 import { LuShoppingCart } from "react-icons/lu";
-import { toast } from "react-toastify"; // Import toast for notifications
+import { toast } from "react-toastify";
 
 interface ProductCardProps {
   product: Product;
@@ -17,11 +17,18 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
 
+  // Get the user role from localStorage
+  const userRole = localStorage.getItem("userRole");
+
   // Calculate average rating from reviews
   const averageRating = product.reviews.length
     ? product.reviews.reduce((acc, review) => acc + review.rating, 0) /
       product.reviews.length
     : 0;
+
+  // Determine the price based on the user role
+  const displayedPrice =
+    userRole === "b2b" ? product.wholeSalePrice : product.retailPrice;
 
   // Handle adding/removing from wishlist
   const toggleWishlist = () => {
@@ -30,7 +37,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       toast.info(`${product.name} removed from your wishlist.`);
     } else {
       addToWishlist(product);
-      // toast.success(`${product.name} added to your wishlist.`);
+      toast.success(`${product.name} added to your wishlist.`);
     }
   };
 
@@ -56,9 +63,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         <div className="flex justify-between items-center">
           {/* Price */}
-          <span className="text-xl font-bold">
-            Rs {product.price.toFixed(2)}
-          </span>
+          <span className="text-xl font-bold">Rs {displayedPrice}</span>
 
           {/* Ratings */}
           <Ratings

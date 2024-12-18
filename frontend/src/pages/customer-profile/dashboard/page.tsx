@@ -1,15 +1,23 @@
+import Footer from "../../../components/layout/Footer";
+import Header from "../../../components/layout/Header";
 import { Dashboard } from "../../../customer-profile/body/dashboard";
 import { SideBar } from "../../../customer-profile/body/side-bar";
 
 export const DashboardPage = () => {
   return (
-    <div className="flex w-full h-screen m-8">
-      <div className="w-[25%]">
-        <SideBar />
-      </div>
-      <div className="w-[75%] overflow-auto">
-        <Dashboard />
-      </div>
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <main className="flex-grow">
+        <div className="flex w-full h-screen m-8">
+          <div className="w-[25%]">
+            <SideBar />
+          </div>
+          <div className="w-[75%] overflow-auto">
+            <Dashboard />
+          </div>
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 };

@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import Footer from "../components/layout/Footer";
+import Header from "../components/layout/Header";
 
 const About: React.FC = () => {
   const [activeTab, setActiveTab] = useState("about");
@@ -92,34 +94,37 @@ const About: React.FC = () => {
   };
 
   return (
-    <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-      className="min-h-screen bg-gray-50 py-16 "
-    >
-      <div className="container mx-auto px-6 grid md:grid-cols-2 items-center gap-4 ">
-        {/* Image Section */}
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <main className="flex-grow">
         <motion.div
-          variants={itemVariants}
-          className="relative overflow-hidden rounded-xl "
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+          className="min-h-screen bg-gray-50 py-16 "
         >
-          <img
-            src="https://trinitywaterproofing.com.np/wp-content/uploads/2024/08/waterproofing_2.jpeg"
-            alt="WaterproofStore"
-            className="w-full h-full object-cover transform transition-transform duration-300 hover:scale-105"
-          />
-        </motion.div>
+          <div className="container mx-auto px-6 grid md:grid-cols-2 items-center gap-4 ">
+            {/* Image Section */}
+            <motion.div
+              variants={itemVariants}
+              className="relative overflow-hidden rounded-xl "
+            >
+              <img
+                src="https://trinitywaterproofing.com.np/wp-content/uploads/2024/08/waterproofing_2.jpeg"
+                alt="WaterproofStore"
+                className="w-full h-full object-cover transform transition-transform duration-300 hover:scale-105"
+              />
+            </motion.div>
 
-        {/* Content Section */}
-        <motion.div variants={itemVariants} className="space-y-6">
-          {/* Custom Tabs Navigation */}
-          <div className="flex w-full bg-gray-200 rounded-md p-1 mb-6">
-            {["about", "mission", "vision"].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`
+            {/* Content Section */}
+            <motion.div variants={itemVariants} className="space-y-6">
+              {/* Custom Tabs Navigation */}
+              <div className="flex w-full bg-gray-200 rounded-md p-1 mb-6">
+                {["about", "mission", "vision"].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`
                   flex-1 py-2 text-sm font-medium rounded-md transition-all duration-300
                   capitalize
                   ${
@@ -128,23 +133,26 @@ const About: React.FC = () => {
                       : "text-gray-700 hover:bg-gray-300"
                   }
                 `}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
 
-          {/* Tab Content */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-          >
-            {renderTabContent()}
-          </motion.div>
+              {/* Tab Content */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                {renderTabContent()}
+              </motion.div>
+            </motion.div>
+          </div>
         </motion.div>
-      </div>
-    </motion.div>
+      </main>
+      <Footer />
+    </div>
   );
 };
 

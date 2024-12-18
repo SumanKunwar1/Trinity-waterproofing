@@ -1,7 +1,7 @@
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { User, IUser } from '../models'; 
-import { httpMessages } from '../middlewares';
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { User, IUser } from "../models";
+import { httpMessages } from "../middlewares";
 
 export class UserService {
   public async createUser(userData: IUser) {
@@ -14,17 +14,17 @@ export class UserService {
         throw httpMessages.ALREADY_PRESENT;
       }
 
-      const salt = await bcrypt.genSalt(10); 
+      const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
       const userWithHashedPassword = { ...userData, password: hashedPassword };
 
-      const user = new User(userWithHashedPassword);  
-      await user.save();  
+      const user = new User(userWithHashedPassword);
+      await user.save();
 
       return user;
     } catch (error) {
-      throw error; 
+      throw error;
     }
   }
 
@@ -41,14 +41,15 @@ export class UserService {
       }
 
       const token = jwt.sign(
-        { id: user._id, email: user.email, role: user.role }, 
-        process.env.JWT_SECRET!,  
-        { expiresIn: '1h' } 
+        { id: user._id, email: user.email, role: user.role },
+        process.env.JWT_SECRET!,
+        { expiresIn: "1h" }
       );
 
       // Return the token
       return { token, user };
     } catch (error) {
+      console.log(error);
       throw error;
     }
   }

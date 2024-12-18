@@ -6,15 +6,20 @@ interface PrivateRouteProps {
 }
 
 const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
-  // Check if the user is logged in (i.e., if the token exists in localStorage)
-  const isAuthenticated = Boolean(localStorage.getItem("authToken"));
+  // Check if the user is authenticated (i.e., if the token exists in localStorage)
+  const authToken = localStorage.getItem("authToken");
+  const userRole = localStorage.getItem("userRole"); // Assuming the role is stored in localStorage
 
-  if (!isAuthenticated) {
-    // If not authenticated, redirect to login page
-    return <Navigate to="/admin" />;
+  // Check if the user is authenticated and has an admin role
+  const isAuthenticated = Boolean(authToken);
+  const isAdmin = userRole === "admin";
+
+  if (!isAuthenticated && !isAdmin) {
+    // If not authenticated or not an admin, redirect to the login or other page
+    return <Navigate to="/" />;
   }
 
-  // If authenticated, render the children (i.e., the protected component)
+  // If authenticated and is an admin, render the children (i.e., the protected component)
   return children;
 };
 
