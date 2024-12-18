@@ -1,1 +1,2 @@
-export { UserService } from './userService';  // Export UserService from the userService file
+export { UserService } from './userService';
+export { CategoryService} from './categoryService' // Export UserService from the userService file

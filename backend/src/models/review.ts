@@ -1,6 +1,13 @@
-const mongoose = require('mongoose');
+import mongoose, { Schema} from 'mongoose';
 
-const reviewSchema = new mongoose.Schema({
+export interface IReview {
+    name: string;
+    content: string;
+    rating: number;
+    date: Date;
+}
+
+const reviewSchema: Schema = new Schema({
   id: {
     type: String,
     required: true,
@@ -25,6 +32,5 @@ const reviewSchema = new mongoose.Schema({
   },
 });
 
-const Review = mongoose.model('Review', reviewSchema);
+export const Review = mongoose.model<IReview>('Review', reviewSchema);
 
-module.exports = Review;

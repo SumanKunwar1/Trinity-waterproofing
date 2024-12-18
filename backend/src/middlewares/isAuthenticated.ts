@@ -1,13 +1,13 @@
-// src/middlewares/isAuthenticated.ts
 import { Request, Response, NextFunction } from 'express';
+import { httpMessages } from '../middlewares';  // Assuming this contains your error messages
 import jwt from 'jsonwebtoken';
 
 const isAuthenticated = (req: Request, res: Response, next: NextFunction): void => {
   const token = req.headers['authorization']?.split(' ')[1];
 
   if (!token) {
-    res.status(401).json({ message: 'Unauthorized access' });
-    return;
+    // Pass error to next middleware (handleResponse)
+    return next(httpMessages.UNAUTHORIZED_NO_TOKEN);
   }
 
   try {
@@ -16,8 +16,8 @@ const isAuthenticated = (req: Request, res: Response, next: NextFunction): void 
     req.role = decoded.role;
     next();
   } catch (error) {
-    res.status(401).json({ message: 'Unauthorized access' });
-    return;
+    // Pass error to next middleware (handleResponse)
+    return next(httpMessages.UNAUTHORIZED_INVALID_TOKEN);
   }
 };
 

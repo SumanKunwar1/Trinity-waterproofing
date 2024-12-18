@@ -1,9 +1,11 @@
 import { Router } from 'express';
-import userRoutes from './userRoutes';  // Import your route file
+import userRoutes from './userRoutes'; 
+import categoryRoutes from './categoryRoutes'; 
 
 const router = Router();
 
-// Register your routes
 router.use('/users', userRoutes); 
+router.use('/category', categoryRoutes); 
+
 
 export default router;

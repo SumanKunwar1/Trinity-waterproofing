@@ -1,18 +1,17 @@
-import { Request, Response, NextFunction } from 'express';
-import { httpMessages } from '../middlewares';
+import { Request, Response, NextFunction } from "express";
+import { httpMessages } from "../middlewares";
 
 const isAuthorized = (requiredRole: string) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.email) {
-      res.status(401).json({ message: httpMessages.UNAUTHORIZED });
-      return;
+      return next(httpMessages.UNAUTHORIZED());
     }
 
     if (req.role !== requiredRole) {
-      res.status(403).json({ message: httpMessages.FORBIDDEN });
-      return;
+      return next(
+        httpMessages.FORBIDDEN(`Access to this resource by ${req.role}`)
+      );
     }
-
     next();
   };
 };

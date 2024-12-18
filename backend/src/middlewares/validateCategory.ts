@@ -2,20 +2,20 @@ import Joi from 'joi';
 import { Request, Response, NextFunction } from 'express';
 import { httpMessages } from '../middlewares'
 
-const validateUserLogin = (req: Request, res: Response, next: NextFunction):void => {
+const validateCategory = (req: Request, res: Response, next: NextFunction):void => {
   // Define Joi validation schema
   const schema = Joi.object({
-    email: Joi.string().email().required().messages({
-      'any.required': 'Email is required',
+    name: Joi.string().required().messages({
+      'string.base': 'Name must be a string',
+      'any.required': 'Name is required',
     }),
-    password: Joi.string().required().messages({
-      'any.required': 'Password is required',
-    }),
+    description: Joi.string().required().messages({
+        'string.base': 'Description must be a string',
+        'any.required': 'Description is required',
+      }),
   });
 
-  // Validate request body
   const { error } = schema.validate(req.body);
-
   if (error) {
     const errors = error.details.map(err => ({
       field: err.context?.key,
@@ -28,4 +28,4 @@ const validateUserLogin = (req: Request, res: Response, next: NextFunction):void
   next();
 };
 
-export { validateUserLogin };
+export { validateCategory };
