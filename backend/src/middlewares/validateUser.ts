@@ -40,7 +40,6 @@ const validateUser = (
   const { error } = schema.validate(req.body);
 
   if (error) {
-    console.log(error);
     const errors = error.details.map((err) => ({
       field: err.context?.key,
       message: err.message,

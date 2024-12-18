@@ -2,7 +2,8 @@ export interface Product {
   id: number; // Unique identifier for the product
   name: string; // Name of the product
   description: string; // Detailed description of the product
-  price: number; // Base price of the product
+  retailPrice: number; // Base price of the product
+  wholeSalePrice: number; // Wholesale price of the product
   reviews: {
     id: string; // Unique identifier for the review
     name: string; // Name of the reviewer

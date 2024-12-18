@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 import { Product } from "../../types/product";
 import Button from "../common/Button";
 import { useCart } from "../../context/CartContext";
@@ -14,7 +14,7 @@ interface ProductInfoProps {
 }
 
 const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
 
   const variantTypes = Object.keys(
@@ -41,7 +41,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
   );
 
   const [quantity, setQuantity] = useState(1);
-  const [price, setPrice] = useState(product.price);
+  const [price, setPrice] = useState(product.retailPrice);
   const { addToCart } = useCart();
 
   useEffect(() => {
@@ -63,7 +63,6 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
       toast.info(`${product.name} removed from your wishlist.`);
     } else {
       addToWishlist(product);
-      // toast.success(`${product.name} added to your wishlist.`);
     }
   };
 
@@ -116,7 +115,6 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
         price,
       };
 
-      // Navigate to the checkout page with data
       navigate("/checkout", { state: checkoutData });
     } else {
       toast.error("Not enough stock available");
@@ -127,6 +125,13 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
     ? product.reviews.reduce((acc, review) => acc + review.rating, 0) /
       product.reviews.length
     : 0;
+
+  // Get user role from localStorage
+  const userRole = localStorage.getItem("userRole");
+
+  // Determine price based on user role (B2B or B2C)
+  const displayedPrice =
+    userRole === "b2b" ? product.wholeSalePrice : product.retailPrice;
 
   return (
     <div>
@@ -149,8 +154,9 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
         </button>
       </div>
 
+      {/* Display the price based on user role */}
       <p className="text-2xl font-semibold text-blue-600 mb-2">
-        Rs {price.toFixed(2)}
+        Rs {displayedPrice.toFixed(2)}
       </p>
       <p className="text-gray-600 mb-2">{product.description}</p>
       <p className="text-gray-500 mb-2">In Stock: {product.inStock}</p>
@@ -177,9 +183,9 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
                     key={option}
                     className={`flex items-center gap-3 cursor-pointer ${
                       selectedVariants[type] === option
-                        ? "ring-0 focus:scale-125"
+                        ? "ring-1 ring-blue-500 scale-110"
                         : ""
-                    }`}
+                    } p-2 rounded-md transition-all duration-200`}
                   >
                     <input
                       type="radio"
@@ -187,15 +193,15 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
                       value={option}
                       checked={selectedVariants[type] === option}
                       onChange={() => handleVariantChange(type, option)}
-                      className="hidden" // Hide the default radio input
+                      className="hidden " // Hide the default radio input
                     />
                     {isColorType ? (
                       // Render color boxes for 'color' type
                       <span
-                        className={`w-8 h-8 rounded-full border-2 ${
+                        className={`w-8 h-8 rounded-full ${
                           selectedVariants[type] === option
-                            ? "border-blue-500"
-                            : "border-gray-300"
+                            ? "ring-0 border border-blue-500"
+                            : "ring-0"
                         }`}
                         style={{ backgroundColor: option }}
                         title={option} // Tooltip for the color name

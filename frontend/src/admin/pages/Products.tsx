@@ -18,6 +18,8 @@ import {
 import { Button } from "../components/ui/button";
 import FormikForm from "../components/FormikForm"; // Your custom form component
 import Table from "../components/ui/table"; // Reusable Table Component
+import Sidebar from "../components/Sidebar";
+import Topbar from "../components/Topbar";
 
 interface Product {
   id: number;
@@ -44,6 +46,11 @@ const productSchema = Yup.object().shape({
 });
 
 const Products: React.FC = () => {
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => !prev);
+  };
   const [products, setProducts] = useState<Product[]>([
     {
       id: 1,
@@ -139,55 +146,67 @@ const Products: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-2xl font-bold">Products</CardTitle>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  variant="secondary"
-                  onClick={() => setEditingProduct(null)}
-                >
-                  Add New Product
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogTitle>
-                  {editingProduct ? "Edit Product" : "Add New Product"}
-                </DialogTitle>
-                <FormikForm
-                  initialValues={
-                    editingProduct || {
-                      name: "",
-                      category: "",
-                      subcategory: "",
-                      brand: "",
-                      price: 0,
-                      stock: 0,
-                      description: "",
-                    }
-                  }
-                  validationSchema={productSchema}
-                  onSubmit={handleSubmit}
-                  fields={formFields}
-                  submitButtonText={
-                    editingProduct ? "Update Product" : "Add Product"
-                  }
-                />
-              </DialogContent>
-            </Dialog>
-          </CardHeader>
-          <CardContent>
-            <Table columns={columns} data={products} />
-          </CardContent>
-        </Card>
-      </motion.div>
+    <div>
+      <div className="flex bg-gray-100">
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Topbar toggleSidebar={toggleSidebar} />
+          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+            <div className="space-y-6">
+              <motion.div
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-2xl font-bold">
+                      Products
+                    </CardTitle>
+                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="secondary"
+                          onClick={() => setEditingProduct(null)}
+                        >
+                          Add New Product
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogTitle>
+                          {editingProduct ? "Edit Product" : "Add New Product"}
+                        </DialogTitle>
+                        <FormikForm
+                          initialValues={
+                            editingProduct || {
+                              name: "",
+                              category: "",
+                              subcategory: "",
+                              brand: "",
+                              price: 0,
+                              stock: 0,
+                              description: "",
+                            }
+                          }
+                          validationSchema={productSchema}
+                          onSubmit={handleSubmit}
+                          fields={formFields}
+                          submitButtonText={
+                            editingProduct ? "Update Product" : "Add Product"
+                          }
+                        />
+                      </DialogContent>
+                    </Dialog>
+                  </CardHeader>
+                  <CardContent>
+                    <Table columns={columns} data={products} />
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </div>
+          </main>
+        </div>
+      </div>
     </div>
   );
 };

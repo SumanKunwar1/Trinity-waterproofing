@@ -24,6 +24,8 @@ import {
 } from "../components/ui/tabs";
 import FormikForm from "../components/FormikForm";
 import Table from "../components/ui/table";
+import Sidebar from "../components/Sidebar";
+import Topbar from "../components/Topbar";
 
 interface Category {
   id: number;
@@ -50,6 +52,11 @@ const subcategorySchema = Yup.object().shape({
 });
 
 const Categories: React.FC = () => {
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => !prev);
+  };
   const [categories, setCategories] = useState<Category[]>([
     {
       id: 1,
@@ -149,198 +156,221 @@ const Categories: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold">
-              Categories and Subcategories
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="categories">
-              <TabsList>
-                <TabsTrigger value="categories">Categories</TabsTrigger>
-                <TabsTrigger value="subcategories">SubCategories</TabsTrigger>
-              </TabsList>
-              <TabsContent value="categories">
-                <div className="flex justify-end mb-4">
-                  <Dialog
-                    open={isCategoryDialogOpen}
-                    onOpenChange={setIsCategoryDialogOpen}
-                  >
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="secondary"
-                        onClick={() => setEditingCategory(null)}
-                      >
-                        <FaPlus className="mr-2" /> Add New Category
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogTitle>
-                        {editingCategory ? "Edit Category" : "Add New Category"}
-                      </DialogTitle>
-                      <FormikForm
-                        initialValues={
-                          editingCategory || { name: "", description: "" }
-                        }
-                        validationSchema={categorySchema}
-                        onSubmit={handleCategorySubmit}
-                        fields={[
-                          {
-                            name: "name",
-                            label: "Category Name",
-                            type: "text",
-                          },
-                          {
-                            name: "description",
-                            label: "Description",
-                            type: "textarea",
-                          },
-                        ]}
-                        submitButtonText={
-                          editingCategory ? "Update Category" : "Add Category"
-                        }
-                      />
-                    </DialogContent>
-                  </Dialog>
-                </div>
-                <Table
-                  columns={[
-                    { header: "Name", accessor: "name" },
-                    { header: "Description", accessor: "description" },
-                    { header: "Actions", accessor: "actions" },
-                  ]}
-                  data={categories.map((category) => ({
-                    ...category,
-                    actions: (
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setEditingCategory(category)}
-                        >
-                          <FaEdit className="mr-2" /> Edit
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteCategory(category.id)}
-                        >
-                          <FaTrash className="mr-2" /> Delete
-                        </Button>
-                      </div>
-                    ),
-                  }))}
-                  itemsPerPage={5}
-                />
-              </TabsContent>
+    <div>
+      <div className="flex bg-gray-100">
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Topbar toggleSidebar={toggleSidebar} />
+          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+            <div className="space-y-6">
+              <motion.div
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-2xl font-bold">
+                      Categories and Subcategories
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Tabs defaultValue="categories">
+                      <TabsList>
+                        <TabsTrigger value="categories">Categories</TabsTrigger>
+                        <TabsTrigger value="subcategories">
+                          SubCategories
+                        </TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="categories">
+                        <div className="flex justify-end mb-4">
+                          <Dialog
+                            open={isCategoryDialogOpen}
+                            onOpenChange={setIsCategoryDialogOpen}
+                          >
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="secondary"
+                                onClick={() => setEditingCategory(null)}
+                              >
+                                <FaPlus className="mr-2" /> Add New Category
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogTitle>
+                                {editingCategory
+                                  ? "Edit Category"
+                                  : "Add New Category"}
+                              </DialogTitle>
+                              <FormikForm
+                                initialValues={
+                                  editingCategory || {
+                                    name: "",
+                                    description: "",
+                                  }
+                                }
+                                validationSchema={categorySchema}
+                                onSubmit={handleCategorySubmit}
+                                fields={[
+                                  {
+                                    name: "name",
+                                    label: "Category Name",
+                                    type: "text",
+                                  },
+                                  {
+                                    name: "description",
+                                    label: "Description",
+                                    type: "textarea",
+                                  },
+                                ]}
+                                submitButtonText={
+                                  editingCategory
+                                    ? "Update Category"
+                                    : "Add Category"
+                                }
+                              />
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                        <Table
+                          columns={[
+                            { header: "Name", accessor: "name" },
+                            { header: "Description", accessor: "description" },
+                            { header: "Actions", accessor: "actions" },
+                          ]}
+                          data={categories.map((category) => ({
+                            ...category,
+                            actions: (
+                              <div className="flex space-x-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setEditingCategory(category)}
+                                >
+                                  <FaEdit className="mr-2" /> Edit
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    handleDeleteCategory(category.id)
+                                  }
+                                >
+                                  <FaTrash className="mr-2" /> Delete
+                                </Button>
+                              </div>
+                            ),
+                          }))}
+                          itemsPerPage={5}
+                        />
+                      </TabsContent>
 
-              <TabsContent value="subcategories">
-                <div className="flex justify-end mb-4">
-                  <Dialog
-                    open={isSubcategoryDialogOpen}
-                    onOpenChange={setIsSubcategoryDialogOpen}
-                  >
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="secondary"
-                        onClick={() => setEditingSubcategory(null)}
-                      >
-                        <FaPlus className="mr-2" /> Add New Subcategory
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogTitle>
-                        {editingSubcategory
-                          ? "Edit Subcategory"
-                          : "Add New Subcategory"}
-                      </DialogTitle>
-                      <FormikForm
-                        initialValues={
-                          editingSubcategory || {
-                            name: "",
-                            categoryId: "",
-                            description: "",
-                          }
-                        }
-                        validationSchema={subcategorySchema}
-                        onSubmit={handleSubcategorySubmit}
-                        fields={[
-                          {
-                            name: "name",
-                            label: "Subcategory Name",
-                            type: "text",
-                          },
-                          {
-                            name: "categoryId",
-                            label: "Category",
-                            type: "select",
-                            options: categories.map((c) => ({
-                              value: c.id.toString(),
-                              label: c.name,
-                            })),
-                          },
-                          {
-                            name: "description",
-                            label: "Description",
-                            type: "textarea",
-                          },
-                        ]}
-                        submitButtonText={
-                          editingSubcategory
-                            ? "Update Subcategory"
-                            : "Add Subcategory"
-                        }
-                      />
-                    </DialogContent>
-                  </Dialog>
-                </div>
-                <Table
-                  columns={[
-                    { header: "Name", accessor: "name" },
-                    { header: "Category", accessor: "category" },
-                    { header: "Description", accessor: "description" },
-                    { header: "Actions", accessor: "actions" },
-                  ]}
-                  data={subcategories.map((subcategory) => ({
-                    ...subcategory,
-                    category: categories.find(
-                      (c) => c.id === subcategory.categoryId
-                    )?.name,
-                    actions: (
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setEditingSubcategory(subcategory)}
-                        >
-                          <FaEdit className="mr-2" /> Edit
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            handleDeleteSubcategory(subcategory.id)
-                          }
-                        >
-                          <FaTrash className="mr-2" /> Delete
-                        </Button>
-                      </div>
-                    ),
-                  }))}
-                  itemsPerPage={5}
-                />
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-      </motion.div>
+                      <TabsContent value="subcategories">
+                        <div className="flex justify-end mb-4">
+                          <Dialog
+                            open={isSubcategoryDialogOpen}
+                            onOpenChange={setIsSubcategoryDialogOpen}
+                          >
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="secondary"
+                                onClick={() => setEditingSubcategory(null)}
+                              >
+                                <FaPlus className="mr-2" /> Add New Subcategory
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogTitle>
+                                {editingSubcategory
+                                  ? "Edit Subcategory"
+                                  : "Add New Subcategory"}
+                              </DialogTitle>
+                              <FormikForm
+                                initialValues={
+                                  editingSubcategory || {
+                                    name: "",
+                                    categoryId: "",
+                                    description: "",
+                                  }
+                                }
+                                validationSchema={subcategorySchema}
+                                onSubmit={handleSubcategorySubmit}
+                                fields={[
+                                  {
+                                    name: "name",
+                                    label: "Subcategory Name",
+                                    type: "text",
+                                  },
+                                  {
+                                    name: "categoryId",
+                                    label: "Category",
+                                    type: "select",
+                                    options: categories.map((c) => ({
+                                      value: c.id.toString(),
+                                      label: c.name,
+                                    })),
+                                  },
+                                  {
+                                    name: "description",
+                                    label: "Description",
+                                    type: "textarea",
+                                  },
+                                ]}
+                                submitButtonText={
+                                  editingSubcategory
+                                    ? "Update Subcategory"
+                                    : "Add Subcategory"
+                                }
+                              />
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                        <Table
+                          columns={[
+                            { header: "Name", accessor: "name" },
+                            { header: "Category", accessor: "category" },
+                            { header: "Description", accessor: "description" },
+                            { header: "Actions", accessor: "actions" },
+                          ]}
+                          data={subcategories.map((subcategory) => ({
+                            ...subcategory,
+                            category: categories.find(
+                              (c) => c.id === subcategory.categoryId
+                            )?.name,
+                            actions: (
+                              <div className="flex space-x-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    setEditingSubcategory(subcategory)
+                                  }
+                                >
+                                  <FaEdit className="mr-2" /> Edit
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    handleDeleteSubcategory(subcategory.id)
+                                  }
+                                >
+                                  <FaTrash className="mr-2" /> Delete
+                                </Button>
+                              </div>
+                            ),
+                          }))}
+                          itemsPerPage={5}
+                        />
+                      </TabsContent>
+                    </Tabs>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </div>
+          </main>
+        </div>
+      </div>
     </div>
   );
 };

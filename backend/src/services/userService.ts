@@ -49,6 +49,7 @@ export class UserService {
 
       return { token, user };
     } catch (error) {
+      console.log(error);
       throw error;
     }
   }

@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   FaChartBar,
   FaBox,
@@ -25,6 +25,18 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   const location = useLocation();
+  const navigate = useNavigate(); // Hook to navigate to different routes
+
+  // Handle logout
+  const handleLogout = () => {
+    // Clear user data from localStorage
+    localStorage.removeItem("user");
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userRole");
+
+    // Redirect to login page
+    navigate("/login"); // Use the navigate hook to redirect the user
+  };
 
   const menuItems = [
     { icon: FaChartBar, text: "Dashboard", link: "/admin/dashboard" },
@@ -55,6 +67,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       text: "Generate Report",
       link: "/admin/generate-report",
     },
+    {
+      icon: FaFileAlt,
+      text: "Logout",
+      link: "/login",
+      onClick: handleLogout,
+    },
   ];
 
   return (
@@ -74,12 +92,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       </div>
 
       <nav className="mt-6 overflow-y-auto h-full">
-        {" "}
-        {/* Added scrollable area here */}
         {menuItems.map((item, index) => (
           <Link
             key={index}
             to={item.link}
+            onClick={item.onClick} // This triggers the handleLogout for logout action
             className={`flex items-center px-6 py-2 mt-4 duration-200 border-l-4 ${
               location.pathname === item.link
                 ? "border-blue-500 bg-blue-100 text-blue-500"

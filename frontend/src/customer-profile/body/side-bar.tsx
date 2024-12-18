@@ -13,11 +13,8 @@ import { Label } from "../../components/ui/label"; // Importing Label from ShadC
 import { motion } from "framer-motion"; // Importing Framer Motion for animation
 
 export const SideBar = memo(() => {
-  const CustomerInfo = {
-    customerName: "John Doe",
-    email: "johndoe@example.com",
-    img: "/assets/logo.png", // Placeholder image URL
-  };
+  const userString = localStorage.getItem("user");
+  const user: User | null = userString ? JSON.parse(userString) : null;
 
   const navItems = [
     {
@@ -59,8 +56,21 @@ export const SideBar = memo(() => {
   const navigate = useNavigate();
 
   const handleNavigation = (path: string, label: string) => {
+    if (label === "Log Out") {
+      handleLogout();
+      return;
+    }
     setActiveItem(label);
     navigate(path);
+  };
+
+  const handleLogout = () => {
+    // Clear user data from localStorage
+    localStorage.removeItem("user");
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userRole");
+    // Redirect to login page
+    navigate("/login");
   };
 
   useEffect(() => {
@@ -75,18 +85,34 @@ export const SideBar = memo(() => {
       exit={{ x: -250 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
     >
-      <div className="flex flex-col items-center my-8">
-        <img
-          className="w-16 h-16 rounded-full object-cover"
-          src={CustomerInfo.img}
-          alt={`${CustomerInfo.customerName}'s avatar`}
-        />
-        <Label className="pt-3 text-center text-lg text-white">
-          {CustomerInfo.customerName}
-        </Label>
-        <Label className="text-center pt-2 text-gray-400">
-          {CustomerInfo.email}
-        </Label>
+      <div className="user-info p-4 flex flex-col items-center">
+        <div className="avatar mb-3">
+          {user ? (
+            <div className="avatar-inner w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center">
+              {user.fullName ? (
+                <span className="text-xl text-white">
+                  {getInitials(user.fullName)}
+                </span>
+              ) : (
+                <span className="text-xl text-white">U</span>
+              )}
+            </div>
+          ) : (
+            <div className="avatar-inner w-16 h-16 rounded-full bg-gray-300"></div>
+          )}
+        </div>
+        <div className="user-name text-center text-gray-800">
+          {user ? (
+            <>
+              <div className="text-lg text-gray-200 font-semibold">
+                {user.fullName}
+              </div>
+              <div className="text-sm text-gray-200">{user.email}</div>
+            </>
+          ) : (
+            <div className="text-gray-500">No User Logged In</div>
+          )}
+        </div>
       </div>
 
       <div className="w-[80%] border-b-2 border-gray-600 mb-3"></div>
@@ -123,3 +149,21 @@ export const SideBar = memo(() => {
     </motion.section>
   );
 });
+
+interface User {
+  _id: string;
+  fullName: string;
+  email: string;
+  role: string;
+  number: string;
+  createdAt: string;
+}
+
+// Helper function to generate initials from the user's name
+const getInitials = (name: string) => {
+  return name
+    .split(" ")
+    .map((word) => word[0].toUpperCase())
+    .join("")
+    .substr(0, 2);
+};

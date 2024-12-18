@@ -1,134 +1,116 @@
-import { motion } from "framer-motion"; // Importing Framer Motion
+"use client";
+
+import { motion } from "framer-motion";
 import {
   FaArrowRight,
   FaShoppingBag,
   FaRegHeart,
   FaCube,
-} from "react-icons/fa"; // Importing react-icons
-import { Label } from "../../components/ui/label";
+  FaPlus,
+} from "react-icons/fa";
 import { Button } from "../../components/ui/button";
-import { Card } from "../../components/ui/card"; // Assuming you have a Card component from shadcn
+import { Card, CardContent } from "../../components/ui/card";
 
 export const Dashboard = () => {
   return (
     <motion.div
-      className="ml-6 w-full h-screen"
+      className="w-full min-h-screen bg-gray-100 p-6 space-y-6"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
       {/* Expenditure Overview Section */}
       <motion.div
-        className="bg-primary-500 p-4 h-[25%] rounded-lg shadow-lg"
-        initial={{ x: "-100vw" }}
-        animate={{ x: 0 }}
+        className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 rounded-xl shadow-lg text-white"
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="flex space-x-4 items-center">
-          <div className="bg-black-600 rounded-full p-2 w-[50px] h-[50px] text-center">
-            <Label className="text-gray-800 text-xl">{"$"}</Label>
+        <div className="flex items-center space-x-4">
+          <div className="bg-white rounded-full p-3 w-16 h-16 flex items-center justify-center">
+            <span className="text-blue-600 text-2xl font-bold">$</span>
           </div>
-          <div className="space-y-1">
-            <Label className="text-gray-800 font-semibold">
-              Total Expenditure
-            </Label>
-            <Label className="text-gray-800 text-2xl">Rs 0.00</Label>
+          <div>
+            <h2 className="text-xl font-semibold">Total Expenditure</h2>
+            <p className="text-3xl font-bold mt-1">Rs 0.00</p>
           </div>
         </div>
 
         <motion.div
-          className="py-3 px-2 flex items-center space-x-2 mt-4 cursor-pointer hover:bg-primary-400 rounded-md transition duration-300"
-          whileHover={{ scale: 1.05 }}
+          className="mt-6 flex items-center space-x-2 cursor-pointer group"
+          whileHover={{ x: 10 }}
         >
-          <Label className="text-gray-800">View order history</Label>
-          <FaArrowRight fontSize={22} className="text-gray-800" />
+          <span className="text-lg">View order history</span>
+          <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
         </motion.div>
       </motion.div>
 
       {/* Statistics and Shipping Section */}
-      <motion.div
-        className="py-8 px-4 flex flex-wrap gap-8 h-[70%]"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-      >
+      <div className="grid md:grid-cols-3 gap-6">
         {/* Statistics Section */}
-        <div className="w-full sm:w-[30%] flex flex-col space-y-6">
-          <motion.div
-            className="w-full"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Card className="bg-white p-6 rounded-lg shadow-lg">
-              <div className="flex space-x-6">
-                <div className="p-2 rounded-full bg-primary-400 w-[50px] h-[50px] flex justify-center items-center text-white">
-                  <FaShoppingBag size={25} />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-black font-semibold">0</Label>
-                  <Label className="text-gray-600">Products in cart</Label>
-                </div>
-              </div>
-              <div className="border-b-2 border-black-300 w-[80%] mt-2"></div>
-            </Card>
-          </motion.div>
-
-          {/* Products in watchlist */}
-          <motion.div
-            className="w-full"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Card className="bg-white p-6 rounded-lg shadow-lg">
-              <div className="flex space-x-6">
-                <div className="p-2 rounded-full bg-ternary-400 w-[50px] h-[50px] flex justify-center items-center text-white">
-                  <FaRegHeart size={25} />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-black font-semibold">0</Label>
-                  <Label className="text-gray-600">Products in watchlist</Label>
-                </div>
-              </div>
-              <div className="border-b-2 border-black-300 w-[80%] mt-2"></div>
-            </Card>
-          </motion.div>
-
-          {/* Total products ordered */}
-          <motion.div
-            className="w-full"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Card className="bg-white p-6 rounded-lg shadow-lg">
-              <div className="flex space-x-6">
-                <div className="p-2 rounded-full bg-secondary-500 w-[50px] h-[50px] flex justify-center items-center text-white">
-                  <FaCube size={25} />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-black font-semibold">0</Label>
-                  <Label className="text-gray-600">
-                    Total products ordered
-                  </Label>
-                </div>
-              </div>
-              <div className="border-b-2 border-black-300 w-[80%] mt-2"></div>
-            </Card>
-          </motion.div>
+        <div className="md:col-span-1 space-y-6">
+          <StatCard
+            icon={<FaShoppingBag size={25} />}
+            value={0}
+            label="Products in cart"
+            color="bg-green-500"
+          />
+          <StatCard
+            icon={<FaRegHeart size={25} />}
+            value={0}
+            label="Products in watchlist"
+            color="bg-pink-500"
+          />
+          <StatCard
+            icon={<FaCube size={25} />}
+            value={0}
+            label="Total products ordered"
+            color="bg-purple-500"
+          />
         </div>
 
-        {/* Shipping Address Section - Now to the right of stats */}
-        <div className="md:w-[60%] sm:w-[70%] bg-white flex flex-col justify-center items-center space-y-4 p-6 rounded-lg shadow-lg">
-          <Label className="text-black font-semibold">
-            Default Shipping Address
-          </Label>
-          <Button className="bg-primary-500 text-gray-800 hover:bg-primary-600 transition duration-200">
-            <span className="text-xl font-semibold">+</span> Add New Address
-          </Button>
-        </div>
-      </motion.div>
+        {/* Shipping Address Section */}
+        <Card className="md:col-span-2 bg-white shadow-lg">
+          <CardContent className="p-6 flex flex-col items-center justify-center space-y-4 h-full">
+            <h2 className="text-2xl font-semibold text-gray-800">
+              Default Shipping Address
+            </h2>
+            <p className="text-gray-600 text-center">
+              You haven't set a default shipping address yet.
+            </p>
+            <Button className="bg-blue-500 hover:bg-blue-600 text-white transition duration-200">
+              <FaPlus className="mr-2" /> Add New Address
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     </motion.div>
   );
 };
+
+interface StatCardProps {
+  icon: React.ReactNode;
+  value: number;
+  label: string;
+  color: string;
+}
+
+const StatCard: React.FC<StatCardProps> = ({ icon, value, label, color }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5 }}
+  >
+    <Card className="bg-white shadow-lg">
+      <CardContent className="p-6">
+        <div className="flex items-center space-x-4">
+          <div className={`${color} rounded-full p-3 text-white`}>{icon}</div>
+          <div>
+            <p className="text-2xl font-bold text-gray-800">{value}</p>
+            <p className="text-gray-600">{label}</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  </motion.div>
+);

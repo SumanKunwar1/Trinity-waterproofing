@@ -19,6 +19,8 @@ import { Switch } from "../components/ui/switch";
 import FormikForm from "../components/FormikForm"; // Reusable form component
 import Table from "../components/ui/table"; // Reusable table component
 import * as Yup from "yup";
+import Sidebar from "../components/Sidebar";
+import Topbar from "../components/Topbar";
 
 interface Slider {
   id: number;
@@ -36,6 +38,11 @@ const sliderSchema = Yup.object().shape({
 });
 
 const Sliders: React.FC = () => {
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => !prev);
+  };
   const [sliders, setSliders] = useState<Slider[]>([
     {
       id: 1,
@@ -143,51 +150,61 @@ const Sliders: React.FC = () => {
   ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-2xl font-bold">Sliders</CardTitle>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button
-                variant="secondary"
-                onClick={() => setEditingSlider(null)}
-              >
-                Add New Slider
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogTitle>
-                {editingSlider ? "Edit Slider" : "Add New Slider"}
-              </DialogTitle>
-              <FormikForm
-                initialValues={
-                  editingSlider || {
-                    title: "",
-                    image: "",
-                    link: "",
-                    isVisible: false,
-                  }
-                }
-                validationSchema={sliderSchema}
-                onSubmit={handleSubmit}
-                fields={formFields}
-                submitButtonText={
-                  editingSlider ? "Update Slider" : "Add Slider"
-                }
-              />
-            </DialogContent>
-          </Dialog>
-        </CardHeader>
-        <CardContent>
-          <Table data={sliders} columns={columns} />
-        </CardContent>
-      </Card>
-    </motion.div>
+    <div>
+      <div className="flex bg-gray-100">
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Topbar toggleSidebar={toggleSidebar} />
+          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-2xl font-bold">Sliders</CardTitle>
+                  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="secondary"
+                        onClick={() => setEditingSlider(null)}
+                      >
+                        Add New Slider
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogTitle>
+                        {editingSlider ? "Edit Slider" : "Add New Slider"}
+                      </DialogTitle>
+                      <FormikForm
+                        initialValues={
+                          editingSlider || {
+                            title: "",
+                            image: "",
+                            link: "",
+                            isVisible: false,
+                          }
+                        }
+                        validationSchema={sliderSchema}
+                        onSubmit={handleSubmit}
+                        fields={formFields}
+                        submitButtonText={
+                          editingSlider ? "Update Slider" : "Add Slider"
+                        }
+                      />
+                    </DialogContent>
+                  </Dialog>
+                </CardHeader>
+                <CardContent>
+                  <Table data={sliders} columns={columns} />
+                </CardContent>
+              </Card>
+            </motion.div>
+          </main>
+        </div>
+      </div>
+    </div>
   );
 };
 

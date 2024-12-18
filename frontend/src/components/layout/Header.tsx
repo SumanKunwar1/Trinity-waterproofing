@@ -1,28 +1,78 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FiUser } from "react-icons/fi";
 import { LuShoppingCart } from "react-icons/lu";
 import { FaChevronDown } from "react-icons/fa";
 import { IoSearchOutline, IoCloseOutline } from "react-icons/io5";
-import { FaRegHeart } from "react-icons/fa"; // Import wishlist icon
+import { FaRegHeart } from "react-icons/fa";
 import { navigationItems } from "../../constants/navigation";
 import { useCart } from "../../context/CartContext";
-import { useWishlist } from "../../context/WishlistContext"; // Import the useWishlist hook
+import { useWishlist } from "../../context/WishlistContext";
 import ProductDropdown from "./ProductDropdown";
-import { categories } from "../../constants/categories";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import {
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardContent,
+} from "../ui/hover-card";
+import { Avatar, AvatarFallback } from "../ui/avatar";
+
+// Define a type for the user object
+interface User {
+  _id: string;
+  fullName: string;
+  email: string;
+  role: string;
+  number: string;
+  createdAt: string;
+}
 
 const Header: React.FC = () => {
   const { cartItems } = useCart();
-  const { wishlist } = useWishlist(); // Access wishlist items from WishlistContext
-  const [isOpen, setIsOpen] = useState(false);
-  const [isProductDropdownOpen, setIsProductDropdownOpen] = useState(false);
+  const { wishlist } = useWishlist();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isProductDropdownOpen, setIsProductDropdownOpen] = useState(false);
+
+  const navigate = useNavigate();
+
+  // Retrieve user information from localStorage
+  const userString = localStorage.getItem("user");
+  const user: User | null = userString ? JSON.parse(userString) : null;
+
+  // Generate initials
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((word) => word[0].toUpperCase())
+      .join("")
+      .substr(0, 2);
+  };
+
+  const handleLogout = () => {
+    // Clear user data from localStorage
+    localStorage.removeItem("user");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("authToken");
+    // Redirect to login page
+    navigate("/login");
+  };
+
+  const handleMenuItemClick = (path: string) => {
+    navigate(path);
+  };
 
   const cartItemCount = cartItems.length;
-  const wishlistItemCount = wishlist.length; // Get the number of items in the wishlist
-
+  const wishlistItemCount = wishlist.length;
   return (
     <header className="bg-brand shadow-md relative">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -35,18 +85,19 @@ const Header: React.FC = () => {
             />
           </Link>
 
-          {/* Brand name - Only visible on medium (md) and larger screens */}
           <Link to="/" className="hidden md:block">
             <span className="text-2xl font-bold text-hover">
               Trinity Waterproofing
             </span>
           </Link>
         </div>
+
         <div
           className={`flex items-center ${
-            isSearchOpen ? "justify-center " : "space-x-3"
+            isSearchOpen ? "justify-center" : "space-x-3"
           }`}
         >
+          {/* Navigation Links */}
           {/* Navigation Links */}
           {!isSearchOpen && (
             <nav
@@ -56,15 +107,24 @@ const Header: React.FC = () => {
             >
               {navigationItems.map((item) =>
                 item.title === "Products" ? (
-                  <button
+                  <HoverCard
                     key={item.id}
-                    className="text-white font-semibold hover:text-secondary transition-colors duration-300 flex items-center"
-                    style={{}}
-                    onClick={() => setIsProductDropdownOpen(true)}
+                    open={isHovered}
+                    onOpenChange={setIsHovered}
                   >
-                    {item.title}
-                    <FaChevronDown className="ml-1" />
-                  </button>
+                    <HoverCardTrigger>
+                      <button className="text-white font-semibold hover:text-secondary transition-colors duration-300 flex items-center">
+                        {item.title}
+                        <FaChevronDown className="ml-1" />
+                      </button>
+                    </HoverCardTrigger>
+                    <HoverCardContent className="border-0 shadow-lg rounded-md  w-screen">
+                      <ProductDropdown
+                        isOpen={isHovered}
+                        onClose={() => setIsHovered(false)}
+                      />
+                    </HoverCardContent>
+                  </HoverCard>
                 ) : (
                   <Link
                     key={item.id}
@@ -77,7 +137,6 @@ const Header: React.FC = () => {
               )}
             </nav>
           )}
-
           {/* Search, User, Cart, and Wishlist Icons */}
           <div className="flex items-center space-x-4">
             {isSearchOpen ? (
@@ -108,17 +167,6 @@ const Header: React.FC = () => {
                 >
                   <IoSearchOutline size={25} />
                 </button>
-
-                {/* User Icon */}
-                <Link
-                  to="/customer/dashboard"
-                  className="p-2 hover:bg-slate-400 rounded-full"
-                >
-                  <FiUser
-                    size={25}
-                    className="text-hover hover:text-secondary transition-all duration-300"
-                  />
-                </Link>
 
                 {/* Cart Icon */}
                 <Link
@@ -152,6 +200,66 @@ const Header: React.FC = () => {
                   )}
                 </Link>
 
+                {/* User Avatar or Login */}
+                {user ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <div className="cursor-pointer">
+                        <Avatar>
+                          <AvatarFallback className="bg-orange-500 text-white font-bold">
+                            {getInitials(user.fullName)}
+                          </AvatarFallback>
+                        </Avatar>
+                      </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56">
+                      <DropdownMenuLabel>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{user.fullName}</span>
+                          <span className="text-xs text-gray-500">
+                            {user.email}
+                          </span>
+                        </div>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="text-brand cursor-pointer hover:text-secondary transition-all duration-300"
+                        onSelect={() =>
+                          handleMenuItemClick("/customer/purchase-history")
+                        }
+                      >
+                        Order History
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-brand cursor-pointer hover:text-secondary transition-all duration-300"
+                        onSelect={() =>
+                          handleMenuItemClick("/customer/manage-profile")
+                        }
+                      >
+                        Manage Profile
+                      </DropdownMenuItem>
+
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="text-red-600 border border-red-600 text-center align-middle hover:bg-tertiary flex justify-center hover:text-brand cursor-pointer focus:text-red-700 transition-all duration-300"
+                        onSelect={handleLogout}
+                      >
+                        Logout
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <Link
+                    to="/login"
+                    className="p-2 hover:bg-slate-400 rounded-full"
+                  >
+                    <FiUser
+                      size={25}
+                      className="text-hover hover:text-secondary transition-all duration-300"
+                    />
+                  </Link>
+                )}
+
                 {/* Mobile Menu Toggle */}
                 <button
                   className="md:hidden"
@@ -182,14 +290,7 @@ const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Product Dropdown */}
-      {isProductDropdownOpen && (
-        <ProductDropdown
-          isOpen={isProductDropdownOpen}
-          onClose={() => setIsProductDropdownOpen(false)}
-        />
-      )}
-
+      {/* Mobile Navigation Dropdown */}
       {isOpen && !isSearchOpen && (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -202,13 +303,17 @@ const Header: React.FC = () => {
               item.title === "Products" ? (
                 <button
                   key={item.id}
-                  className="text-gray-600 hover:text-blue-600 py-2 transition-colors duration-300 text-left"
-                  onClick={() => {
-                    setIsProductDropdownOpen(true);
-                    setIsOpen(false);
-                  }}
+                  className="text-gray-600 hover:text-blue-600 py-2 transition-colors duration-300 text-left flex items-center justify-between w-full"
+                  onClick={() =>
+                    setIsProductDropdownOpen(!isProductDropdownOpen)
+                  }
                 >
                   {item.title}
+                  <FaChevronDown
+                    className={`ml-2 transition-transform duration-300 ${
+                      isProductDropdownOpen ? "rotate-180" : ""
+                    }`}
+                  />
                 </button>
               ) : (
                 <Link
@@ -220,6 +325,19 @@ const Header: React.FC = () => {
                   {item.title}
                 </Link>
               )
+            )}
+            {isProductDropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="bg-white shadow-inner"
+              >
+                <ProductDropdown
+                  isOpen={isProductDropdownOpen}
+                  onClose={() => setIsProductDropdownOpen(false)}
+                />
+              </motion.div>
             )}
           </nav>
         </motion.div>

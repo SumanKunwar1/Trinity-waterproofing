@@ -1,3 +1,30 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* Loader.css */
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f0f0f0; /* Light background */
+}
+
+.loader-image {
+  margin-bottom: 20px;
+}
+
+.balls-container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.ball {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background-color: #3498db; /* Blue color for the balls */
+  opacity: 0; /* Initially hidden */
+}
