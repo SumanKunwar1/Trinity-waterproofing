@@ -18,7 +18,7 @@ const productSchema: Schema = new Schema({
     },
   ],
   instock: { type: Number, required: true },
-  subCategoryId: { type: Types.ObjectId, ref: "SubCategory", required: true },
+  subCategory: { type: Types.ObjectId, ref: "SubCategory", required: true },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
 });

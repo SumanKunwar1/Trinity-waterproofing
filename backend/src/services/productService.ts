@@ -16,4 +16,61 @@ export class ProductService {
       throw error;
     }
   }
+
+  public async getProducts() {
+    try {
+      const products = await Product.find().populate({
+        path: "subCategory",
+        populate: {
+          path: "category",
+          model: "Category",
+        },
+      });
+
+      if (!products || products.length === 0) {
+        throw httpMessages.NOT_FOUND("products");
+      }
+
+      return products;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async getProductById(productId: string) {
+    try {
+      const product = await Product.findById(productId).populate({
+        path: "subCategory",
+        populate: {
+          path: "category",
+          model: "Category",
+        },
+      });
+
+      if (!product) {
+        throw httpMessages.NOT_FOUND(`product`);
+      }
+
+      return product;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async deleteProductById(productId: string) {
+    try {
+      const product = await Product.findById(productId);
+
+      if (!product) {
+        throw httpMessages.NOT_FOUND(`product`);
+      }
+
+      await Product.deleteOne({ _id: productId });
+      return {
+        message: "Product deleted successfully",
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
 }

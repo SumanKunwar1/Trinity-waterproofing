@@ -7,7 +7,6 @@ import {
   isAuthorized,
   handleError,
 } from "../middlewares";
-import { NextFunction, Request, Response } from "express";
 import { uploadMiddleware, appendFileDataToBody } from "../config/upload";
 
 const router = Router();
@@ -21,6 +20,28 @@ router.post(
   appendFileDataToBody,
   validateProduct,
   productController.createProduct.bind(productController),
+  handleResponse
+);
+router.get(
+  "/",
+  isAuthenticated,
+  isAuthorized("admin"),
+  productController.getProducts.bind(productController),
+  handleResponse
+);
+
+router.get(
+  "/:id",
+  isAuthenticated,
+  productController.getProductById.bind(productController),
+  handleResponse
+);
+
+router.delete(
+  "/:id",
+  isAuthenticated,
+  isAuthorized("admin"),
+  productController.deleteProductById.bind(productController),
   handleResponse
 );
 router.use(handleError);

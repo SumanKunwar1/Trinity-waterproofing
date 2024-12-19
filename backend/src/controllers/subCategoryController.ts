@@ -25,4 +25,37 @@ export class SubCategoryController {
       next(error);
     }
   }
+
+  public async getSubCategories(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const result = await this.subCategoryService.getSubCategories();
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  public async editSubCategory(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { subCategoryId } = req.params;
+      const updateData: Partial<ISubCategory> = req.body;
+      const result = await this.subCategoryService.editSubCategory(
+        subCategoryId,
+        updateData
+      );
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
 }

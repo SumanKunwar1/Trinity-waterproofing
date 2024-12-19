@@ -17,6 +17,21 @@ router.post(
   subCategoryController.createSubCategory.bind(subCategoryController),
   handleResponse
 );
+
+router.get(
+  "/",
+  isAuthenticated,
+  subCategoryController.getSubCategories.bind(subCategoryController),
+  handleResponse
+);
+
+router.patch(
+  "/:id",
+  isAuthenticated,
+  isAuthorized("admin"),
+  subCategoryController.editSubCategory.bind(subCategoryController),
+  handleResponse
+);
 router.use(handleError);
 
 export default router;

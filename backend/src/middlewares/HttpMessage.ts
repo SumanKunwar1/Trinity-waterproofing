@@ -27,6 +27,10 @@ export const httpMessages = {
     statusCode: 401,
     message: "Unauthorized access: Invalid token",
   },
+  UNAUTHORIZED_TOKEN_EXPIRED: {
+    statusCode: 401,
+    message: "Unauthorized access: expired token",
+  },
   BAD_REQUEST: (details: string = "") => ({
     statusCode: 400,
     message: `Bad request${details ? `: ${details}` : ""}`,
