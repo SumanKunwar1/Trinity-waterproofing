@@ -65,10 +65,14 @@ export const SideBar = memo(() => {
   };
 
   const handleLogout = () => {
-    // Clear user data from localStorage
-    localStorage.removeItem("user");
     localStorage.removeItem("authToken");
     localStorage.removeItem("userRole");
+    localStorage.removeItem("user");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userFullName");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userPassword");
+    localStorage.removeItem("userNumber");
     // Redirect to login page
     navigate("/login");
   };

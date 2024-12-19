@@ -55,20 +55,26 @@ const Footer = () => {
                   Products
                 </Link>
               </li>
-              <li>
-                <Link
-                  to="/solutions"
-                  className="hover:text-white transition-colors"
-                >
-                  Solutions
-                </Link>
-              </li>
+
               <li>
                 <Link
                   to="/about"
                   className="hover:text-white transition-colors"
                 >
                   About Us
+                </Link>
+              </li>
+              <li>
+                <Link to="/cart" className="hover:text-white transition-colors">
+                  Cart
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/wishlist"
+                  className="hover:text-white transition-colors"
+                >
+                  Wishlist
                 </Link>
               </li>
               <li>
@@ -101,15 +107,15 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  to="/returns"
+                  to="/return-policy"
                   className="hover:text-white transition-colors"
                 >
-                  Returns Policy
+                  Return Policy
                 </Link>
               </li>
               <li>
                 <Link
-                  to="/privacy"
+                  to="/privacy-policy"
                   className="hover:text-white transition-colors"
                 >
                   Privacy Policy

@@ -28,6 +28,14 @@ function AdminApp() {
       <Routes>
         {/* Private routes (protected by PrivateRoute) */}
         <Route
+          path="/"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
           path="/admin/dashboard"
           element={
             <PrivateRoute>

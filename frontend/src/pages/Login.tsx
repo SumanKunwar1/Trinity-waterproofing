@@ -47,17 +47,29 @@ const Login: React.FC = () => {
           localStorage.setItem("authToken", data.token);
           localStorage.setItem("userRole", userRole);
           localStorage.setItem("user", JSON.stringify(data.user));
+          localStorage.setItem("userId", JSON.stringify(data.user._id));
+          localStorage.setItem(
+            "userFullName",
+            JSON.stringify(data.user.fullName)
+          );
+          localStorage.setItem("userEmail", JSON.stringify(data.user.email));
+          localStorage.setItem(
+            "userPassword",
+            JSON.stringify(data.user.password)
+          );
+          localStorage.setItem("userNumber", JSON.stringify(data.user.number));
           console.log(data.user);
           toast.success("Login successful!");
 
           if (userRole === "admin") {
             navigate("/admin/dashboard");
-          } else if (userRole === "b2c") {
+            window.location.reload();
+          } else if (userRole === "b2c" || userRole === "b2b") {
             navigate("/customer/dashboard");
-          } else if (userRole === "b2b") {
-            navigate("/business/dashboard");
+            window.location.reload();
           } else {
             navigate("/");
+            window.location.reload();
           }
         } else {
           toast.error("Invalid response from the server. Please try again.");

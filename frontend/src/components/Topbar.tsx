@@ -115,9 +115,14 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
 
   // Handle logout
   const handleLogout = () => {
-    localStorage.removeItem("user");
     localStorage.removeItem("authToken");
     localStorage.removeItem("userRole");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("user");
+    localStorage.removeItem("userFullName");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userPassword");
+    localStorage.removeItem("userNumber");
     toast({
       title: "Logged Out",
       description: "You have been successfully logged out.",

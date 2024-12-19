@@ -1,5 +1,4 @@
-"use client";
-
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   FaArrowRight,
@@ -36,13 +35,15 @@ export const Dashboard = () => {
           </div>
         </div>
 
-        <motion.div
-          className="mt-6 flex items-center space-x-2 cursor-pointer group"
-          whileHover={{ x: 10 }}
-        >
-          <span className="text-lg">View order history</span>
-          <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
-        </motion.div>
+        <Link to="/customer/purchase-history">
+          <motion.div
+            className="mt-6 flex items-center space-x-2 cursor-pointer group"
+            whileHover={{ x: 10 }}
+          >
+            <span className="text-lg">View order history</span>
+            <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+          </motion.div>
+        </Link>
       </motion.div>
 
       {/* Statistics and Shipping Section */}

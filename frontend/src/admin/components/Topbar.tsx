@@ -21,6 +21,7 @@ import { Toaster } from "../components/ui/toaster";
 import { useNavigate } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { Avatar, AvatarFallback } from "../components/ui/avatar";
 
 // Notification types
 interface Notification {
@@ -56,15 +57,28 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const userName = JSON.parse(localStorage.getItem("userFullName") || "");
+  const userEmail = JSON.parse(localStorage.getItem("userEmail") || "");
+  const userNumber = JSON.parse(localStorage.getItem("userNumber") || "");
+
+  // Generate initials
+  const getInitials = (name?: string) => {
+    if (!name || name.trim() === "") {
+      return "N/A"; // Default initials if name is missing or empty
+    }
+    return name
+      .split(" ")
+      .map((word) => word[0].toUpperCase())
+      .join("")
+      .substr(0, 2);
+  };
+  const initials = getInitials(userName || "N/A");
   // Change Password Validation Schema
   const changePasswordSchema = Yup.object().shape({
-    currentPassword: Yup.string().required("Current password is required"),
+    oldPassword: Yup.string().required("Current password is required"),
     newPassword: Yup.string()
       .min(8, "Password must be at least 8 characters")
-      .matches(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-        "Password must include uppercase, lowercase, number, and special character"
-      )
+
       .required("New password is required"),
     confirmPassword: Yup.string()
       .oneOf([Yup.ref("newPassword")], "Passwords must match")
@@ -73,11 +87,11 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
 
   // Profile Update Validation Schema
   const profileUpdateSchema = Yup.object().shape({
-    name: Yup.string().required("Name is required"),
+    fullName: Yup.string().required("Full Name is required"),
     email: Yup.string().email("Invalid email").required("Email is required"),
-    username: Yup.string()
-      .min(4, "Username must be at least 4 characters")
-      .required("Username is required"),
+    phone: Yup.string()
+      .matches(/^[0-9]{10}$/, "Invalid phone number")
+      .required("Phone Number is required"),
   });
 
   // Notification Management Functions
@@ -115,14 +129,20 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
 
   // Handle logout
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("userRole");
     localStorage.removeItem("authToken");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("user");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userFullName");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userPassword");
+    localStorage.removeItem("userNumber");
     toast({
       title: "Logged Out",
       description: "You have been successfully logged out.",
     });
     navigate("/login");
+    window.location.reload();
   };
 
   // Handle change password submission
@@ -131,12 +151,29 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
     { setSubmitting, resetForm }: any
   ) => {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const userId = JSON.parse(localStorage.getItem("userId") || "");
+      const response = await fetch(`/api/users/edit/password/${userId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+        body: JSON.stringify({
+          oldPassword: values.oldPassword,
+          newPassword: values.newPassword,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to change password");
+      }
+
       toast({
         title: "Password Changed",
         description: "Your password has been successfully updated.",
       });
       setIsChangePasswordDialogOpen(false);
+      localStorage.setItem("userPassword", JSON.stringify(values.newPassword));
       resetForm();
     } catch (error) {
       toast({
@@ -149,18 +186,39 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
     }
   };
 
-  // Handle profile update submission
   const handleProfileUpdate = async (
     values: any,
     { setSubmitting, resetForm }: any
   ) => {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const userId = JSON.parse(localStorage.getItem("userId") || "");
+
+      const response = await fetch(`/api/users/edit/${userId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+        body: JSON.stringify({
+          fullName: values.fullName,
+          email: values.email,
+          number: values.number,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update profile");
+      }
+
       toast({
         title: "Profile Updated",
         description: "Your profile has been successfully updated.",
       });
       setIsProfileDialogOpen(false);
+      localStorage.setItem("user", JSON.stringify(values));
+      localStorage.setItem("userFullName", JSON.stringify(values.fullName));
+      localStorage.setItem("userEmail", JSON.stringify(values.email));
+      localStorage.setItem("userNumber", JSON.stringify(values.number));
       resetForm();
     } catch (error) {
       toast({
@@ -169,7 +227,7 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
         variant: "destructive",
       });
     } finally {
-      setSubmitting(false);
+      setSubmitting(false); // Ensure submitting state is always reset
     }
   };
 
@@ -276,12 +334,14 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
         {/* User Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center focus:outline-none">
-            <img
-              className="h-8 w-8 rounded-full object-cover"
-              src="https://ui-avatars.com/api/?name=Admin+User&background=0D8ABC&color=fff"
-              alt="User avatar"
-            />
-            <span className="ml-2">Admin User</span>
+            <div className="cursor-pointer">
+              <Avatar>
+                <AvatarFallback className="bg-orange-500 text-white font-bold">
+                  {getInitials(userName)}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+            <span className="ml-2">{userName}</span>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
@@ -330,7 +390,7 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
           </DialogHeader>
           <Formik
             initialValues={{
-              currentPassword: "",
+              oldPassword: "",
               newPassword: "",
               confirmPassword: "",
             }}
@@ -340,16 +400,16 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
             {({ isSubmitting }) => (
               <Form className="space-y-4">
                 <div>
-                  <label htmlFor="currentPassword" className="block mb-2">
+                  <label htmlFor="oldPassword" className="block mb-2">
                     Current Password
                   </label>
                   <Field
                     type="password"
-                    name="currentPassword"
+                    name="oldPassword"
                     className="w-full p-2 border rounded"
                   />
                   <ErrorMessage
-                    name="currentPassword"
+                    name="oldPassword"
                     component="div"
                     className="text-red-500 text-sm mt-1"
                   />
@@ -405,9 +465,9 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
           </DialogHeader>
           <Formik
             initialValues={{
-              name: "Admin User",
-              email: "admin@example.com",
-              username: "admin_user",
+              fullName: userName,
+              email: userEmail,
+              phone: userNumber,
             }}
             validationSchema={profileUpdateSchema}
             onSubmit={handleProfileUpdate}
@@ -415,16 +475,16 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
             {({ isSubmitting }) => (
               <Form className="space-y-4">
                 <div>
-                  <label htmlFor="name" className="block mb-2">
+                  <label htmlFor="fullName" className="block mb-2">
                     Full Name
                   </label>
                   <Field
                     type="text"
-                    name="name"
+                    name="fullName"
                     className="w-full p-2 border rounded"
                   />
                   <ErrorMessage
-                    name="name"
+                    name="fullName"
                     component="div"
                     className="text-red-500 text-sm mt-1"
                   />
@@ -445,16 +505,16 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="username" className="block mb-2">
-                    Username
+                  <label htmlFor="phone" className="block mb-2">
+                    Phone Number
                   </label>
                   <Field
                     type="text"
-                    name="username"
+                    name="phone"
                     className="w-full p-2 border rounded"
                   />
                   <ErrorMessage
-                    name="username"
+                    name="phone"
                     component="div"
                     className="text-red-500 text-sm mt-1"
                   />
