@@ -2,16 +2,19 @@ import Joi from "joi";
 import { Request, Response, NextFunction } from "express";
 import { httpMessages } from "../middlewares";
 
-const validateCategory = (
+const validateSubCategory = (
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
-  // Define Joi validation schema
   const schema = Joi.object({
     name: Joi.string().required().messages({
       "string.base": "Name must be a string",
       "any.required": "Name is required",
+    }),
+    categoryId: Joi.string().required().messages({
+      "string.base": "categoryId must be a string",
+      "any.required": "categoryId is required",
     }),
     description: Joi.string().required().messages({
       "string.base": "Description must be a string",
@@ -42,4 +45,4 @@ const validateCategory = (
   next();
 };
 
-export { validateCategory };
+export { validateSubCategory };

@@ -83,7 +83,7 @@ export class UserService {
       await user.save();
 
       return {
-        name: user.fullName,
+        fullName: user.fullName,
         email: user.email,
         role: user.role,
         createdAt: user.createdAt,

@@ -1,14 +1,14 @@
-import mongoose, { Schema, Types } from 'mongoose';
+import mongoose, { Schema, Types } from "mongoose";
 
 const productSchema: Schema = new Schema({
   name: { type: String, required: true },
   retailPrice: { type: Number, required: true },
   wholeSalePrice: { type: Number, required: true },
-  review: { type: Types.ObjectId, ref: 'Review' },  
-  description: { type: String, default: ''},
+  review: { type: Types.ObjectId, ref: "Review" },
+  description: { type: String, default: "" },
   productImage: { type: String, required: true },
-  image: [String],  
-  features: [String],  
+  image: [String],
+  features: [String],
   brand: { type: String, required: true },
   variants: [
     {
@@ -18,27 +18,12 @@ const productSchema: Schema = new Schema({
     },
   ],
   instock: { type: Number, required: true },
+  subCategoryId: { type: Types.ObjectId, ref: "SubCategory", required: true },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
 });
 
-const subcategorySchema: Schema = new Schema({
-  name: { type: String, required: true },
-  description: { type: String, default: '' },
-  products: [productSchema], 
-  created_at: { type: Date, default: Date.now },
-  updated_at: { type: Date, default: Date.now },
-});
-
-const categorySchema: Schema = new Schema({
-  name: { type: String, required: true, unique:true },
-  description: { type: String, required: true },
-  subcategories: [subcategorySchema],  
-  created_at: { type: Date, default: Date.now },
-  updated_at: { type: Date, default: Date.now },
-});
-
-const Category = mongoose.model<ICategory>('Category', categorySchema);
+const Product = mongoose.model("Product", productSchema);
 
 interface IVariant {
   color: string;
@@ -48,6 +33,7 @@ interface IVariant {
 
 interface IProduct {
   name: string;
+  subCategoryId: Types.ObjectId;
   retailPrice: number;
   wholeSalePrice: number;
   productImage: string;
@@ -57,26 +43,9 @@ interface IProduct {
   variants: IVariant[];
   instock: number;
   description?: string;
-  review?: Types.ObjectId; 
+  review?: Types.ObjectId;
   created_at?: Date;
   updated_at?: Date;
 }
 
-interface ISubcategory {
-  name: string;
-  description?: string;
-  products?: IProduct[];
-  created_at?: Date;
-  updated_at?: Date;
-}
-
-interface ICategory {
-  name: string;
-  description: string;
-  subcategories?: ISubcategory[];
-  created_at?: Date;
-  updated_at?: Date;
-}
-
-
-export { Category, ICategory , ISubcategory, IProduct , IVariant };
+export { Product, IProduct, IVariant };
