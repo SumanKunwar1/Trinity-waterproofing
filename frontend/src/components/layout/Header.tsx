@@ -47,10 +47,14 @@ const Header: React.FC = () => {
 
   // Retrieve user information from localStorage
   const userString = localStorage.getItem("user");
+  const userName = localStorage.getItem("userFullName");
   const user: User | null = userString ? JSON.parse(userString) : null;
 
   // Generate initials
-  const getInitials = (name: string) => {
+  const getInitials = (name?: string) => {
+    if (!name || name.trim() === "") {
+      return "N/A"; // Default initials if name is missing or empty
+    }
     return name
       .split(" ")
       .map((word) => word[0].toUpperCase())
@@ -59,10 +63,15 @@ const Header: React.FC = () => {
   };
 
   const handleLogout = () => {
-    // Clear user data from localStorage
-    localStorage.removeItem("user");
-    localStorage.removeItem("userRole");
     localStorage.removeItem("authToken");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("user");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userFullName");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userPassword");
+    localStorage.removeItem("userNumber");
+    window.location.reload();
     // Redirect to login page
     navigate("/login");
   };

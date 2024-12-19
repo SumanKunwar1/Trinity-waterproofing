@@ -124,7 +124,7 @@ const Table: React.FC<TableProps> = ({
                     key={colIndex}
                     className="px-5 py-5 border-b border-gray-200 bg-white text-sm"
                   >
-                    {item[column.accessor]}
+                    {column.cell ? column.cell(item) : item[column.accessor]}
                   </td>
                 ))}
               </motion.tr>
