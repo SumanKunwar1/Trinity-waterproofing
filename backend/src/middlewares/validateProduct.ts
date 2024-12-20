@@ -16,14 +16,6 @@ const validateProduct = (
     description: Joi.string().optional().messages({
       "string.base": "Description must be a string",
     }),
-    retailPrice: Joi.number().required().messages({
-      "number.base": "Retail Price must be a number",
-      "any.required": "Retail Price is required",
-    }),
-    wholeSalePrice: Joi.number().required().messages({
-      "number.base": "Wholesale Price must be a number",
-      "any.required": "Wholesale Price is required",
-    }),
     productImage: Joi.string().required().messages({
       "string.base": "Product Image must be a valid URL",
       "any.required": "Product Image is required",
@@ -56,9 +48,13 @@ const validateProduct = (
             "string.base": "Variant value must be a string",
             "any.required": "Variant value is required",
           }),
-          price: Joi.number().required().messages({
-            "number.base": "Variant price must be a number",
-            "any.required": "Variant price is required",
+          wholeSalePrice: Joi.number().required().messages({
+            "number.base": "Variant wholesale price must be a number",
+            "any.required": "Variant wholesale price is required",
+          }),
+          retailPrice: Joi.number().required().messages({
+            "number.base": "Variant retail price must be a number",
+            "any.required": "Variant retail price is required",
           }),
           isColorChecked: Joi.boolean().optional().default(false).messages({
             "boolean.base": "isColorChecked must be a boolean",
