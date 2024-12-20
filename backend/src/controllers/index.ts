@@ -2,3 +2,4 @@ export { UserController } from "./userController"; // Export UserService from th
 export { CategoryController } from "./categoryController";
 export { SubCategoryController } from "./subCategoryController";
 export { ProductController } from "./productController";
+export { ReviewController } from "./reviewController";

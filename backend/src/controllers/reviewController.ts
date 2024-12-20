@@ -9,7 +9,6 @@ export class ReviewController {
     this.reviewService = new ReviewService();
   }
 
-  // Create a review
   public async createReview(
     req: Request,
     res: Response,
@@ -23,7 +22,6 @@ export class ReviewController {
         userEmail
       );
       res.locals.responseData = result;
-      next();
     } catch (error: any) {
       next(error);
     }
@@ -37,7 +35,6 @@ export class ReviewController {
     try {
       const result = await this.reviewService.getReviews();
       res.locals.responseData = result;
-      next();
     } catch (error: any) {
       next(error);
     }
@@ -52,7 +49,6 @@ export class ReviewController {
       const userId = req.params.id;
       const result = await this.reviewService.getReviewsByUser(userId);
       res.locals.responseData = result;
-      next();
     } catch (error: any) {
       next(error);
     }
@@ -65,9 +61,12 @@ export class ReviewController {
   ): Promise<void> {
     try {
       const reviewId = req.params.id;
-      const result = await this.reviewService.deleteReviewById(reviewId);
+      const userEmail = req.email;
+      const result = await this.reviewService.deleteReviewById(
+        reviewId,
+        userEmail
+      );
       res.locals.responseData = result;
-      next();
     } catch (error: any) {
       next(error);
     }
@@ -80,13 +79,12 @@ export class ReviewController {
   ): Promise<void> {
     try {
       const reviewId = req.params.id;
-      const updatedData: IReview = req.body;
+      const updatedData: Partial<IReview> = req.body;
       const result = await this.reviewService.updateReviewById(
         reviewId,
         updatedData
       );
       res.locals.responseData = result;
-      next();
     } catch (error: any) {
       next(error);
     }

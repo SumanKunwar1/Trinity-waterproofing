@@ -56,4 +56,19 @@ export class CategoryController {
       next(error);
     }
   }
+
+  public async deleteCategory(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const categoryId = req.params.id;
+      const result = await this.categoryService.deleteCategory(categoryId);
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
 }

@@ -13,6 +13,7 @@ interface IVariant {
 
 // Define the IProduct interface
 interface IProduct extends Document {
+  _id: Types.ObjectId;
   name: string;
   retailPrice: number;
   wholeSalePrice: number;

@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 
 interface IReview extends Document {
-  id: string;
+  _id: Types.ObjectId;
   fullName: string;
   number: string;
   content: string;

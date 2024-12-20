@@ -14,6 +14,9 @@ export class ReviewService {
       if (!user) {
         throw httpMessages.NOT_FOUND("User not found");
       }
+      if (user.role === "admin") {
+        throw httpMessages.UNAUTHORIZED;
+      }
       const { content, rating } = reviewData;
       const newReview = new Review({
         content,
@@ -68,12 +71,23 @@ export class ReviewService {
     }
   }
 
-  public async deleteReviewById(reviewId: string) {
+  public async deleteReviewById(reviewId: string, userEmail: string) {
     try {
       const review = await Review.findById(reviewId);
 
       if (!review) {
         throw httpMessages.NOT_FOUND("review");
+      }
+
+      const user = await User.findOne({ email: userEmail });
+      if (!user) {
+        throw httpMessages.NOT_FOUND("User not found");
+      }
+
+      if (!review.user || review.user.toString() !== user._id.toString()) {
+        throw httpMessages.UNAUTHORIZED(
+          "You do not have permission to delete this review"
+        );
       }
 
       await Product.updateOne(
