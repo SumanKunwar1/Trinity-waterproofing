@@ -14,6 +14,9 @@ import { Button } from "../components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "../components/ui/dialog";
@@ -57,7 +60,7 @@ const subcategorySchema = Yup.object().shape({
 });
 
 const getAuthToken = () => localStorage.getItem("authToken");
-console.log("Token", getAuthToken());
+
 const Categories: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -67,6 +70,14 @@ const Categories: React.FC = () => {
     useState<Subcategory | null>(null);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [isSubcategoryDialogOpen, setIsSubcategoryDialogOpen] = useState(false);
+  const [isDeleteCategoryDialogOpen, setIsDeleteCategoryDialogOpen] =
+    useState(false);
+  const [isDeleteSubcategoryDialogOpen, setIsDeleteSubcategoryDialogOpen] =
+    useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
+  const [subcategoryToDelete, setSubcategoryToDelete] = useState<string | null>(
+    null
+  );
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
@@ -79,23 +90,17 @@ const Categories: React.FC = () => {
 
   const fetchCategories = async () => {
     try {
-      console.log("Categories fetch called");
       const response = await axios.get("/api/category");
       setCategories(response.data);
-      console.log("Categories response", response, response.data);
     } catch (error) {
       toast.error("Failed to fetch categories");
     }
   };
-  console.log(categories);
-  console.log(subcategories);
 
   const fetchSubcategories = async () => {
     try {
-      console.log("Sub Categories fetch called");
       const response = await axios.get("/api/subcategory");
       setSubcategories(response.data);
-      console.log("Sub Categories response", response, response.data);
     } catch (error) {
       toast.error("Failed to fetch subcategories");
     }
@@ -119,16 +124,13 @@ const Categories: React.FC = () => {
             Authorization: `Bearer ${getAuthToken()}`,
           },
         });
-        console.log("Category response", values);
         toast.success("Category added successfully");
       }
-      console.log(values);
       fetchCategories();
       setEditingCategory(null);
       setIsCategoryDialogOpen(false);
       resetForm();
     } catch (error) {
-      console.log("Error", error);
       toast.error("Failed to save category");
     }
   };
@@ -155,7 +157,6 @@ const Categories: React.FC = () => {
             Authorization: `Bearer ${getAuthToken()}`,
           },
         });
-        console.log("Subcategory response", values);
         toast.success("Subcategory added successfully");
       }
       fetchSubcategories();
@@ -167,33 +168,51 @@ const Categories: React.FC = () => {
     }
   };
 
-  const handleDeleteCategory = async (id: string) => {
-    try {
-      await axios.delete(`/api/categories/${id}`, {
-        headers: {
-          Authorization: `Bearer ${getAuthToken()}`,
-        },
-      });
-      toast.success("Category deleted successfully");
-      fetchCategories();
-      fetchSubcategories();
-    } catch (error) {
-      toast.error("Failed to delete category");
-    }
+  const handleDeleteCategory = (id: string) => {
+    setCategoryToDelete(id);
+    setIsDeleteCategoryDialogOpen(true);
   };
 
-  const handleDeleteSubcategory = async (id: string) => {
-    try {
-      await axios.delete(`/api/subcategories/${id}`, {
-        headers: {
-          Authorization: `Bearer ${getAuthToken()}`,
-        },
-      });
-      toast.success("Subcategory deleted successfully");
-      fetchSubcategories();
-    } catch (error) {
-      toast.error("Failed to delete subcategory");
+  const confirmDeleteCategory = async () => {
+    if (categoryToDelete) {
+      try {
+        await axios.delete(`/api/category/${categoryToDelete}`, {
+          headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+          },
+        });
+        toast.success("Category deleted successfully");
+        fetchCategories();
+        fetchSubcategories();
+      } catch (error) {
+        toast.error("Failed to delete category");
+      }
     }
+    setIsDeleteCategoryDialogOpen(false);
+    setCategoryToDelete(null);
+  };
+
+  const handleDeleteSubcategory = (id: string) => {
+    setSubcategoryToDelete(id);
+    setIsDeleteSubcategoryDialogOpen(true);
+  };
+
+  const confirmDeleteSubcategory = async () => {
+    if (subcategoryToDelete) {
+      try {
+        await axios.delete(`/api/subcategory/${subcategoryToDelete}`, {
+          headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+          },
+        });
+        toast.success("Subcategory deleted successfully");
+        fetchSubcategories();
+      } catch (error) {
+        toast.error("Failed to delete subcategory");
+      }
+    }
+    setIsDeleteSubcategoryDialogOpen(false);
+    setSubcategoryToDelete(null);
   };
 
   return (
@@ -416,6 +435,56 @@ const Categories: React.FC = () => {
           </main>
         </div>
       </div>
+      <Dialog
+        open={isDeleteCategoryDialogOpen}
+        onOpenChange={setIsDeleteCategoryDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Category Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this category? This action cannot
+              be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteCategoryDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDeleteCategory}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={isDeleteSubcategoryDialogOpen}
+        onOpenChange={setIsDeleteSubcategoryDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Subcategory Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this subcategory? This action
+              cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteSubcategoryDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDeleteSubcategory}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

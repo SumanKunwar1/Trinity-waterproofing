@@ -24,7 +24,7 @@ interface IProduct extends Document {
   features: string[];
   brand: string;
   variants: IVariant[]; // Array of IVariant
-  inStock: number; // Correcting from `instock` to `inStock` to match schema
+  inStock: number; // Correcting from instock to inStock to match schema
   subCategory: Types.ObjectId;
   created_at?: Date;
   updated_at?: Date;

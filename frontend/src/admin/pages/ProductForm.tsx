@@ -126,11 +126,15 @@ const ProductForm: React.FC = () => {
         } else if (key === "features") {
           formData.append(key, values[key]);
         } else if (key === "variants") {
-          formData.append(key, JSON.stringify(values.variants));
+          const processedVariants = values.variants.map((variant) => ({
+            ...variant,
+            color: variant.isColorChecked ? variant.color : undefined,
+            volume: variant.isVolumeChecked ? variant.volume : undefined,
+          }));
+          formData.append(key, JSON.stringify(processedVariants));
         } else {
           formData.append(key, String(values[key]));
         }
-        console.log(values);
       });
 
       if (id) {
@@ -148,12 +152,15 @@ const ProductForm: React.FC = () => {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         });
-        console.log(formData);
         toast.success("Product added successfully");
       }
       navigate("/admin/products");
     } catch (error) {
-      toast.error("Failed to save product");
+      if (axios.isAxiosError(error) && error.response) {
+        toast.error(`Failed to save product: ${error.response.data.message}`);
+      } else {
+        toast.error("Failed to save product");
+      }
     }
   };
 
