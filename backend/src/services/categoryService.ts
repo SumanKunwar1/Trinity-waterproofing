@@ -1,4 +1,5 @@
-import { Category, ICategory } from "../models";
+import { Category } from "../models";
+import { ICategory } from "../interfaces";
 import { httpMessages } from "../middlewares";
 
 export class CategoryService {
@@ -36,6 +37,7 @@ export class CategoryService {
     updateData: Partial<ICategory>
   ) {
     try {
+      console.log(categoryId);
       const updatedCategory = await Category.findById(categoryId);
       const { name, description } = updateData;
 
@@ -46,6 +48,7 @@ export class CategoryService {
       if (name) updatedCategory.name = name;
       if (description) updatedCategory.description = description;
 
+      updatedCategory.save();
       return updatedCategory;
     } catch (error) {
       throw error;

@@ -7,6 +7,7 @@ export { isAuthorized } from "./isAuthorized";
 export { isAuthorizedUser } from "./isAuthorizedUser";
 export { validateUserLogin } from "./validateUserLogin";
 export { validateCategory } from "./validateCategory";
+export { validateEditCategory } from "./validateEditCategory";
 export { validateSubCategory } from "./validateSubCategory";
 export { validateProduct } from "./validateProduct";
 export { handleError } from "./handleError";

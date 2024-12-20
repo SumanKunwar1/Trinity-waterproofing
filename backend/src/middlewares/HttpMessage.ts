@@ -19,6 +19,12 @@ export const httpMessages = {
     statusCode: 401,
     message: message,
   }),
+  UNAUTHORIZED_NO_DATA: (
+    message: string = "Unable to verify credentials from the token"
+  ) => ({
+    statusCode: 401,
+    message: message,
+  }),
   UNAUTHORIZED_NO_TOKEN: {
     statusCode: 401,
     message: "Unauthorized access: No token provided",

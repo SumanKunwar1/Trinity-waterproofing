@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { ProductService } from "../services";
-import { IProduct } from "../models";
+import { IProduct } from "../interfaces";
 import { deleteImages } from "../config/deleteImages";
 
 export class ProductController {
@@ -47,7 +47,7 @@ export class ProductController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { productId } = req.params;
+      const productId = req.params.id;
 
       const result = await this.productService.getProductById(productId);
       res.locals.responseData = result;

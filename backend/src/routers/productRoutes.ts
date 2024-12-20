@@ -7,7 +7,11 @@ import {
   isAuthorized,
   handleError,
 } from "../middlewares";
-import { uploadMiddleware, appendFileDataToBody } from "../config/upload";
+import {
+  uploadMiddleware,
+  appendFileDataToBody,
+  parseVariantsMiddleware,
+} from "../config/upload";
 
 const router = Router();
 const productController = new ProductController();
@@ -18,21 +22,19 @@ router.post(
   isAuthorized("admin"),
   uploadMiddleware,
   appendFileDataToBody,
+  parseVariantsMiddleware,
   validateProduct,
   productController.createProduct.bind(productController),
   handleResponse
 );
 router.get(
   "/",
-  isAuthenticated,
-  isAuthorized("admin"),
   productController.getProducts.bind(productController),
   handleResponse
 );
 
 router.get(
   "/:id",
-  isAuthenticated,
   productController.getProductById.bind(productController),
   handleResponse
 );

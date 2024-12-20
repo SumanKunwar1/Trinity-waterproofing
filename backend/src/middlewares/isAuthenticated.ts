@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { httpMessages } from "../middlewares"; // Assuming this contains your error messages
 import jwt from "jsonwebtoken";
+import { string } from "joi";
 
 const isAuthenticated = (
   req: Request,
@@ -19,6 +20,12 @@ const isAuthenticated = (
       email: string;
       role: string;
     };
+    if (!decoded.email) {
+      return next(httpMessages.UNAUTHORIZED_NO_DATA);
+    }
+    if (!decoded.role) {
+      return next(httpMessages.UNAUTHORIZED_NO_DATA);
+    }
     req.email = decoded.email;
     req.role = decoded.role;
     next();
