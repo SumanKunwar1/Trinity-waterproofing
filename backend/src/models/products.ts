@@ -1,5 +1,17 @@
 import mongoose, { Schema, Types } from "mongoose";
 
+// Variant schema with additional fields
+const variantSchema: Schema = new Schema({
+  color: { type: String, required: false },
+  volume: { type: String, required: false },
+  label: { type: String, required: true },
+  value: { type: String, required: true },
+  price: { type: Number, required: true },
+  isColorChecked: { type: Boolean, default: false },
+  isVolumeChecked: { type: Boolean, default: false },
+});
+
+// Main product schema
 const productSchema: Schema = new Schema({
   name: { type: String, required: true },
   retailPrice: { type: Number, required: true },
@@ -10,13 +22,7 @@ const productSchema: Schema = new Schema({
   image: [String],
   features: [String],
   brand: { type: String, required: true },
-  variants: [
-    {
-      color: { type: String, required: true },
-      volume: { type: String, required: true },
-      price: { type: Number, required: true },
-    },
-  ],
+  variants: [variantSchema], // Using the variantSchema defined above
   inStock: { type: Number, required: true },
   subCategory: { type: Types.ObjectId, ref: "SubCategory", required: true },
   created_at: { type: Date, default: Date.now },
@@ -25,31 +31,29 @@ const productSchema: Schema = new Schema({
 
 const Product = mongoose.model("Product", productSchema);
 
+// Updated TypeScript interfaces for product and variant
 interface IVariant {
-  color: string;
-  volume: string;
-  price: number;
+  color?: string; // Optional field for color of the variant
+  volume?: string; // Optional field for volume (if applicable)
+  label: string; // Label or name of the variant, e.g., "Red", "500ml"
+  value: string; // Specific value of the variant, e.g., "#FF0000" for color, "500ml" for size
+  price: number; // Price of the variant
+  isColorChecked: boolean; // Whether the color is selected or not
+  isVolumeChecked: boolean; // Whether the volume is selected or not
 }
 
 interface IProduct {
-  // Unique identifier for the product
-  name: string; // Name of the product
-  description: string; // Detailed description of the product
-  retailPrice: number; // Base price of the product
-  wholeSalePrice: number; // Wholesale price of the product
-  productImage: string; // URL of the main product image
-  image: string[]; // Array of additional image URLs
-  subCategory: Types.ObjectId; // ID of the subcategory the product belongs to
-  features: string; // Array of features or highlights of the product
-  brand: string; // Brand name of the product
-  variants: {
-    color?: string; // Optional field for color of the variant
-    volume?: string; // Optional field for volume (if applicable)
-    label?: string; // Description of the variant, e.g., "Color: Red", "Size: 500ml"
-    value?: string; // Specific value of the variant, e.g., "#FF0000" for color, "500ml" for size
-    price: number; // Price of the specific variant
-  }[]; // Array of product variants, including color, volume, and price
-  inStock: number;
+  name: string; // Product name
+  description: string; // Product description
+  retailPrice: number; // Retail price
+  wholeSalePrice: number; // Wholesale price
+  productImage: string; // Main product image URL
+  image: string[]; // Additional images URLs
+  subCategory: Types.ObjectId; // Subcategory ID
+  features: string[]; // Features of the product
+  brand: string; // Brand name
+  variants: IVariant[]; // Array of variants with color, volume, label, value, price, isColorChecked, and isVolumeChecked
+  inStock: number; // Product stock quantity
 }
 
-export { Product, IProduct, IVariant };
+export { IProduct, Product };
