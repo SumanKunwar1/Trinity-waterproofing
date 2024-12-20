@@ -4,8 +4,8 @@ import { httpMessages } from "../middlewares";
 export class ProductService {
   public async createProduct(productData: IProduct) {
     try {
-      const { subCategoryId } = productData;
-      const isPresent = await SubCategory.findById(subCategoryId);
+      const { subCategory } = productData;
+      const isPresent = await SubCategory.findById(subCategory);
       if (!isPresent) {
         throw httpMessages.NOT_FOUND(`subCategory`);
       }

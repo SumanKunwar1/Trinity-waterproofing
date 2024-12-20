@@ -44,7 +44,7 @@ export class CategoryController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { categoryId } = req.params;
+      const categoryId = req.params.id;
       const updateData: Partial<ICategory> = req.body;
       const result = await this.categoryService.editCategory(
         categoryId,

@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import axios from "axios";
 import {
   Card,
   CardHeader,
@@ -28,16 +29,20 @@ import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 
 interface Category {
-  id: number;
+  _id: string;
   name: string;
   description: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface Subcategory {
-  id: number;
-  categoryId: number;
+  _id: string;
   name: string;
   description: string;
+  categoryId: string;
+  created_at: string;
+  updated_at: string;
 }
 
 const categorySchema = Yup.object().shape({
@@ -47,112 +52,148 @@ const categorySchema = Yup.object().shape({
 
 const subcategorySchema = Yup.object().shape({
   name: Yup.string().required("Required"),
-  categoryId: Yup.number().required("Required"),
+  categoryId: Yup.string().required("Required"),
   description: Yup.string().required("Required"),
 });
 
+const getAuthToken = () => localStorage.getItem("authToken");
+console.log("Token", getAuthToken());
 const Categories: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-
-  const toggleSidebar = () => {
-    setSidebarOpen((prev) => !prev);
-  };
-  const [categories, setCategories] = useState<Category[]>([
-    {
-      id: 1,
-      name: "Paints",
-      description: "Various types of waterproof paints",
-    },
-    {
-      id: 2,
-      name: "Sealants",
-      description: "Waterproof sealants for different applications",
-    },
-  ]);
-
-  const [subcategories, setSubcategories] = useState<Subcategory[]>([
-    {
-      id: 1,
-      categoryId: 1,
-      name: "Exterior Paints",
-      description: "Waterproof paints for exterior use",
-    },
-    {
-      id: 2,
-      categoryId: 1,
-      name: "Interior Paints",
-      description: "Waterproof paints for interior use",
-    },
-    {
-      id: 3,
-      categoryId: 2,
-      name: "Silicone Sealants",
-      description: "Silicone-based waterproof sealants",
-    },
-  ]);
-
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [editingSubcategory, setEditingSubcategory] =
     useState<Subcategory | null>(null);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [isSubcategoryDialogOpen, setIsSubcategoryDialogOpen] = useState(false);
 
-  const handleCategorySubmit = (
-    values: Omit<Category, "id">,
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => !prev);
+  };
+
+  useEffect(() => {
+    fetchCategories();
+    fetchSubcategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      console.log("Categories fetch called");
+      const response = await axios.get("/api/category");
+      setCategories(response.data);
+      console.log("Categories response", response, response.data);
+    } catch (error) {
+      toast.error("Failed to fetch categories");
+    }
+  };
+  console.log(categories);
+  console.log(subcategories);
+
+  const fetchSubcategories = async () => {
+    try {
+      console.log("Sub Categories fetch called");
+      const response = await axios.get("/api/subcategory");
+      setSubcategories(response.data);
+      console.log("Sub Categories response", response, response.data);
+    } catch (error) {
+      toast.error("Failed to fetch subcategories");
+    }
+  };
+
+  const handleCategorySubmit = async (
+    values: Omit<Category, "_id" | "created_at" | "updated_at">,
     { resetForm }: any
   ) => {
-    if (editingCategory) {
-      setCategories(
-        categories.map((c) =>
-          c.id === editingCategory.id
-            ? { ...values, id: editingCategory.id }
-            : c
-        )
-      );
-      toast.success("Category updated successfully");
-    } else {
-      setCategories([...categories, { ...values, id: categories.length + 1 }]);
-      toast.success("Category added successfully");
+    try {
+      if (editingCategory) {
+        await axios.patch(`/api/category/${editingCategory._id}`, values, {
+          headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+          },
+        });
+        toast.success("Category updated successfully");
+      } else {
+        await axios.post("/api/category", values, {
+          headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+          },
+        });
+        console.log("Category response", values);
+        toast.success("Category added successfully");
+      }
+      console.log(values);
+      fetchCategories();
+      setEditingCategory(null);
+      setIsCategoryDialogOpen(false);
+      resetForm();
+    } catch (error) {
+      console.log("Error", error);
+      toast.error("Failed to save category");
     }
-    setEditingCategory(null);
-    setIsCategoryDialogOpen(false);
-    resetForm();
   };
 
-  const handleSubcategorySubmit = (
-    values: Omit<Subcategory, "id">,
+  const handleSubcategorySubmit = async (
+    values: Omit<Subcategory, "_id" | "created_at" | "updated_at">,
     { resetForm }: any
   ) => {
-    if (editingSubcategory) {
-      setSubcategories(
-        subcategories.map((s) =>
-          s.id === editingSubcategory.id
-            ? { ...values, id: editingSubcategory.id }
-            : s
-        )
-      );
-      toast.success("Subcategory updated successfully");
-    } else {
-      setSubcategories([
-        ...subcategories,
-        { ...values, id: subcategories.length + 1 },
-      ]);
-      toast.success("Subcategory added successfully");
+    try {
+      if (editingSubcategory) {
+        await axios.patch(
+          `/api/subcategory/${editingSubcategory._id}`,
+          values,
+          {
+            headers: {
+              Authorization: `Bearer ${getAuthToken()}`,
+            },
+          }
+        );
+        toast.success("Subcategory updated successfully");
+      } else {
+        await axios.post("/api/subcategory", values, {
+          headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+          },
+        });
+        console.log("Subcategory response", values);
+        toast.success("Subcategory added successfully");
+      }
+      fetchSubcategories();
+      setEditingSubcategory(null);
+      setIsSubcategoryDialogOpen(false);
+      resetForm();
+    } catch (error) {
+      toast.error("Failed to save subcategory");
     }
-    setEditingSubcategory(null);
-    setIsSubcategoryDialogOpen(false);
-    resetForm();
   };
 
-  const handleDeleteCategory = (id: number) => {
-    setCategories(categories.filter((c) => c.id !== id));
-    setSubcategories(subcategories.filter((s) => s.categoryId !== id));
-    toast.success("Category and associated subcategories deleted successfully");
+  const handleDeleteCategory = async (id: string) => {
+    try {
+      await axios.delete(`/api/categories/${id}`, {
+        headers: {
+          Authorization: `Bearer ${getAuthToken()}`,
+        },
+      });
+      toast.success("Category deleted successfully");
+      fetchCategories();
+      fetchSubcategories();
+    } catch (error) {
+      toast.error("Failed to delete category");
+    }
   };
 
-  const handleDeleteSubcategory = (id: number) => {
-    setSubcategories(subcategories.filter((s) => s.id !== id));
-    toast.success("Subcategory deleted successfully");
+  const handleDeleteSubcategory = async (id: string) => {
+    try {
+      await axios.delete(`/api/subcategories/${id}`, {
+        headers: {
+          Authorization: `Bearer ${getAuthToken()}`,
+        },
+      });
+      toast.success("Subcategory deleted successfully");
+      fetchSubcategories();
+    } catch (error) {
+      toast.error("Failed to delete subcategory");
+    }
   };
 
   return (
@@ -245,7 +286,10 @@ const Categories: React.FC = () => {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => setEditingCategory(category)}
+                                  onClick={() => {
+                                    setEditingCategory(category);
+                                    setIsCategoryDialogOpen(true);
+                                  }}
                                 >
                                   <FaEdit className="mr-2" /> Edit
                                 </Button>
@@ -253,7 +297,7 @@ const Categories: React.FC = () => {
                                   variant="outline"
                                   size="sm"
                                   onClick={() =>
-                                    handleDeleteCategory(category.id)
+                                    handleDeleteCategory(category._id)
                                   }
                                 >
                                   <FaTrash className="mr-2" /> Delete
@@ -306,7 +350,7 @@ const Categories: React.FC = () => {
                                     label: "Category",
                                     type: "select",
                                     options: categories.map((c) => ({
-                                      value: c.id.toString(),
+                                      value: c._id,
                                       label: c.name,
                                     })),
                                   },
@@ -335,16 +379,17 @@ const Categories: React.FC = () => {
                           data={subcategories.map((subcategory) => ({
                             ...subcategory,
                             category: categories.find(
-                              (c) => c.id === subcategory.categoryId
+                              (c) => c._id === subcategory.categoryId
                             )?.name,
                             actions: (
                               <div className="flex space-x-2">
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() =>
-                                    setEditingSubcategory(subcategory)
-                                  }
+                                  onClick={() => {
+                                    setEditingSubcategory(subcategory);
+                                    setIsSubcategoryDialogOpen(true);
+                                  }}
                                 >
                                   <FaEdit className="mr-2" /> Edit
                                 </Button>
@@ -352,7 +397,7 @@ const Categories: React.FC = () => {
                                   variant="outline"
                                   size="sm"
                                   onClick={() =>
-                                    handleDeleteSubcategory(subcategory.id)
+                                    handleDeleteSubcategory(subcategory._id)
                                   }
                                 >
                                   <FaTrash className="mr-2" /> Delete

@@ -46,6 +46,7 @@ export class CategoryService {
       if (name) updatedCategory.name = name;
       if (description) updatedCategory.description = description;
 
+      updatedCategory.save();
       return updatedCategory;
     } catch (error) {
       throw error;

@@ -58,7 +58,7 @@ export class SubCategoryService {
       }
       if (name) updatedSubCategory.name = name;
       if (description) updatedSubCategory.description = description;
-
+      updatedSubCategory.save();
       return updatedSubCategory;
     } catch (error) {
       throw error;

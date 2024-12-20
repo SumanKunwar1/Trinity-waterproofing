@@ -22,8 +22,6 @@ router.post(
 
 router.get(
   "/",
-  isAuthenticated,
-  validateCategory,
   categoryController.getCategories.bind(categoryController),
   handleResponse
 );

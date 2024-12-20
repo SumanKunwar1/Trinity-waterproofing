@@ -20,7 +20,6 @@ router.post(
 
 router.get(
   "/",
-  isAuthenticated,
   subCategoryController.getSubCategories.bind(subCategoryController),
   handleResponse
 );

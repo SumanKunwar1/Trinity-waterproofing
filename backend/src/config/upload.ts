@@ -44,7 +44,7 @@ const upload = multer({ storage: storage });
 // Upload middleware using multer fields
 export const uploadMiddleware = upload.fields([
   { name: "productImage", maxCount: 1 },
-  { name: "images", maxCount: 10 },
+  { name: "image", maxCount: 10 },
 ]);
 
 // Custom middleware to append filenames to req.body after multer processes the files
@@ -56,13 +56,26 @@ export const appendFileDataToBody = (req: any, res: any, next: Function) => {
   }
 
   // Process other images (if any)
-  if (req.files["images"]) {
-    const imageFiles = req.files["images"];
-    req.body.images = imageFiles.map((file: any) => file.filename); // Add filenames of other images to req.body
+  if (req.files["image"]) {
+    const imageFiles = req.files["image"];
+    req.body.image = imageFiles.map((file: any) => file.filename); // Add filenames of other images to req.body
   } else {
-    req.body.images = []; // If no images, set it to an empty array
+    req.body.image = []; // If no images, set it to an empty array
   }
 
   console.log("Updated Request Body:", req.body);
   next(); // Continue to the next middleware (e.g., validation, product creation)
+};
+
+export const parseVariantsMiddleware = (req: any, res: any, next: Function) => {
+  if (req.body.variants && typeof req.body.variants === "string") {
+    try {
+      req.body.variants = JSON.parse(req.body.variants); // Convert JSON string to array
+    } catch (error) {
+      return res
+        .status(400)
+        .json({ error: "Invalid JSON format for variants" });
+    }
+  }
+  next();
 };
