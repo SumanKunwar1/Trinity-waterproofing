@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { ProductService } from "../services";
-import { IProduct } from "../models";
+import { IProduct } from "../interfaces";
 import { deleteImages } from "../config/deleteImages";
 
 export class ProductController {

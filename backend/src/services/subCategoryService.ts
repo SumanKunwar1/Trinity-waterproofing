@@ -1,4 +1,5 @@
-import { Category, ISubCategory, SubCategory } from "../models";
+import { Category, SubCategory } from "../models";
+import { ISubCategory } from "../interfaces";
 import { httpMessages } from "../middlewares";
 
 export class SubCategoryService {
@@ -59,6 +60,7 @@ export class SubCategoryService {
       if (name) updatedSubCategory.name = name;
       if (description) updatedSubCategory.description = description;
       updatedSubCategory.save();
+
       return updatedSubCategory;
     } catch (error) {
       throw error;

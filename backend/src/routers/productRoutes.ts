@@ -23,20 +23,19 @@ router.post(
   uploadMiddleware,
   appendFileDataToBody,
   parseVariantsMiddleware,
+  parseVariantsMiddleware,
   validateProduct,
   productController.createProduct.bind(productController),
   handleResponse
 );
 router.get(
   "/",
-
   productController.getProducts.bind(productController),
   handleResponse
 );
 
 router.get(
   "/:id",
-
   productController.getProductById.bind(productController),
   handleResponse
 );

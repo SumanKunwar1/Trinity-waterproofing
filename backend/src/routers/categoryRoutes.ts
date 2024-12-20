@@ -6,6 +6,7 @@ import {
   isAuthenticated,
   isAuthorized,
   handleError,
+  validateEditCategory,
 } from "../middlewares";
 
 const router = Router();
@@ -30,6 +31,7 @@ router.patch(
   "/:id",
   isAuthenticated,
   isAuthorized("admin"),
+  validateEditCategory,
   categoryController.editCategory.bind(categoryController),
   handleResponse
 );

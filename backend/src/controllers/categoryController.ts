@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { CategoryService } from "../services";
-import { ICategory } from "../models";
+import { ICategory } from "../interfaces";
 
 export class CategoryController {
   private categoryService: CategoryService;

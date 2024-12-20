@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { SubCategoryService } from "../services";
-import { ISubCategory } from "../models";
+import { ISubCategory } from "../interfaces";
 
 export class SubCategoryController {
   private subCategoryService: SubCategoryService;

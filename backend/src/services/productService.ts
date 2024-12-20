@@ -1,4 +1,5 @@
-import { Product, IProduct, SubCategory } from "../models";
+import { Product, SubCategory } from "../models";
+import { IProduct } from "../interfaces";
 import { httpMessages } from "../middlewares";
 
 export class ProductService {

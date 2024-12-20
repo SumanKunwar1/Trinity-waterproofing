@@ -1,5 +1,5 @@
-export { User, IUser } from "./user";
-export { Review, IReview } from "./review";
+export { User } from "./user";
+export { Review } from "./review";
 export { Product } from "./products";
-export { Category, ICategory } from "./category";
-export { SubCategory, ISubCategory } from "./subCategory";
+export { Category } from "./category";
+export { SubCategory } from "./subCategory";

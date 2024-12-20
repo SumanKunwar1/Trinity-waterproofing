@@ -1,6 +1,35 @@
-import mongoose, { Schema, Types } from "mongoose";
+import mongoose, { Schema, Document, Types } from "mongoose";
 
-// Variant schema with additional fields
+// Define the IVariant interface
+interface IVariant {
+  color?: string; // Optional since it's not required in the schema
+  volume?: string; // Optional since it's not required in the schema
+  label: string;
+  value: string;
+  price: number;
+  isColorChecked?: boolean; // Optional since it defaults to false
+  isVolumeChecked?: boolean; // Optional since it defaults to false
+}
+
+// Define the IProduct interface
+interface IProduct extends Document {
+  name: string;
+  retailPrice: number;
+  wholeSalePrice: number;
+  review?: Types.ObjectId; // Singular and optional to match the schema
+  description?: string;
+  productImage: string;
+  image: string[];
+  features: string[];
+  brand: string;
+  variants: IVariant[]; // Array of IVariant
+  inStock: number; // Correcting from `instock` to `inStock` to match schema
+  subCategory: Types.ObjectId;
+  created_at?: Date;
+  updated_at?: Date;
+}
+
+// Define the variant schema
 const variantSchema: Schema = new Schema({
   color: { type: String, required: false },
   volume: { type: String, required: false },
@@ -11,7 +40,7 @@ const variantSchema: Schema = new Schema({
   isVolumeChecked: { type: Boolean, default: false },
 });
 
-// Main product schema
+// Define the main product schema
 const productSchema: Schema = new Schema({
   name: { type: String, required: true },
   retailPrice: { type: Number, required: true },
@@ -29,31 +58,7 @@ const productSchema: Schema = new Schema({
   updated_at: { type: Date, default: Date.now },
 });
 
-const Product = mongoose.model("Product", productSchema);
+// Define and export the Product model
+const Product = mongoose.model<IProduct>("Product", productSchema);
 
-// Updated TypeScript interfaces for product and variant
-interface IVariant {
-  color?: string; // Optional field for color of the variant
-  volume?: string; // Optional field for volume (if applicable)
-  label: string; // Label or name of the variant, e.g., "Red", "500ml"
-  value: string; // Specific value of the variant, e.g., "#FF0000" for color, "500ml" for size
-  price: number; // Price of the variant
-  isColorChecked: boolean; // Whether the color is selected or not
-  isVolumeChecked: boolean; // Whether the volume is selected or not
-}
-
-interface IProduct {
-  name: string; // Product name
-  description: string; // Product description
-  retailPrice: number; // Retail price
-  wholeSalePrice: number; // Wholesale price
-  productImage: string; // Main product image URL
-  image: string[]; // Additional images URLs
-  subCategory: Types.ObjectId; // Subcategory ID
-  features: string[]; // Features of the product
-  brand: string; // Brand name
-  variants: IVariant[]; // Array of variants with color, volume, label, value, price, isColorChecked, and isVolumeChecked
-  inStock: number; // Product stock quantity
-}
-
-export { IProduct, Product };
+export { Product };

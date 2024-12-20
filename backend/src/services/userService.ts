@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { User, IUser } from "../models";
+import { User } from "../models";
+import { IUser } from "../interfaces";
 import { httpMessages } from "../middlewares";
 
 export class UserService {
@@ -36,7 +37,7 @@ export class UserService {
         throw httpMessages.NOT_FOUND("User");
       }
 
-      const isMatch = await bcrypt.compare(password, user.password);
+      const isMatch = bcrypt.compare(password, user.password as string);
       if (!isMatch) {
         throw httpMessages.INVALID_CREDENTIALS;
       }
@@ -107,7 +108,7 @@ export class UserService {
         throw httpMessages.NOT_FOUND("User");
       }
 
-      const isMatch = await bcrypt.compare(oldPassword, user.password);
+      const isMatch = bcrypt.compare(oldPassword, user.password as string);
       if (!isMatch) {
         throw httpMessages.INVALID_CREDENTIALS;
       }
