@@ -13,10 +13,11 @@ interface IVariant {
 
 // Define the IProduct interface
 interface IProduct extends Document {
+  _id: Types.ObjectId;
   name: string;
   retailPrice: number;
   wholeSalePrice: number;
-  review?: Types.ObjectId; // Singular and optional to match the schema
+  review: [Types.ObjectId]; // Singular and optional to match the schema
   description?: string;
   productImage: string;
   image: string[];
@@ -45,7 +46,7 @@ const productSchema: Schema = new Schema({
   name: { type: String, required: true },
   retailPrice: { type: Number, required: true },
   wholeSalePrice: { type: Number, required: true },
-  review: { type: Types.ObjectId, ref: "Review" },
+  review: [{ type: Types.ObjectId, ref: "Review", default: [] }],
   description: { type: String, default: "" },
   productImage: { type: String, required: true },
   image: [String],

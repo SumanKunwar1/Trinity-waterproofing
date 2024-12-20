@@ -36,6 +36,14 @@ router.patch(
   handleResponse
 );
 
+router.delete(
+  "/:id",
+  isAuthenticated,
+  isAuthorized("admin"),
+  categoryController.deleteCategory.bind(categoryController),
+  handleResponse
+);
+
 router.use(handleError);
 
 export default router;

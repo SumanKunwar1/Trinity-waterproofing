@@ -9,5 +9,8 @@ export { validateUserLogin } from "./validateUserLogin";
 export { validateCategory } from "./validateCategory";
 export { validateEditCategory } from "./validateEditCategory";
 export { validateSubCategory } from "./validateSubCategory";
+export { validateEditSubCategory } from "./validateEditSubScategory";
 export { validateProduct } from "./validateProduct";
+export { validateReview } from "./validateReview";
+export { validateEditReview } from "./validateEditReview";
 export { handleError } from "./handleError";

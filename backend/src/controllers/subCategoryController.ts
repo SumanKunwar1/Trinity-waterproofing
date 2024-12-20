@@ -58,4 +58,21 @@ export class SubCategoryController {
       next(error);
     }
   }
+
+  public async deleteSubCategories(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const subCategoryId = req.params.id;
+      const result = await this.subCategoryService.deleteSubCategory(
+        subCategoryId
+      );
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
 }

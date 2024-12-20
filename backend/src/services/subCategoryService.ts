@@ -1,4 +1,4 @@
-import { Category, SubCategory } from "../models";
+import { Category, SubCategory, Product } from "../models";
 import { ISubCategory } from "../interfaces";
 import { httpMessages } from "../middlewares";
 
@@ -62,6 +62,30 @@ export class SubCategoryService {
       updatedSubCategory.save();
 
       return updatedSubCategory;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async deleteSubCategory(subCategoryId: string) {
+    try {
+      const subCategory = await SubCategory.findById(subCategoryId);
+      if (!subCategory) {
+        throw httpMessages.NOT_FOUND("SubCategory");
+      }
+
+      const deletedProducts = await Product.deleteMany({
+        subCategory: subCategoryId,
+      });
+      if (deletedProducts.deletedCount > 0) {
+        console.log(`Deleted ${deletedProducts.deletedCount} products.`);
+      }
+
+      await SubCategory.deleteOne({ _id: subCategoryId });
+
+      return {
+        message: "SubCategory and associated products deleted successfully",
+      };
     } catch (error) {
       throw error;
     }

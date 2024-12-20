@@ -20,13 +20,18 @@ export class ProductService {
 
   public async getProducts() {
     try {
-      const products = await Product.find().populate({
-        path: "subCategory",
-        populate: {
-          path: "category",
-          model: "Category",
-        },
-      });
+      const products = await Product.find()
+        .populate({
+          path: "subCategory",
+          populate: {
+            path: "category",
+            model: "Category",
+          },
+        })
+        .populate({
+          path: "review",
+          model: "Review",
+        });
 
       if (!products || products.length === 0) {
         throw httpMessages.NOT_FOUND("products");
