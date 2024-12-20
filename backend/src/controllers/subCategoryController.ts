@@ -46,7 +46,7 @@ export class SubCategoryController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { subCategoryId } = req.params;
+      const subCategoryId = req.params.id;
       const updateData: Partial<ISubCategory> = req.body;
       const result = await this.subCategoryService.editSubCategory(
         subCategoryId,

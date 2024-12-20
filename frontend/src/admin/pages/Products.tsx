@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import * as Yup from "yup";
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import axios from "axios";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import { FaEdit, FaTrash } from "react-icons/fa";
@@ -9,124 +10,86 @@ import {
   CardTitle,
   CardContent,
 } from "../components/ui/card";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogTrigger,
-} from "../components/ui/dialog";
 import { Button } from "../components/ui/button";
-import FormikForm from "../components/FormikForm"; // Your custom form component
-import Table from "../components/ui/table"; // Reusable Table Component
+import Table from "../components/ui/table";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 
 interface Product {
-  id: number;
+  _id: string;
   name: string;
-  category: string;
-  subcategory: string;
   brand: string;
-  price: number;
-  stock: number;
-  description: string;
+  retailPrice: number;
+  wholeSalePrice: number;
+  instock: number;
 }
 
-const productSchema = Yup.object().shape({
-  name: Yup.string().required("Required"),
-  category: Yup.string().required("Required"),
-  subcategory: Yup.string().required("Required"),
-  brand: Yup.string().required("Required"),
-  price: Yup.number().positive("Must be positive").required("Required"),
-  stock: Yup.number()
-    .integer("Must be an integer")
-    .min(0, "Must be at least 0")
-    .required("Required"),
-  description: Yup.string().required("Required"),
-});
-
 const Products: React.FC = () => {
+  const [products, setProducts] = useState<Product[]>([]);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
-  const [products, setProducts] = useState<Product[]>([
-    {
-      id: 1,
-      name: "Waterproof Paint A",
-      category: "Paints",
-      subcategory: "Exterior",
-      brand: "BrandA",
-      price: 19.99,
-      stock: 100,
-      description: "High-quality exterior waterproof paint",
-    },
-    {
-      id: 2,
-      name: "Sealant X",
-      category: "Sealants",
-      subcategory: "Silicone",
-      brand: "BrandB",
-      price: 29.99,
-      stock: 50,
-      description: "Professional-grade silicone sealant",
-    },
-  ]);
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const handleSubmit = (values: Omit<Product, "id">, { resetForm }: any) => {
-    if (editingProduct) {
-      setProducts(
-        products.map((p) =>
-          p.id === editingProduct.id ? { ...values, id: editingProduct.id } : p
-        )
-      );
-      toast.success("Product updated successfully");
-    } else {
-      setProducts([...products, { ...values, id: products.length + 1 }]);
-      toast.success("Product added successfully");
+  const fetchProducts = async () => {
+    try {
+      const response = await axios.get("/api/product", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
+      setProducts(response.data);
+    } catch (error) {
+      toast.error("Failed to fetch products");
     }
-    setEditingProduct(null);
-    setIsDialogOpen(false);
-    resetForm();
   };
 
-  const handleEdit = (product: Product) => {
-    setEditingProduct(product);
-    setIsDialogOpen(true);
-  };
-
-  const handleDelete = (id: number) => {
-    setProducts(products.filter((p) => p.id !== id));
-    toast.success("Product deleted successfully");
+  const handleDelete = async (id: string) => {
+    try {
+      await axios.delete(`/api/product/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
+      toast.success("Product deleted successfully");
+      fetchProducts();
+    } catch (error) {
+      toast.error("Failed to delete product");
+    }
   };
 
   const columns = [
     { header: "Name", accessor: "name" },
-    { header: "Category", accessor: "category" },
-    { header: "Subcategory", accessor: "subcategory" },
     { header: "Brand", accessor: "brand" },
     {
-      header: "Price",
-      accessor: "price",
-      cell: (row: Product) => `$${row.price.toFixed(2)}`,
+      header: "Retail Price",
+      accessor: "retailPrice",
+      cell: (row: Product) => `$${row.retailPrice.toFixed(2)}`,
     },
-    { header: "Stock", accessor: "stock" },
+    {
+      header: "Wholesale Price",
+      accessor: "wholeSalePrice",
+      cell: (row: Product) => `$${row.wholeSalePrice.toFixed(2)}`,
+    },
+    { header: "Stock", accessor: "instock" },
     {
       header: "Actions",
       accessor: "actions",
       cell: (row: Product) => (
         <div className="flex space-x-2">
-          <Button variant="outline" size="sm" onClick={() => handleEdit(row)}>
-            <FaEdit className="mr-2" /> Edit
-          </Button>
+          <Link to={`/admin/add-product/${row._id}`}>
+            <Button variant="outline" size="sm">
+              <FaEdit className="mr-2" /> Edit
+            </Button>
+          </Link>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleDelete(row.id)}
+            onClick={() => handleDelete(row._id)}
           >
             <FaTrash className="mr-2" /> Delete
           </Button>
@@ -135,76 +98,31 @@ const Products: React.FC = () => {
     },
   ];
 
-  const formFields = [
-    { name: "name", label: "Product Name", type: "text" },
-    { name: "category", label: "Category", type: "text" },
-    { name: "subcategory", label: "Subcategory", type: "text" },
-    { name: "brand", label: "Brand", type: "text" },
-    { name: "price", label: "Price", type: "number" },
-    { name: "stock", label: "Stock", type: "number" },
-    { name: "description", label: "Description", type: "textarea" },
-  ];
-
   return (
     <div>
       <div className="flex bg-gray-100">
         <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         <div className="flex-1 flex flex-col overflow-hidden">
           <Topbar toggleSidebar={toggleSidebar} />
-          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
-            <div className="space-y-6">
-              <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-2xl font-bold">
-                      Products
-                    </CardTitle>
-                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="secondary"
-                          onClick={() => setEditingProduct(null)}
-                        >
-                          Add New Product
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-[425px]">
-                        <DialogTitle>
-                          {editingProduct ? "Edit Product" : "Add New Product"}
-                        </DialogTitle>
-                        <FormikForm
-                          initialValues={
-                            editingProduct || {
-                              name: "",
-                              category: "",
-                              subcategory: "",
-                              brand: "",
-                              price: 0,
-                              stock: 0,
-                              description: "",
-                            }
-                          }
-                          validationSchema={productSchema}
-                          onSubmit={handleSubmit}
-                          fields={formFields}
-                          submitButtonText={
-                            editingProduct ? "Update Product" : "Add Product"
-                          }
-                        />
-                      </DialogContent>
-                    </Dialog>
-                  </CardHeader>
-                  <CardContent>
-                    <Table columns={columns} data={products} />
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </div>
-          </main>
+          <div className="container mx-auto p-6">
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-2xl font-bold">Products</CardTitle>
+                  <Link to="/admin/add-product">
+                    <Button variant="secondary">Add New Product</Button>
+                  </Link>
+                </CardHeader>
+                <CardContent>
+                  <Table columns={columns} data={products} />
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
         </div>
       </div>
     </div>

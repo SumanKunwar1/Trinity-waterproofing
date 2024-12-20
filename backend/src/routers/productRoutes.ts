@@ -12,6 +12,11 @@ import {
   appendFileDataToBody,
   parseVariantsMiddleware,
 } from "../config/upload";
+import {
+  uploadMiddleware,
+  appendFileDataToBody,
+  parseVariantsMiddleware,
+} from "../config/upload";
 
 const router = Router();
 const productController = new ProductController();
@@ -22,6 +27,7 @@ router.post(
   isAuthorized("admin"),
   uploadMiddleware,
   appendFileDataToBody,
+  parseVariantsMiddleware,
   parseVariantsMiddleware,
   validateProduct,
   productController.createProduct.bind(productController),

@@ -2,8 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ErrorBoundary from "./components/ErrorBoundary";
-import PrivateRoute from "./PrivateRoute"; // Import PrivateRoute
-
+import PrivateRoute from "./PrivateRoute";
 // Directly import the admin pages
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
@@ -21,7 +20,7 @@ import ReturnPolicy from "./pages/ReturnPolicy";
 import Solutions from "./pages/Solutions";
 import Sliders from "./pages/Sliders";
 import GenerateReport from "./pages/GenerateReport";
-
+import ProductForm from "./pages/ProductForm";
 function AdminApp() {
   return (
     <ErrorBoundary>
@@ -48,6 +47,14 @@ function AdminApp() {
           element={
             <PrivateRoute>
               <Products />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/add-product"
+          element={
+            <PrivateRoute>
+              <ProductForm />
             </PrivateRoute>
           }
         />

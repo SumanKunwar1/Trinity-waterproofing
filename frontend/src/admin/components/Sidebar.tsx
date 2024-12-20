@@ -16,6 +16,7 @@ import {
   FaShieldAlt,
   FaExchangeAlt,
   FaLightbulb,
+  FaSignOutAlt,
 } from "react-icons/fa";
 
 interface SidebarProps {
@@ -72,7 +73,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       link: "/admin/generate-report",
     },
     {
-      icon: FaFileAlt,
+      icon: FaSignOutAlt,
       text: "Logout",
       link: "/login",
       onClick: handleLogout,

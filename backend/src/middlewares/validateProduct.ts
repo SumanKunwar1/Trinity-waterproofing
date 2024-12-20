@@ -48,6 +48,7 @@ const validateProduct = (
           volume: Joi.string().optional().messages({
             "string.base": "Variant volume must be a string",
           }),
+<<<<<<< HEAD
           label: Joi.string().required().messages({
             "string.base": "Variant label must be a string",
             "any.required": "Variant label is required",
@@ -55,6 +56,13 @@ const validateProduct = (
           value: Joi.string().required().messages({
             "string.base": "Variant value must be a string",
             "any.required": "Variant value is required",
+=======
+          label: Joi.string().optional().messages({
+            "string.base": "Variant label must be a string",
+          }),
+          value: Joi.string().optional().messages({
+            "string.base": "Variant value must be a string",
+>>>>>>> 120f5cdd05761dd17d0d93a2ae548aeb9d7dce72
           }),
           price: Joi.number().required().messages({
             "number.base": "Variant price must be a number",
