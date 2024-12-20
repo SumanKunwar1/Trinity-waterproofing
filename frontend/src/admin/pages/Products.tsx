@@ -14,6 +14,14 @@ import { Button } from "../components/ui/button";
 import Table from "../components/ui/table";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
 
 interface Product {
   _id: string;
@@ -27,10 +35,13 @@ interface Product {
 const Products: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<string | null>(null);
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
+
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -48,18 +59,27 @@ const Products: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      await axios.delete(`/api/product/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
-      toast.success("Product deleted successfully");
-      fetchProducts();
-    } catch (error) {
-      toast.error("Failed to delete product");
+  const handleDelete = (id: string) => {
+    setProductToDelete(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (productToDelete) {
+      try {
+        await axios.delete(`/api/product/${productToDelete}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+        toast.success("Product deleted successfully");
+        fetchProducts();
+      } catch (error) {
+        toast.error("Failed to delete product");
+      }
     }
+    setIsDeleteDialogOpen(false);
+    setProductToDelete(null);
   };
 
   const columns = [
@@ -125,6 +145,28 @@ const Products: React.FC = () => {
           </div>
         </div>
       </div>
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this product? This action cannot
+              be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

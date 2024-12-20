@@ -25,7 +25,7 @@ export class ReviewService {
 
       await newReview.save();
 
-      product.reviews.push(newReview._id as Types.ObjectId);
+      product.review.push(newReview._id as Types.ObjectId);
       await product.save();
 
       return newReview;
@@ -37,12 +37,12 @@ export class ReviewService {
   public async getReviews() {
     try {
       const products = await Product.find({
-        reviews: { $exists: true, $not: { $size: 0 } },
+        review: { $exists: true, $not: { $size: 0 } },
       })
         .populate({
-          path: "reviews",
+          path: "review",
         })
-        .select("name reviews");
+        .select("name review");
 
       if (!products || products.length === 0) {
         throw httpMessages.NOT_FOUND("No products with reviews found");

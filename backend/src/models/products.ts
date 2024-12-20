@@ -16,14 +16,14 @@ interface IProduct extends Document {
   name: string;
   retailPrice: number;
   wholeSalePrice: number;
-  review?: Types.ObjectId; // Singular and optional to match the schema
+  review: [Types.ObjectId]; // Singular and optional to match the schema
   description?: string;
   productImage: string;
   image: string[];
   features: string[];
   brand: string;
   variants: IVariant[]; // Array of IVariant
-  inStock: number; // Correcting from `instock` to `inStock` to match schema
+  inStock: number; // Correcting from instock to inStock to match schema
   subCategory: Types.ObjectId;
   created_at?: Date;
   updated_at?: Date;
@@ -45,7 +45,7 @@ const productSchema: Schema = new Schema({
   name: { type: String, required: true },
   retailPrice: { type: Number, required: true },
   wholeSalePrice: { type: Number, required: true },
-  review: { type: Types.ObjectId, ref: "Review" },
+  review: [{ type: Types.ObjectId, ref: "Review", default: [] }],
   description: { type: String, default: "" },
   productImage: { type: String, required: true },
   image: [String],
