@@ -1,6 +1,7 @@
 import { Product, SubCategory } from "../models";
 import { IProduct } from "../interfaces";
 import { httpMessages } from "../middlewares";
+import { deleteImages } from "../config/deleteImages";
 
 export class ProductService {
   public async createProduct(productData: IProduct) {
@@ -13,6 +14,42 @@ export class ProductService {
       const newProduct = new Product(productData);
       await newProduct.save();
       return newProduct;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async editProduct(productId: string, productData: IProduct) {
+    try {
+      const { subCategory } = productData;
+
+      const isSubCategoryPresent = await SubCategory.findById(subCategory);
+      if (!isSubCategoryPresent) {
+        throw httpMessages.NOT_FOUND(`subCategory`);
+      }
+
+      const existingProduct = await Product.findById(productId);
+      if (!existingProduct) {
+        throw httpMessages.NOT_FOUND(`Product with ID: ${productId}`);
+      }
+
+      const filesToDelete: string[] = [];
+
+      if (existingProduct.productImage) {
+        filesToDelete.push(existingProduct.productImage);
+      }
+
+      if (existingProduct.image && existingProduct.image.length > 0) {
+        filesToDelete.push(...existingProduct.image);
+      }
+
+      await deleteImages(filesToDelete);
+
+      existingProduct.set(productData);
+
+      await existingProduct.save();
+
+      return existingProduct;
     } catch (error) {
       throw error;
     }
@@ -70,7 +107,17 @@ export class ProductService {
       if (!product) {
         throw httpMessages.NOT_FOUND(`product`);
       }
+      const filesToDelete: string[] = [];
 
+      if (product.productImage) {
+        filesToDelete.push(product.productImage);
+      }
+
+      if (product.image && product.image.length > 0) {
+        filesToDelete.push(...product.image);
+      }
+
+      await deleteImages(filesToDelete);
       await Product.deleteOne({ _id: productId });
       return {
         message: "Product deleted successfully",

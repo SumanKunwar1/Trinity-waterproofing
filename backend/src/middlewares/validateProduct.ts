@@ -1,7 +1,7 @@
 import Joi from "joi";
 import { Request, Response, NextFunction } from "express";
 import { httpMessages } from "../middlewares";
-import { deleteImages } from "../config/deleteImages";
+import { deleteProductImages } from "../config/deleteImages";
 
 const validateProduct = (
   req: Request,
@@ -97,7 +97,7 @@ const validateProduct = (
       message: err.message,
     }));
 
-    deleteImages(req);
+    deleteProductImages(req);
 
     return next(
       httpMessages.BAD_REQUEST(
