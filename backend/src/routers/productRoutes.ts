@@ -12,11 +12,6 @@ import {
   appendFileDataToBody,
   parseVariantsMiddleware,
 } from "../config/upload";
-import {
-  uploadMiddleware,
-  appendFileDataToBody,
-  parseVariantsMiddleware,
-} from "../config/upload";
 
 const router = Router();
 const productController = new ProductController();
