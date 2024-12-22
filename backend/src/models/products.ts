@@ -6,7 +6,8 @@ interface IVariant {
   volume?: string; // Optional since it's not required in the schema
   label: string;
   value: string;
-  price: number;
+  retailPrice: number;
+  wholeSalePrice: number;
   isColorChecked?: boolean; // Optional since it defaults to false
   isVolumeChecked?: boolean; // Optional since it defaults to false
 }
@@ -36,7 +37,8 @@ const variantSchema: Schema = new Schema({
   volume: { type: String, required: false },
   label: { type: String, required: true },
   value: { type: String, required: true },
-  price: { type: Number, required: true },
+  retailPrice: { type: Number, required: true },
+  wholeSalePrice: { type: Number, required: true },
   isColorChecked: { type: Boolean, default: false },
   isVolumeChecked: { type: Boolean, default: false },
 });
@@ -44,8 +46,6 @@ const variantSchema: Schema = new Schema({
 // Define the main product schema
 const productSchema: Schema = new Schema({
   name: { type: String, required: true },
-  retailPrice: { type: Number, required: true },
-  wholeSalePrice: { type: Number, required: true },
   review: [{ type: Types.ObjectId, ref: "Review", default: [] }],
   description: { type: String, default: "" },
   productImage: { type: String, required: true },
