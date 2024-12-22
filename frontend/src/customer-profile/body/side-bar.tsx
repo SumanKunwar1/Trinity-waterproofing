@@ -43,6 +43,11 @@ export const SideBar = memo(() => {
       icon: <FaUndoAlt />,
     },
     {
+      label: "Reviews & Ratings",
+      path: "/customer/reviews-ratings",
+      icon: <FaUndoAlt />,
+    },
+    {
       label: "Log Out",
       path: "/",
       icon: <FaSignOutAlt />,
