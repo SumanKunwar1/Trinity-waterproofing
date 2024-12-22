@@ -10,7 +10,7 @@ import {
 import {
   uploadMiddleware,
   appendFileDataToBody,
-  parseVariantsMiddleware,
+  parseColorsMiddleware,
 } from "../config/upload";
 
 const router = Router();
@@ -22,8 +22,7 @@ router.post(
   isAuthorized("admin"),
   uploadMiddleware,
   appendFileDataToBody,
-  parseVariantsMiddleware,
-  parseVariantsMiddleware,
+  parseColorsMiddleware,
   validateProduct,
   productController.createProduct.bind(productController),
   handleResponse

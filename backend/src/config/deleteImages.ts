@@ -1,12 +1,7 @@
 import fs from "fs/promises";
 import { Request } from "express";
 import path from "path";
-import dotenv from "dotenv";
-dotenv.config();
-
-console.log("image upload folder name", process.env.IMAGE_UPLOAD);
-const UPLOADS = process.env.IMAGE_UPLOAD || "uploads";
-const uploadFolder = path.join(__dirname, "../../../", UPLOADS);
+import { uploadFolder } from "../config/upload";
 
 export const deleteImages = async (images: string[]): Promise<void> => {
   const filesToDelete: string[] = images.map((image) =>

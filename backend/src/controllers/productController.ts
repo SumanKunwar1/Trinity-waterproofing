@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { ProductService } from "../services";
 import { IProduct } from "../interfaces";
-import { deleteImages } from "../config/deleteImages";
+import { deleteProductImages } from "../config/deleteImages";
 
 export class ProductController {
   private productService: ProductService;
@@ -17,12 +17,11 @@ export class ProductController {
   ): Promise<void> {
     try {
       const productData: IProduct = req.body;
-
       const result = await this.productService.createProduct(productData);
       res.locals.responseData = result;
       next();
     } catch (error: any) {
-      deleteImages(req);
+      deleteProductImages(req);
       next(error);
     }
   }

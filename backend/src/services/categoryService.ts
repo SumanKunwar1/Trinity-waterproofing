@@ -21,15 +21,67 @@ export class CategoryService {
 
   public async getCategories() {
     try {
+      // Step 1: Fetch Categories
       const categories = await Category.find();
 
       if (!categories || categories.length === 0) {
         throw httpMessages.NOT_FOUND("categories");
       }
 
-      return categories;
+      // Step 2: Fetch SubCategories and Products separately
+      const categoryResponse = await Promise.all(
+        categories.map(async (category) => {
+          // Step 2.1: Fetch subCategories for each category
+          const subCategories = await SubCategory.find({
+            category: category._id,
+          });
+
+          // Step 2.2: Fetch Products for each subCategory
+          const modifiedSubCategories = await Promise.all(
+            subCategories.map(async (subCategory) => {
+              // Step 2.2.1: Fetch products for this subcategory
+              const products = await Product.find({
+                _id: { $in: subCategory.product },
+              });
+
+              // Step 2.2.2: Modify products (add full URLs for images)
+              const modifiedProducts = products.map((product) => {
+                const productImageUrl = product.productImage
+                  ? `/api/image/${product.productImage}`
+                  : null;
+
+                const imageUrls =
+                  product.image && product.image.length > 0
+                    ? product.image.map((img: string) => `/api/image/${img}`)
+                    : [];
+
+                return {
+                  ...product.toObject(), // Convert Mongoose document to plain object
+                  productImage: productImageUrl,
+                  image: imageUrls,
+                };
+              });
+
+              // Step 2.3: Return the subcategory with modified products
+              return {
+                ...subCategory.toObject(), // Convert subcategory to plain object
+                products: modifiedProducts, // Attach the modified product array
+              };
+            })
+          );
+
+          // Step 3: Return the category with modified subcategories
+          return {
+            ...category.toObject(), // Convert category to plain object
+            subCategories: modifiedSubCategories, // Attach the modified subcategory array
+          };
+        })
+      );
+
+      console.log(JSON.stringify(categoryResponse, null, 2));
+      return categoryResponse;
     } catch (error) {
-      throw error;
+      throw error; // Rethrow error if any occurs
     }
   }
 

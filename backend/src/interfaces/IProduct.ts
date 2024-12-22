@@ -14,12 +14,14 @@ interface IVariant {
 interface IProduct {
   name: string; // Product name
   description: string; // Product description
+  wholeSalePrice: number;
+  retailPrice: number;
   productImage: string; // Main product image URL
   image: string[]; // Additional images URLs
   subCategory: Types.ObjectId; // Subcategory ID
   features: string[]; // Features of the product
-  brand: string; // Brand name
-  variants: IVariant[]; // Array of variants with color, volume, label, value, price, isColorChecked, and isVolumeChecked
+  brand: Types.ObjectId; // Brand name
+  colors?: string[];
   inStock: number; // Product stock quantity
 }
 

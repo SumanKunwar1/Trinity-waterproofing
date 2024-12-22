@@ -1,9 +1,12 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
+import { IProduct } from "../interfaces";
 
-interface ISubCategory extends Document {
+export interface ISubCategory extends Document {
+  _id: Types.ObjectId;
   name: string;
   description?: string;
   category: Types.ObjectId;
+  product: Types.ObjectId[];
   created_at?: Date;
   updated_at?: Date;
 }
@@ -13,8 +16,7 @@ const subcategorySchema: Schema = new Schema(
     name: { type: String, required: true },
     description: { type: String },
     category: { type: Types.ObjectId, ref: "Category", required: true },
-    created_at: { type: Date, default: Date.now },
-    updated_at: { type: Date, default: Date.now },
+    product: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
   },
   { timestamps: true }
 );

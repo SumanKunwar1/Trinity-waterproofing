@@ -106,4 +106,78 @@ export class UserController {
       next(error);
     }
   }
+
+  public async addAddress(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const userId = req.params.id;
+      const addressData = req.body;
+      const result = await this.userService.addAddress(userId, addressData);
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  public async editAddress(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const userId = req.params.id;
+      const addressBookId = req.params.addressBookId;
+      const addressData = req.body;
+      const result = await this.userService.editAddress(
+        userId,
+        addressData,
+        addressBookId
+      );
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  public async editDefaultAddress(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const userId = req.params.id;
+      const addressBookId = req.params.addressBookId;
+      const result = await this.userService.editDefaultAddress(
+        userId,
+        addressBookId
+      );
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
+  public async deleteAddress(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const userId = req.params.id;
+      const addressBookId = req.params.addressBookId;
+      const result = await this.userService.deleteAddress(
+        userId,
+        addressBookId
+      );
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
 }

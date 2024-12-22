@@ -8,6 +8,7 @@ import {
   isAuthorized,
   isAuthenticated,
   isAuthorizedUser,
+  validateAddressBook,
 } from "../middlewares";
 
 const router = Router();
@@ -48,6 +49,39 @@ router.patch(
   isAuthenticated,
   isAuthorizedUser,
   userController.editPassword.bind(userController),
+  handleResponse
+);
+
+router.patch(
+  "/addressBook/:id",
+  isAuthenticated,
+  isAuthorizedUser,
+  validateAddressBook,
+  userController.addAddress.bind(userController),
+  handleResponse
+);
+
+router.patch(
+  "/addressBook/:id/:addressBookId",
+  isAuthenticated,
+  isAuthorizedUser,
+  validateAddressBook,
+  userController.editAddress.bind(userController),
+  handleResponse
+);
+router.patch(
+  "/addressBook/default/:id/:addressBookId",
+  isAuthenticated,
+  isAuthorizedUser,
+  userController.editDefaultAddress.bind(userController),
+  handleResponse
+);
+
+router.delete(
+  "/addressBook/:id/:addressBookId",
+  isAuthenticated,
+  isAuthorizedUser,
+  userController.editAddress.bind(userController),
   handleResponse
 );
 

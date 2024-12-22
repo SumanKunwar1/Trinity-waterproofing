@@ -1,11 +1,10 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { User } from "../models";
-import { IUser } from "../interfaces";
+import { IUser, IAddress } from "../interfaces";
 import { httpMessages } from "../middlewares";
 
 export class UserService {
-  // Create a new user
   public async createUser(userData: IUser) {
     try {
       const { email, password } = userData;
@@ -29,7 +28,6 @@ export class UserService {
     }
   }
 
-  // Login user and return a token
   public async loginUser(email: string, password: string) {
     try {
       const user = await User.findOne({ email });
@@ -55,7 +53,6 @@ export class UserService {
     }
   }
 
-  // Get user details
   public async getUsers() {
     try {
       const users = await User.find({}, "fullName email role createdAt number");
@@ -65,7 +62,6 @@ export class UserService {
     }
   }
 
-  // Edit user details
   public async editUser(userId: string, updatedData: Partial<IUser>) {
     try {
       const user = await User.findById(userId);
@@ -96,7 +92,6 @@ export class UserService {
     }
   }
 
-  // Edit user password
   public async editPassword(
     userId: string,
     oldPassword: string,
@@ -176,6 +171,122 @@ export class UserService {
         message: "User deleted successfully",
       };
     } catch (error) {
+      throw error;
+    }
+  }
+
+  public async addAddress(userId: string, addressData: IAddress) {
+    try {
+      const user = await User.findById(userId);
+      if (!user) {
+        throw httpMessages.NOT_FOUND("User");
+      }
+
+      if (addressData.default) {
+        user.addressBook.forEach((address) => {
+          address.default = false;
+        });
+      }
+
+      user.addressBook.push(addressData);
+      await user.save();
+
+      return user;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
+  public async editAddress(
+    userId: string,
+    addressData: IAddress,
+    addressBookId: string
+  ) {
+    try {
+      const user = await User.findById(userId);
+      if (!user) {
+        throw httpMessages.NOT_FOUND("User not found");
+      }
+
+      const addressIndex = user.addressBook.findIndex(
+        (address) => address._id.toString() === addressBookId
+      );
+
+      if (addressIndex === -1) {
+        throw httpMessages.NOT_FOUND("AddressBook not found");
+      }
+
+      if (addressData.default) {
+        user.addressBook.forEach((address) => {
+          address.default = false;
+        });
+      }
+
+      user.addressBook[addressIndex] = {
+        ...user.addressBook[addressIndex],
+        ...addressData,
+      };
+
+      await user.save();
+
+      return user;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  public async editDefaultAddress(userId: string, addressBookId: string) {
+    try {
+      const user = await User.findById(userId);
+      if (!user) {
+        throw httpMessages.NOT_FOUND("User not found");
+      }
+      const addressBookIndex = user.addressBook.findIndex(
+        (address) => address._id.toString() === addressBookId
+      );
+
+      if (addressBookIndex === -1) {
+        throw httpMessages.NOT_FOUND("Address not found");
+      }
+
+      // Step 1: Set the specified address as the default
+      user.addressBook.forEach((address, index) => {
+        if (index === addressBookIndex) {
+          address.default = true; // Set the current address as the default
+        } else {
+          address.default = false; // Set all other addresses to not be default
+        }
+      });
+      await user.save();
+      return { message: "AddressBook deleted successfully" };
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  public async deleteAddress(userId: string, addressBookId: string) {
+    try {
+      const user = await User.findById(userId);
+      if (!user) {
+        throw httpMessages.NOT_FOUND("User not found");
+      }
+
+      const addressIndex = user.addressBook.findIndex(
+        (address) => address._id.toString() === addressBookId
+      );
+
+      if (addressIndex === -1) {
+        throw httpMessages.NOT_FOUND("Address not found");
+      }
+
+      user.addressBook.splice(addressIndex, 1);
+      await user.save();
+      return { message: "AddressBook deleted successfully" };
+    } catch (error) {
+      console.error(error);
       throw error;
     }
   }

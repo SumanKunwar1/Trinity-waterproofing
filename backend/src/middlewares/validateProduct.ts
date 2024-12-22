@@ -16,12 +16,23 @@ const validateProduct = (
     description: Joi.string().optional().messages({
       "string.base": "Description must be a string",
     }),
+    wholeSalePrice: Joi.number().required().messages({
+      "number.base": "Variant wholesale price must be a number",
+      "any.required": "Variant wholesale price is required",
+    }),
+    retailPrice: Joi.number().required().messages({
+      "number.base": "Variant retail price must be a number",
+      "any.required": "Variant retail price is required",
+    }),
     productImage: Joi.string().required().messages({
       "string.base": "Product Image must be a valid URL",
       "any.required": "Product Image is required",
     }),
     image: Joi.array().items(Joi.string()).optional().messages({
-      "array.base": "Images must be an array of valid URLs",
+      "array.base": "Images must be an array of valid filename",
+    }),
+    colors: Joi.array().items(Joi.string()).optional().messages({
+      "array.base": "colorss must be an array of string",
     }),
     features: Joi.string().required().messages({
       "string.base": "Features must be a string",
@@ -31,43 +42,6 @@ const validateProduct = (
       "string.base": "Brand must be a string",
       "any.required": "Brand is required",
     }),
-    variants: Joi.array()
-      .items(
-        Joi.object({
-          color: Joi.string().optional().messages({
-            "string.base": "Variant color must be a string",
-          }),
-          volume: Joi.string().optional().messages({
-            "string.base": "Variant volume must be a string",
-          }),
-          label: Joi.string().required().messages({
-            "string.base": "Variant label must be a string",
-            "any.required": "Variant label is required",
-          }),
-          value: Joi.string().required().messages({
-            "string.base": "Variant value must be a string",
-            "any.required": "Variant value is required",
-          }),
-          wholeSalePrice: Joi.number().required().messages({
-            "number.base": "Variant wholesale price must be a number",
-            "any.required": "Variant wholesale price is required",
-          }),
-          retailPrice: Joi.number().required().messages({
-            "number.base": "Variant retail price must be a number",
-            "any.required": "Variant retail price is required",
-          }),
-          isColorChecked: Joi.boolean().optional().default(false).messages({
-            "boolean.base": "isColorChecked must be a boolean",
-          }),
-          isVolumeChecked: Joi.boolean().optional().default(false).messages({
-            "boolean.base": "isVolumeChecked must be a boolean",
-          }),
-        })
-      )
-      .optional()
-      .messages({
-        "array.base": "Variants must be an array",
-      }),
     inStock: Joi.number().required().messages({
       "number.base": "InStock must be a number",
       "any.required": "InStock is required",

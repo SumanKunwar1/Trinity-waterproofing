@@ -1,5 +1,6 @@
 export { User } from "./user";
 export { Review } from "./review";
-export { Product } from "./products";
+export { Product, IProduct } from "./products";
 export { Category } from "./category";
-export { SubCategory } from "./subCategory";
+export { SubCategory, ISubCategory } from "./subCategory";
+export { Brand } from "./brand";

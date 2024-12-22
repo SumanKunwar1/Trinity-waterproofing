@@ -1,4 +1,4 @@
-import { Product, SubCategory } from "../models";
+import { Product, SubCategory, Brand } from "../models";
 import { IProduct } from "../interfaces";
 import { httpMessages } from "../middlewares";
 import { deleteImages } from "../config/deleteImages";
@@ -6,12 +6,19 @@ import { deleteImages } from "../config/deleteImages";
 export class ProductService {
   public async createProduct(productData: IProduct) {
     try {
-      const { subCategory } = productData;
+      const { subCategory, brand } = productData;
       const isPresent = await SubCategory.findById(subCategory);
       if (!isPresent) {
         throw httpMessages.NOT_FOUND(`subCategory`);
       }
+      const isBrandPresent = await Brand.findById(brand);
+      if (!isBrandPresent) {
+        throw httpMessages.NOT_FOUND(`Brand`);
+      }
+
       const newProduct = new Product(productData);
+      isPresent.product.push(newProduct._id);
+
       await newProduct.save();
       return newProduct;
     } catch (error) {
@@ -21,16 +28,21 @@ export class ProductService {
 
   public async editProduct(productId: string, productData: IProduct) {
     try {
-      const { subCategory } = productData;
+      const { subCategory, brand } = productData;
+
+      const existingProduct = await Product.findById(productId);
+      if (!existingProduct) {
+        throw httpMessages.NOT_FOUND(`Product with ID: ${productId}`);
+      }
 
       const isSubCategoryPresent = await SubCategory.findById(subCategory);
       if (!isSubCategoryPresent) {
         throw httpMessages.NOT_FOUND(`subCategory`);
       }
 
-      const existingProduct = await Product.findById(productId);
-      if (!existingProduct) {
-        throw httpMessages.NOT_FOUND(`Product with ID: ${productId}`);
+      const isBrandPresent = await Brand.findById(brand);
+      if (!isBrandPresent) {
+        throw httpMessages.NOT_FOUND(`Brand`);
       }
 
       const filesToDelete: string[] = [];
@@ -44,6 +56,22 @@ export class ProductService {
       }
 
       await deleteImages(filesToDelete);
+      if (existingProduct.subCategory !== subCategory) {
+        // Remove the product ID from the old subcategory's product array
+        const oldSubCategory = await SubCategory.findById(
+          existingProduct.subCategory
+        );
+        if (oldSubCategory) {
+          oldSubCategory.product = oldSubCategory.product.filter(
+            (productId) => !productId.equals(existingProduct._id)
+          );
+          await oldSubCategory.save();
+        }
+
+        // Add the product ID to the new subcategory's product array
+        isSubCategoryPresent.product.push(existingProduct._id);
+        await isSubCategoryPresent.save();
+      }
 
       existingProduct.set(productData);
 
@@ -74,7 +102,17 @@ export class ProductService {
         throw httpMessages.NOT_FOUND("products");
       }
 
-      return products;
+      const productResponse = products.map((product) => ({
+        ...product.toObject(),
+        productImage: product.productImage
+          ? `/api/image/${product.productImage}`
+          : null, // Modify productImage field
+        image: product.image
+          ? product.image.map((img: string) => `/api/image/${img}`)
+          : [], // Modify image field
+      }));
+
+      return productResponse;
     } catch (error) {
       throw error;
     }
@@ -94,7 +132,17 @@ export class ProductService {
         throw httpMessages.NOT_FOUND(`product`);
       }
 
-      return product;
+      const productResponse = {
+        ...product.toObject(),
+        productImage: product.productImage
+          ? `/api/image/${product.productImage}`
+          : null,
+        image: product.image
+          ? product.image.map((img: string) => `/api/image/${img}`)
+          : [],
+      };
+
+      return productResponse;
     } catch (error) {
       throw error;
     }

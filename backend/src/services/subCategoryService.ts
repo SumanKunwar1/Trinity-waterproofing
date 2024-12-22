@@ -16,6 +16,8 @@ export class SubCategoryService {
         description,
         category: categoryId,
       });
+
+      isPresent.subCategory.push(newSubCategory._id);
       await newSubCategory.save();
       return newSubCategory;
     } catch (error) {
@@ -26,17 +28,54 @@ export class SubCategoryService {
   public async getSubCategories() {
     try {
       const subCategories = await SubCategory.find().populate({
-        path: "category",
-        model: "Category",
+        path: "product",
+        model: "Product",
       });
 
       if (!subCategories || subCategories.length === 0) {
         throw httpMessages.NOT_FOUND("subcategories");
       }
 
-      return subCategories;
+      const subCategoryResponse = await Promise.all(
+        subCategories.map(async (subCategory) => {
+          // Extract product IDs from the subcategory
+          const productIds = subCategory.product;
+
+          // Step 3: Fetch the products based on the extracted product IDs
+          const products = await Product.find({
+            _id: { $in: productIds }, // Match products whose _id is in the list of productIds
+          });
+
+          // Step 4: Modify each product (e.g., include full URLs for productImage and images)
+          const modifiedProducts = products.map((product) => {
+            const productImageUrl = product.productImage
+              ? `/api/image/${product.productImage}`
+              : null;
+
+            const imageUrls =
+              product.image && product.image.length > 0
+                ? product.image.map((img: string) => `/api/image/${img}`)
+                : [];
+
+            // Return modified product data
+            return {
+              ...product.toObject(),
+              productImage: productImageUrl,
+              image: imageUrls,
+            };
+          });
+
+          // Step 5: Return the subcategory data with the modified products
+          return {
+            ...subCategory.toObject(),
+            product: modifiedProducts,
+          };
+        })
+      );
+      console.log(JSON.stringify(subCategoryResponse, null, 2));
+      return subCategoryResponse;
     } catch (error) {
-      throw error;
+      throw error; // Rethrow error if any occurs
     }
   }
 
@@ -54,8 +93,26 @@ export class SubCategoryService {
       if (categoryId) {
         const isCategoryPresent = await Category.findById(categoryId);
         if (!isCategoryPresent) {
-          throw httpMessages.NOT_FOUND(`Category`);
+          throw httpMessages.NOT_FOUND("Category");
         }
+
+        // If the category is changing, we need to remove this subcategory from the previous category's subcategory array
+        const oldCategoryId = updatedSubCategory.category;
+        if (oldCategoryId !== categoryId) {
+          const oldCategory = await Category.findById(oldCategoryId);
+          if (oldCategory) {
+            oldCategory.subCategory = oldCategory.subCategory.filter(
+              (subCategory) => !subCategory.equals(updatedSubCategory._id)
+            );
+            await oldCategory.save();
+          }
+
+          // Add the subcategory to the new category's subcategory array
+          isCategoryPresent.subCategory.push(updatedSubCategory._id);
+          await isCategoryPresent.save();
+        }
+
+        // Update the subcategory's category
         updatedSubCategory.category = categoryId;
       }
       if (name) updatedSubCategory.name = name;
