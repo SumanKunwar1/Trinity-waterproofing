@@ -13,7 +13,7 @@ export const httpMessages = {
   },
   FORBIDDEN: (reason: string = "Request") => ({
     statusCode: 403,
-    message: `${reason} is forbidden`,
+    message: `${reason}`,
   }),
   UNAUTHORIZED: (message: string = "Unauthorized access") => ({
     statusCode: 401,

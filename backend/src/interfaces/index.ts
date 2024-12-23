@@ -4,3 +4,4 @@ export { IProduct } from "./IProduct";
 export { ISubCategory } from "./ISubCategory";
 export { IUser, IAddress } from "./IUser";
 export { IBrand } from "./IBrand";
+export { IOrderItem } from "./IOrdeItem";

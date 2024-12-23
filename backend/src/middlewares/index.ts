@@ -1,3 +1,5 @@
+import { validateOrder } from "./validateOrder";
+
 export { handleResponse } from "./handleResponse";
 export { connectToDatabase } from "./databaseConnection";
 export { httpMessages } from "./HttpMessage";
@@ -15,4 +17,5 @@ export { validateProduct } from "./validateProduct";
 export { validateReview } from "./validateReview";
 export { validateEditReview } from "./validateEditReview";
 export { validateBrand } from "./validateBrand";
+export { validateOrder } from "./validateOrder";
 export { handleError } from "./handleError";

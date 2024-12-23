@@ -16,8 +16,8 @@ const isAuthorizedUser = async (
     }
     if (user.email !== req.email && user.role !== req.role) {
       return next(
-        httpMessages.UNAUTHORIZED(
-          "You are not authorized to update this user's email"
+        httpMessages.FORBIDDEN(
+          "You do not have permission to update this user's email"
         )
       );
     }
