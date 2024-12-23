@@ -87,6 +87,10 @@ export class ProductService {
     try {
       const products = await Product.find()
         .populate({
+          path: "brand",
+          model: "Brand",
+        })
+        .populate({
           path: "subCategory",
           populate: {
             path: "category",

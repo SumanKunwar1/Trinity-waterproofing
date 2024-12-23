@@ -8,6 +8,7 @@ interface Column {
   header: string;
   accessor: string;
   filterable?: boolean;
+  cell?: (item: any) => React.ReactNode;
 }
 
 interface TableProps {
@@ -19,7 +20,7 @@ interface TableProps {
 
 const Table: React.FC<TableProps> = ({
   columns,
-  data,
+  data = [],
   onRowClick,
   itemsPerPage = 10,
 }) => {
@@ -45,7 +46,11 @@ const Table: React.FC<TableProps> = ({
   const filteredData = useMemo(() => {
     return data.filter((item) => {
       return Object.entries(filters).every(([key, value]) => {
-        return item[key].toString().toLowerCase().includes(value.toLowerCase());
+        const itemValue = item[key];
+        return (
+          itemValue &&
+          itemValue.toString().toLowerCase().includes(value.toLowerCase())
+        );
       });
     });
   }, [data, filters]);
@@ -53,10 +58,10 @@ const Table: React.FC<TableProps> = ({
   const sortedData = useMemo(() => {
     return [...filteredData].sort((a, b) => {
       if (sortColumn) {
-        if (a[sortColumn] < b[sortColumn])
-          return sortDirection === "asc" ? -1 : 1;
-        if (a[sortColumn] > b[sortColumn])
-          return sortDirection === "asc" ? 1 : -1;
+        const aValue = a[sortColumn];
+        const bValue = b[sortColumn];
+        if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+        if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
       }
       return 0;
     });

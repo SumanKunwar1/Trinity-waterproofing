@@ -7,7 +7,7 @@ import {
   handleResponse,
   handleError,
 } from "../middlewares";
-import { imageUploadMiddleware } from "../config/upload";
+import { imageUploadMiddleware, appendImageDataToBody } from "../config/upload";
 
 const router = Router();
 const brandController = new BrandController();
@@ -17,6 +17,7 @@ router.post(
   isAuthenticated,
   isAuthorized("admin"),
   imageUploadMiddleware,
+  appendImageDataToBody,
   validateBrand,
   brandController.createBrand.bind(brandController),
   handleResponse
@@ -39,6 +40,7 @@ router.patch(
   isAuthenticated,
   isAuthorized("admin"),
   imageUploadMiddleware,
+  appendImageDataToBody,
   validateBrand,
   brandController.editBrand.bind(brandController),
   handleResponse

@@ -1,5 +1,11 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 
+// Define the Color interface for the colors array
+export interface IColor {
+  name: string;
+  hex: string;
+}
+
 export interface IProduct extends Document {
   _id: Types.ObjectId;
   name: string;
@@ -11,7 +17,7 @@ export interface IProduct extends Document {
   image: string[];
   features: string[];
   brand: Types.ObjectId;
-  colors?: string[];
+  colors?: IColor[]; // Updated to an array of IColor objects
   inStock: number;
   subCategory: Types.ObjectId;
   created_at?: Date;
@@ -29,7 +35,12 @@ const productSchema: Schema = new Schema(
     image: [String],
     features: [String],
     brand: { type: Types.ObjectId, ref: "Brand", required: true },
-    colors: [{ type: String, required: false }],
+    colors: [
+      {
+        name: { type: String, required: true },
+        hex: { type: String, required: true },
+      },
+    ], // Updated to reflect colors as an array of objects with 'name' and 'hex' fields
     inStock: { type: Number, required: true },
     subCategory: { type: Types.ObjectId, ref: "SubCategory", required: true },
   },

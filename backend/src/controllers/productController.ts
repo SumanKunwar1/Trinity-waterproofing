@@ -26,6 +26,26 @@ export class ProductController {
     }
   }
 
+  public async editProduct(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const productId: string = req.params.id;
+      const productData: IProduct = req.body;
+      const result = await this.productService.editProduct(
+        productId,
+        productData
+      );
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      deleteProductImages(req);
+      next(error);
+    }
+  }
+
   public async getProducts(
     req: Request,
     res: Response,

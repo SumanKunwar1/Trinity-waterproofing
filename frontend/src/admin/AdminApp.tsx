@@ -59,6 +59,14 @@ function AdminApp() {
           }
         />
         <Route
+          path="/admin/add-product/:id"
+          element={
+            <PrivateRoute>
+              <ProductForm />
+            </PrivateRoute>
+          }
+        />
+        <Route
           path="/admin/categories"
           element={
             <PrivateRoute>

@@ -61,6 +61,14 @@ router.patch(
   handleResponse
 );
 
+router.get(
+  "/addressBook/:id",
+  isAuthenticated,
+  isAuthorizedUser,
+  userController.getAddress.bind(userController),
+  handleResponse
+);
+
 router.patch(
   "/addressBook/:id/:addressBookId",
   isAuthenticated,
@@ -81,7 +89,7 @@ router.delete(
   "/addressBook/:id/:addressBookId",
   isAuthenticated,
   isAuthorizedUser,
-  userController.editAddress.bind(userController),
+  userController.deleteAddress.bind(userController),
   handleResponse
 );
 

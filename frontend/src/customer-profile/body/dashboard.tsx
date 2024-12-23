@@ -1,5 +1,7 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { toast } from "react-toastify";
 import {
   FaArrowRight,
   FaShoppingBag,
@@ -9,8 +11,75 @@ import {
 } from "react-icons/fa";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "../../components/ui/dialog";
+import { AddressForm } from "./address-form";
+
+interface Address {
+  _id: string;
+  street: string;
+  city: string;
+  province: string;
+  district: string;
+  postalCode: string;
+  country: string;
+  default: boolean;
+}
 
 export const Dashboard = () => {
+  const [defaultAddress, setDefaultAddress] = useState<Address | null>(null);
+  const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false);
+
+  useEffect(() => {
+    fetchDefaultAddress();
+  }, []);
+
+  const fetchDefaultAddress = async () => {
+    try {
+      const userId = JSON.parse(localStorage.getItem("userId") || "");
+      const response = await fetch(`/api/users/addressBook/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
+      if (!response.ok) throw new Error("Failed to fetch addresses");
+      const data = await response.json();
+      const defaultAddr = data.addressBook.find(
+        (addr: Address) => addr.default
+      );
+      setDefaultAddress(defaultAddr || null);
+    } catch (error) {
+      console.error("Error fetching default address:", error);
+      toast.error("Failed to load default address");
+    }
+  };
+
+  const handleAddressSubmit = async (
+    address: Omit<Address, "_id" | "default">
+  ) => {
+    try {
+      const userId = JSON.parse(localStorage.getItem("userId") || "");
+      const response = await fetch(`/api/users/addressBook/${userId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+        body: JSON.stringify({ ...address, default: true }),
+      });
+      if (!response.ok) throw new Error("Failed to add address");
+      await fetchDefaultAddress();
+      setIsAddressDialogOpen(false);
+      toast.success("Address added successfully");
+    } catch (error) {
+      console.error("Error adding address:", error);
+      toast.error("Failed to add address");
+    }
+  };
+
   return (
     <motion.div
       className="w-full min-h-screen bg-gray-100 p-6 space-y-6"
@@ -76,12 +145,37 @@ export const Dashboard = () => {
             <h2 className="text-2xl font-semibold text-gray-800">
               Default Shipping Address
             </h2>
-            <p className="text-gray-600 text-center">
-              You haven't set a default shipping address yet.
-            </p>
-            <Button className="bg-blue-500 hover:bg-blue-600 text-white transition duration-200">
-              <FaPlus className="mr-2" /> Add New Address
-            </Button>
+            {defaultAddress ? (
+              <div className="text-center">
+                <p>{defaultAddress.street}</p>
+                <p>{`${defaultAddress.city}, ${defaultAddress.province} ${defaultAddress.postalCode}`}</p>
+                <p>{defaultAddress.country}</p>
+                <Link to="/customer/address-book">
+                  <Button className="mt-4 bg-blue-500 hover:bg-blue-600 text-white transition duration-200">
+                    Manage Addresses
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="text-center">
+                <p className="text-gray-600">
+                  You haven't set a default shipping address yet.
+                </p>
+                <Dialog
+                  open={isAddressDialogOpen}
+                  onOpenChange={setIsAddressDialogOpen}
+                >
+                  <DialogTrigger asChild>
+                    <Button className="mt-4 bg-blue-500 hover:bg-blue-600 text-white transition duration-200">
+                      <FaPlus className="mr-2" /> Add New Address
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <AddressForm onSubmit={handleAddressSubmit} />
+                  </DialogContent>
+                </Dialog>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

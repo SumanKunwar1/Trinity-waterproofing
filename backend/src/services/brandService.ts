@@ -56,10 +56,11 @@ export class BrandService {
         throw httpMessages.NOT_FOUND("brands");
       }
       const brandResponse = brands.map((brand) => ({
-        name: brand.image,
+        _id: brand._id,
+        name: brand.name,
         image: `/api/image/${brand.image}`,
       }));
-      return brands;
+      return brandResponse;
     } catch (error) {
       throw error;
     }

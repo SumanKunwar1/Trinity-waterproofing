@@ -267,6 +267,19 @@ export class UserService {
     }
   }
 
+  public async getAddress(userId: string) {
+    try {
+      const user = await User.findById(userId);
+      if (!user) {
+        throw httpMessages.NOT_FOUND("User not found");
+      }
+      console.log(user.addressBook);
+      return { addressBook: user.addressBook };
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
   public async deleteAddress(userId: string, addressBookId: string) {
     try {
       const user = await User.findById(userId);

@@ -1,4 +1,5 @@
 import { Types } from "mongoose";
+import { IColor } from "../models";
 
 interface IVariant {
   color?: string; // Optional field for color of the variant
@@ -21,7 +22,7 @@ interface IProduct {
   subCategory: Types.ObjectId; // Subcategory ID
   features: string[]; // Features of the product
   brand: Types.ObjectId; // Brand name
-  colors?: string[];
+  colors?: IColor[];
   inStock: number; // Product stock quantity
 }
 

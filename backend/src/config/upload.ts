@@ -8,7 +8,6 @@ console.log("image upload fol;der name", process.env.IMAGE_UPLOAD);
 const UPLOADS = process.env.IMAGE_UPLOAD || "uploads";
 
 export const uploadFolder = path.join(__dirname, "../../../", UPLOADS);
-
 if (!fs.existsSync(uploadFolder)) {
   fs.mkdirSync(uploadFolder, { recursive: true });
 }
@@ -61,6 +60,26 @@ export const appendFileDataToBody = (req: any, res: any, next: Function) => {
   }
 
   console.log("Updated Request Body:", req.body);
+  next();
+};
+
+export const appendImageDataToBody = (req: any, res: any, next: Function) => {
+  if (req.files && req.files["image"]) {
+    const imageFiles = req.files["image"];
+
+    // If there's at least one image uploaded, assign the filename as a string
+    if (imageFiles.length > 0) {
+      req.body.image = imageFiles[0].filename;
+    } else {
+      // If no images were uploaded, set it to an empty string
+      req.body.image = "";
+    }
+  } else {
+    // If the 'image' field is missing in req.files
+    req.body.image = "";
+  }
+
+  console.log("Updated Request Body (imageUploadMiddleware):", req.body);
   next();
 };
 

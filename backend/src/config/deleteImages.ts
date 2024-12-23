@@ -4,6 +4,7 @@ import path from "path";
 import { uploadFolder } from "../config/upload";
 
 export const deleteImages = async (images: string[]): Promise<void> => {
+  console.log("Files to delete:", images);
   const filesToDelete: string[] = images.map((image) =>
     path.join(uploadFolder, image)
   );

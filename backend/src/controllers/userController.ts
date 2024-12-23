@@ -119,6 +119,7 @@ export class UserController {
       res.locals.responseData = result;
       next();
     } catch (error: any) {
+      console.log("error in add address", error);
       next(error);
     }
   }
@@ -156,6 +157,20 @@ export class UserController {
         userId,
         addressBookId
       );
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
+  public async getAddress(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const userId = req.params.id;
+      const result = await this.userService.getAddress(userId);
       res.locals.responseData = result;
       next();
     } catch (error: any) {

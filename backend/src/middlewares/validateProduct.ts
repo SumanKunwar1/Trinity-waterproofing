@@ -8,6 +8,17 @@ const validateProduct = (
   res: Response,
   next: NextFunction
 ): void => {
+  const colorSchema = Joi.object({
+    name: Joi.string().required().messages({
+      "string.base": "Color name must be a string",
+      "any.required": "Color name is required",
+    }),
+    hex: Joi.string().required().messages({
+      "string.base": "Color hex must be a string",
+      "string.pattern.base": "Color hex must be a valid hex code ",
+      "any.required": "Color hex is required",
+    }),
+  });
   const schema = Joi.object({
     name: Joi.string().required().messages({
       "string.base": "Name must be a string",
@@ -31,8 +42,9 @@ const validateProduct = (
     image: Joi.array().items(Joi.string()).optional().messages({
       "array.base": "Images must be an array of valid filename",
     }),
-    colors: Joi.array().items(Joi.string()).optional().messages({
-      "array.base": "colorss must be an array of string",
+    colors: Joi.array().items(colorSchema).optional().messages({
+      "array.base":
+        "colors must be an array of color objects with 'name' and 'hex'",
     }),
     features: Joi.string().required().messages({
       "string.base": "Features must be a string",

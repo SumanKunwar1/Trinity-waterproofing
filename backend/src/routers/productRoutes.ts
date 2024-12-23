@@ -27,6 +27,19 @@ router.post(
   productController.createProduct.bind(productController),
   handleResponse
 );
+
+router.patch(
+  "/:id",
+  isAuthenticated,
+  isAuthorized("admin"),
+  uploadMiddleware,
+  appendFileDataToBody,
+  parseColorsMiddleware,
+  validateProduct,
+  productController.editProduct.bind(productController),
+  handleResponse
+);
+
 router.get(
   "/",
   productController.getProducts.bind(productController),
