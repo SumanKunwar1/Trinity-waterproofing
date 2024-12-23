@@ -4,3 +4,5 @@ export { SubCategoryService } from "./subCategoryService";
 export { ProductService } from "./productService";
 export { ReviewService } from "./reviewService";
 export { BrandService } from "./brandService";
+export { OrderService } from "./orderService";
+export { WishListService } from "./wishListService";

@@ -4,3 +4,5 @@ export { SubCategoryController } from "./subCategoryController";
 export { ProductController } from "./productController";
 export { ReviewController } from "./reviewController";
 export { BrandController } from "./brandController";
+export { OrderController } from "./orderController";
+export { WishListController } from "./wishListController";

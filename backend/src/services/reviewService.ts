@@ -1,7 +1,8 @@
-import { Review, Product, User } from "../models";
+import { Review, Product, User, Order } from "../models";
 import { Types } from "mongoose";
 import { IReview } from "../interfaces";
 import { httpMessages } from "../middlewares";
+import { OrderStatus } from "../config/orderStatusEnum";
 
 export class ReviewService {
   public async createReview(reviewData: IReview, userEmail: string) {
@@ -15,8 +16,33 @@ export class ReviewService {
         throw httpMessages.NOT_FOUND("User not found");
       }
       if (user.role === "admin") {
-        throw httpMessages.UNAUTHORIZED;
+        throw httpMessages.FORBIDDEN("You are forbidded to post reviews");
       }
+
+      const order = await Order.findOne({
+        user: user._id,
+        "products.productId": reviewData.productId,
+      });
+
+      if (!order) {
+        throw httpMessages.FORBIDDEN(
+          "You can only review products you have purchased"
+        );
+      }
+
+      if (order.status !== OrderStatus.Completed) {
+        throw httpMessages.FORBIDDEN(
+          "You can only review products from completed orders"
+        );
+      }
+      const existingReview = await Review.findOne({
+        user: user._id,
+        product: product._id,
+      });
+      if (existingReview) {
+        throw httpMessages.FORBIDDEN("You have already reviewed this product");
+      }
+
       const { content, rating } = reviewData;
       const newReview = new Review({
         content,
@@ -85,7 +111,7 @@ export class ReviewService {
       }
 
       if (!review.user || review.user.toString() !== user._id.toString()) {
-        throw httpMessages.UNAUTHORIZED(
+        throw httpMessages.FORBIDDEN(
           "You do not have permission to delete this review"
         );
       }

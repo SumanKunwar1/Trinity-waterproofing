@@ -52,7 +52,7 @@ router.patch(
   handleResponse
 );
 
-router.patch(
+router.get(
   "/addressBook/:id",
   isAuthenticated,
   isAuthorizedUser,
@@ -108,6 +108,7 @@ router.delete(
   userController.deleteUser.bind(userController),
   handleResponse
 );
+
 router.use(handleError);
 
 export default router;
