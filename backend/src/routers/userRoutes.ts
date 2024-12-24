@@ -52,7 +52,7 @@ router.patch(
   handleResponse
 );
 
-router.get(
+router.patch(
   "/addressBook/:id",
   isAuthenticated,
   isAuthorizedUser,
@@ -77,6 +77,7 @@ router.patch(
   userController.editAddress.bind(userController),
   handleResponse
 );
+
 router.patch(
   "/addressBook/default/:id/:addressBookId",
   isAuthenticated,

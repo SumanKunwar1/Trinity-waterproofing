@@ -29,14 +29,21 @@ router.post(
 );
 
 router.patch(
-  "/:id",
+  "image/:id",
   isAuthenticated,
   isAuthorized("admin"),
   uploadMiddleware,
   appendFileDataToBody,
-  parseColorsMiddleware,
   validateProduct,
-  productController.editProduct.bind(productController),
+  productController.editProductImages.bind(productController),
+  handleResponse
+);
+router.patch(
+  "/:id",
+  isAuthenticated,
+  isAuthorized("admin"),
+  validateProduct,
+  productController.editProductImages.bind(productController),
   handleResponse
 );
 
@@ -49,6 +56,11 @@ router.get(
 router.get(
   "/:id",
   productController.getProductById.bind(productController),
+  handleResponse
+);
+router.get(
+  "/user/:id",
+  productController.getProductByUserId.bind(productController),
   handleResponse
 );
 

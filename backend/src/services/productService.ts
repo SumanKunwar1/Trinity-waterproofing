@@ -1,5 +1,5 @@
-import { Product, SubCategory, Brand } from "../models";
-import { IProduct } from "../interfaces";
+import { Product, SubCategory, Brand, WishList, Cart } from "../models";
+import { IProduct, IEditableProduct } from "../interfaces";
 import { httpMessages } from "../middlewares";
 import { deleteImages } from "../config/deleteImages";
 
@@ -26,23 +26,16 @@ export class ProductService {
     }
   }
 
-  public async editProduct(productId: string, productData: IProduct) {
+  public async editProductImages(
+    productId: string,
+    productData: { productImage: string; image: string[] }
+  ) {
     try {
-      const { subCategory, brand } = productData;
+      const { productImage, image } = productData;
 
       const existingProduct = await Product.findById(productId);
       if (!existingProduct) {
         throw httpMessages.NOT_FOUND(`Product with ID: ${productId}`);
-      }
-
-      const isSubCategoryPresent = await SubCategory.findById(subCategory);
-      if (!isSubCategoryPresent) {
-        throw httpMessages.NOT_FOUND(`subCategory`);
-      }
-
-      const isBrandPresent = await Brand.findById(brand);
-      if (!isBrandPresent) {
-        throw httpMessages.NOT_FOUND(`Brand`);
       }
 
       const filesToDelete: string[] = [];
@@ -56,24 +49,68 @@ export class ProductService {
       }
 
       await deleteImages(filesToDelete);
-      if (existingProduct.subCategory !== subCategory) {
-        // Remove the product ID from the old subcategory's product array
-        const oldSubCategory = await SubCategory.findById(
-          existingProduct.subCategory
-        );
-        if (oldSubCategory) {
-          oldSubCategory.product = oldSubCategory.product.filter(
-            (productId) => !productId.equals(existingProduct._id)
-          );
-          await oldSubCategory.save();
-        }
 
-        // Add the product ID to the new subcategory's product array
-        isSubCategoryPresent.product.push(existingProduct._id);
-        await isSubCategoryPresent.save();
+      if (productImage) {
+        existingProduct.productImage = productImage;
       }
 
-      existingProduct.set(productData);
+      if (image && image.length > 0) {
+        existingProduct.image = image;
+      }
+
+      await existingProduct.save();
+
+      return existingProduct;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async editProductDetails(
+    productId: string,
+    productData: IEditableProduct
+  ) {
+    try {
+      const existingProduct = await Product.findById(productId);
+      if (!existingProduct) {
+        throw httpMessages.NOT_FOUND(`Product with ID: ${productId}`);
+      }
+
+      const {
+        name,
+        description,
+        wholeSalePrice,
+        retailPrice,
+        colors,
+        features,
+        brand,
+        inStock,
+        subCategory,
+      } = productData;
+
+      if (brand) {
+        const isBrandPresent = await Brand.findById(brand);
+        if (!isBrandPresent) {
+          throw httpMessages.NOT_FOUND("Brand");
+        }
+      }
+
+      if (subCategory) {
+        const isSubCategoryPresent = await SubCategory.findById(subCategory);
+        if (!isSubCategoryPresent) {
+          throw httpMessages.NOT_FOUND("SubCategory");
+        }
+      }
+
+      if (name) existingProduct.name = name;
+      if (description) existingProduct.description = description;
+      if (wholeSalePrice) existingProduct.wholeSalePrice = wholeSalePrice;
+      if (retailPrice) existingProduct.retailPrice = retailPrice;
+      if (colors) existingProduct.colors = colors;
+      if (features) existingProduct.features = features;
+      if (brand) existingProduct.brand = brand;
+      if (inStock) existingProduct.inStock = inStock;
+      if (subCategory) existingProduct.subCategory = subCategory;
 
       await existingProduct.save();
 
@@ -174,6 +211,63 @@ export class ProductService {
       return {
         message: "Product deleted successfully",
       };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async getProductByUserId(userId: string) {
+    try {
+      const wishlist = await WishList.findOne({ user_id: userId });
+      const cart = await Cart.findOne({ userId });
+
+      const products = await Product.find()
+        .populate({
+          path: "brand",
+          model: "Brand",
+        })
+        .populate({
+          path: "subCategory",
+          populate: {
+            path: "category",
+            model: "Category",
+          },
+        })
+        .populate({
+          path: "review",
+          model: "Review",
+        });
+
+      if (!products || products.length === 0) {
+        throw httpMessages.NOT_FOUND("products");
+      }
+
+      const wishlistProductIds = new Set(
+        wishlist ? wishlist.product_id.map((id) => id) : []
+      );
+
+      const cartProductIds = new Set(
+        cart ? cart.items.map((item) => item.productId) : []
+      );
+
+      const productResponse = products.map((product) => {
+        const isAddedToWishlist = wishlistProductIds.has(product._id);
+        const isAddedToCart = cartProductIds.has(product._id);
+
+        return {
+          ...product.toObject(),
+          productImage: product.productImage
+            ? `/api/image/${product.productImage}`
+            : null,
+          image: product.image
+            ? product.image.map((img: string) => `/api/image/${img}`)
+            : [],
+          isAddedToWishlist,
+          isAddedToCart,
+        };
+      });
+
+      return productResponse;
     } catch (error) {
       throw error;
     }

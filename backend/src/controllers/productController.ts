@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { ProductService } from "../services";
-import { IProduct } from "../interfaces";
+import { IProduct, IEditableProduct } from "../interfaces";
 import { deleteProductImages } from "../config/deleteImages";
 
 export class ProductController {
@@ -26,7 +26,7 @@ export class ProductController {
     }
   }
 
-  public async editProduct(
+  public async editProductImages(
     req: Request,
     res: Response,
     next: NextFunction
@@ -34,7 +34,26 @@ export class ProductController {
     try {
       const productId: string = req.params.id;
       const productData: IProduct = req.body;
-      const result = await this.productService.editProduct(
+      const result = await this.productService.editProductImages(
+        productId,
+        productData
+      );
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      deleteProductImages(req);
+      next(error);
+    }
+  }
+  public async editProductDetails(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const productId: string = req.params.id;
+      const productData: IEditableProduct = req.body;
+      const result = await this.productService.editProductDetails(
         productId,
         productData
       );
@@ -69,6 +88,21 @@ export class ProductController {
       const productId = req.params.id;
 
       const result = await this.productService.getProductById(productId);
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  public async getProductByUserId(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const userId = req.params.id;
+      const result = await this.productService.getProductByUserId(userId);
       res.locals.responseData = result;
       next();
     } catch (error: any) {

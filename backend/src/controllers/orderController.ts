@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { OrderService } from "../services";
+import { OrderService, CartService } from "../services";
 import { IOrderItem } from "../interfaces";
 import { httpMessages } from "../middlewares";
 
@@ -7,7 +7,8 @@ export class OrderController {
   private orderService: OrderService;
 
   constructor() {
-    this.orderService = new OrderService();
+    const cartService = new CartService(); // Initialize CartService
+    this.orderService = new OrderService(cartService); // Pass CartService to OrderService
   }
 
   public async createOrder(

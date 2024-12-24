@@ -1,10 +1,16 @@
-import { Order, Product, User } from "../models";
+import { Order, Product, User, Cart } from "../models";
 import { IOrderItem } from "../interfaces";
 import { httpMessages } from "../middlewares";
 import { OrderStatus } from "../config/orderStatusEnum";
+import { CartService } from "./cartService";
 import moment from "moment";
 
 export class OrderService {
+  private cartService: CartService;
+
+  constructor(cartService: CartService) {
+    this.cartService = cartService;
+  }
   public async createOrder(
     userId: string,
     orderData: IOrderItem[],
@@ -40,11 +46,17 @@ export class OrderService {
               } with available colors: ${product.colors.join(", ")}`
             );
           }
-          if (!product.colors.includes(color)) {
+          const colorExists = product.colors.some(
+            (c) => c.name === color || c.hex === color
+          );
+
+          if (!colorExists) {
             throw httpMessages.BAD_REQUEST(
               `Invalid color '${color}' for product ${
                 product.name
-              }. Available colors: ${product.colors.join(", ")}`
+              }. Available colors: ${product.colors
+                .map((c) => c.name)
+                .join(", ")}`
             );
           }
         }
@@ -82,6 +94,25 @@ export class OrderService {
         await Product.findByIdAndUpdate(productId, {
           $inc: { inStock: -quantity },
         });
+      }
+
+      // Validate if the order items match the cart items
+      const cart = await Cart.findOne({ userId });
+      if (!cart) {
+        throw httpMessages.NOT_FOUND("Cart not found");
+      }
+
+      const cartItemsMatch = validatedProducts.every((orderItem) =>
+        cart.items.some(
+          (cartItem) =>
+            cartItem.productId.toString() === orderItem.productId.toString() &&
+            cartItem.color === orderItem.color &&
+            cartItem.quantity === orderItem.quantity
+        )
+      );
+
+      if (cartItemsMatch) {
+        await this.cartService.clearCart(userId);
       }
 
       return newOrder;

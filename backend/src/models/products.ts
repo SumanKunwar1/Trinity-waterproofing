@@ -15,7 +15,7 @@ export interface IProduct extends Document {
   description?: string;
   productImage: string;
   image: string[];
-  features: string[];
+  features: string;
   brand: Types.ObjectId;
   colors?: IColor[]; // Updated to an array of IColor objects
   inStock: number;

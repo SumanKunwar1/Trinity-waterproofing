@@ -1,0 +1,75 @@
+// validateEditProduct.ts
+import Joi from "joi";
+import { Request, Response, NextFunction } from "express";
+import { httpMessages } from "../middlewares";
+
+// Define color schema
+const colorSchema = Joi.object({
+  name: Joi.string().optional().messages({
+    "string.base": "Color name must be a string",
+  }),
+  hex: Joi.string().optional().messages({
+    "string.base": "Color hex must be a string",
+    "string.pattern.base": "Color hex must be a valid hex code",
+  }),
+});
+
+const schema = Joi.object({
+  name: Joi.string().optional().messages({
+    "string.base": "Name must be a string",
+  }),
+  description: Joi.string().optional().messages({
+    "string.base": "Description must be a string",
+  }),
+  wholeSalePrice: Joi.number().optional().messages({
+    "number.base": "Variant wholesale price must be a number",
+  }),
+  retailPrice: Joi.number().optional().messages({
+    "number.base": "Variant retail price must be a number",
+  }),
+  colors: Joi.array().items(colorSchema).optional().messages({
+    "array.base":
+      "colors must be an array of color objects with 'name' and 'hex'",
+  }),
+  features: Joi.string().optional().messages({
+    "string.base": "Features must be a string",
+  }),
+  brand: Joi.string().optional().messages({
+    "string.base": "Brand must be a string",
+  }),
+  inStock: Joi.number().optional().messages({
+    "number.base": "InStock must be a number",
+  }),
+  subCategory: Joi.string()
+    .pattern(/^[a-f\d]{24}$/i)
+    .optional()
+    .messages({
+      "string.base": "SubCategory ID must be a string",
+      "string.pattern.base": "SubCategory ID must be a valid ObjectId",
+    }),
+});
+
+const validateEditProduct = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  const { error } = schema.validate(req.body);
+
+  if (error) {
+    const errors = error.details.map((err) => ({
+      field: err.context?.key,
+      message: err.message,
+    }));
+
+    return next(
+      httpMessages.BAD_REQUEST(
+        `${errors.map((e) => `${e.field}: ${e.message}`).join(", ")}`
+      )
+    );
+  }
+
+  next();
+};
+
+export { validateEditProduct };

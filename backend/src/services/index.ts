@@ -6,3 +6,4 @@ export { ReviewService } from "./reviewService";
 export { BrandService } from "./brandService";
 export { OrderService } from "./orderService";
 export { WishListService } from "./wishListService";
+export { CartService } from "./cartService";
