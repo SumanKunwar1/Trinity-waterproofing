@@ -58,6 +58,7 @@ router.get(
   productController.getProductById.bind(productController),
   handleResponse
 );
+
 router.get(
   "/user/:id",
   productController.getProductByUserId.bind(productController),
