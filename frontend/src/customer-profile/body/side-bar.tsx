@@ -88,7 +88,7 @@ export const SideBar = memo(() => {
 
   return (
     <motion.section
-      className="w-full bg-[#2b2c2e] text-white flex flex-col items-center py-6 h-screen"
+      className="w-full bg-[#293855] text-white flex flex-col items-center py-6 h-screen"
       initial={{ x: -250 }}
       animate={{ x: 0 }}
       exit={{ x: -250 }}
@@ -97,7 +97,7 @@ export const SideBar = memo(() => {
       <div className="user-info p-4 flex flex-col items-center">
         <div className="avatar mb-3">
           {user ? (
-            <div className="avatar-inner w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center">
+            <div className="avatar-inner w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-secondary flex items-center justify-center">
               {user.fullName ? (
                 <span className="text-xl text-white">
                   {getInitials(user.fullName)}
@@ -134,24 +134,12 @@ export const SideBar = memo(() => {
             className={`flex items-center space-x-3 cursor-pointer py-3 px-3 rounded-md transition duration-200 ${
               activeItem === item.label
                 ? "bg-blue-600 text-white"
-                : "text-gray-400 hover:bg-blue-500 hover:text-white"
+                : "text-white hover:bg-secondary"
             }`}
             whileHover={{ scale: 1.05 }}
           >
-            <div
-              className={`text-xl ${
-                activeItem === item.label ? "text-white" : "text-gray-300"
-              }`}
-            >
-              {item.icon}
-            </div>
-            <Label
-              className={`text-sm ${
-                activeItem === item.label ? "text-white" : "text-gray-300"
-              }`}
-            >
-              {item.label}
-            </Label>
+            <div className={`text-xl `}>{item.icon}</div>
+            <Label className={`text-sm `}>{item.label}</Label>
           </motion.div>
         ))}
       </div>

@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css"; // Add the necessary CSS for the date picker
+import "react-datepicker/dist/react-datepicker.css";
 import { Bar, Line, Pie } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -32,7 +32,7 @@ import {
 } from "chart.js";
 import { Link } from "react-router-dom";
 import { jsPDF } from "jspdf";
-import "jspdf-autotable"; // Ensure this import is here
+import "jspdf-autotable";
 import { toast } from "react-toastify";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
@@ -111,42 +111,55 @@ const Reports: React.FC = () => {
 
   const generatePDFReport = () => {
     const doc = new jsPDF();
+
+    // Add company logo
+    const logo = new Image();
+    logo.src = "/company-logo.svg";
+    doc.addImage(logo, "SVG", 14, 10, 30, 30);
+
+    // Add company name and date
+    doc.setFontSize(20);
+    doc.text("SELLER CENTER", 50, 25);
+    doc.setFontSize(12);
+    doc.text(new Date().toLocaleDateString(), 14, 45);
+
+    // Rest of the report content starting lower on the page
     doc.text(
       `${
         selectedReport.charAt(0).toUpperCase() +
         selectedReport.slice(1).replace("-", " ")
       } Report`,
       14,
-      15
+      60
     );
 
     // Adding chart to PDF
     const canvas = document.querySelector("canvas");
     if (canvas) {
       const imgData = canvas.toDataURL("image/png");
-      doc.addImage(imgData, "PNG", 14, 30, 180, 100); // Adding chart image to the PDF
+      doc.addImage(imgData, "PNG", 14, 75, 180, 100);
     }
 
     // Adding details
-    doc.text("Report Details:", 14, 140);
+    doc.text("Report Details:", 14, 185);
     doc.text(
       `Report Type: ${
         selectedReport.charAt(0).toUpperCase() +
         selectedReport.slice(1).replace("-", " ")
       }`,
       14,
-      150
+      195
     );
     doc.text(
       `Selected Date: ${
         selectedDate ? selectedDate.toLocaleDateString() : "Not selected"
       }`,
       14,
-      160
+      205
     );
 
     // Example of adding key insights
-    doc.text("Key Insights:", 14, 170);
+    doc.text("Key Insights:", 14, 215);
     doc.autoTable({
       head: [["Insight", "Value"]],
       body: [
@@ -154,7 +167,7 @@ const Reports: React.FC = () => {
         ["Best Selling Product", "Product A"],
         ["New Customer Growth", "15%"],
       ],
-      startY: 175,
+      startY: 220,
     });
 
     // Save PDF
@@ -163,7 +176,6 @@ const Reports: React.FC = () => {
   };
 
   const handleDownload = () => {
-    // Trigger PDF generation
     generatePDFReport();
   };
 
@@ -206,7 +218,6 @@ const Reports: React.FC = () => {
                         </SelectContent>
                       </Select>
 
-                      {/* Date Picker component */}
                       <DatePicker
                         selected={selectedDate}
                         onChange={(date: Date | null) => setSelectedDate(date)}
@@ -231,7 +242,10 @@ const Reports: React.FC = () => {
 
               <motion.div
                 initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
                 <Card>

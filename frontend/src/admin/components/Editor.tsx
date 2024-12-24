@@ -15,13 +15,49 @@ const Editor: React.FC<EditorProps> = ({ value, onChange }) => {
       onChange={onChange}
       modules={{
         toolbar: [
-          [{ header: [1, 2, false] }],
-          ["bold", "italic", "underline", "strike", "blockquote"],
-          [{ list: "ordered" }, { list: "bullet" }],
-          ["link", "image"],
+          // Header dropdown
+          [{ header: [1, 2, 3, 4, 5, 6, false] }],
+          // Font style
+          [{ font: [] }],
+          // Formatting options
+          ["bold", "italic", "underline", "strike"],
+          ["blockquote", "code-block"],
+          // List options
+          [
+            { list: "ordered" },
+            { list: "bullet" },
+            { indent: "-1" },
+            { indent: "+1" },
+          ],
+          // Text alignment
+          [{ align: [] }],
+          // Insert options
+          ["link", "image", "video"],
+          // Text color and background color
+          [{ color: [] }, { background: [] }],
+          // Clear formatting
           ["clean"],
         ],
       }}
+      formats={[
+        "header",
+        "font",
+        "bold",
+        "italic",
+        "underline",
+        "strike",
+        "blockquote",
+        "code-block",
+        "list",
+        "bullet",
+        "indent",
+        "align",
+        "link",
+        "image",
+        "video",
+        "color",
+        "background",
+      ]}
     />
   );
 };

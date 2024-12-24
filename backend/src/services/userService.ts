@@ -268,6 +268,7 @@ export class UserService {
   }
 
   public async getAddress(userId: string) {
+    console.log("IN THE GET ADDRES FUNCTION");
     try {
       const user = await User.findById(userId);
       if (!user) {

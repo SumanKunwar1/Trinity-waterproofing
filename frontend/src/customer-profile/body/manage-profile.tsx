@@ -193,14 +193,14 @@ export const ManageProfile = () => {
 
       {/* Profile Image and Edit Section */}
       <motion.div
-        className="bg-white mt-5 p-4 rounded-lg shadow-md"
+        className="bg-gradient-to-r from-primary to-blue-500 mt-5 p-4 rounded-lg shadow-md"
         initial={{ x: "-100vw" }}
         animate={{ x: 0 }}
         transition={{ duration: 0.5 }}
       >
         <div className="flex justify-between items-center pb-4">
           <div className="avatar mb-3">
-            <div className="avatar-inner w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center">
+            <div className="avatar-inner w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-secondary flex items-center justify-center">
               <span className="text-xl text-white">
                 {getInitials(userInfo.fullName)}
               </span>

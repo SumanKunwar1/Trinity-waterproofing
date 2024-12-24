@@ -65,6 +65,7 @@ export const AddressBook = () => {
 
   const fetchAddresses = async () => {
     setIsLoading(true);
+    console.log("IN THE FETCH ADRDRESSES FUNCTION");
     try {
       const userId = JSON.parse(localStorage.getItem("userId") || "");
       if (!userId) {
@@ -107,6 +108,7 @@ export const AddressBook = () => {
     e.preventDefault();
     try {
       const userId = JSON.parse(localStorage.getItem("userId") || "");
+      console.log("Submitting Form Data:", JSON.stringify(formData, null, 2));
       const response = await fetch(`/api/users/addressBook/${userId}`, {
         method: "PATCH",
         headers: {
@@ -196,7 +198,9 @@ export const AddressBook = () => {
     e.preventDefault();
     if (!selectedAddress) return;
     try {
+      console.log("IN THE HANDLE UPDATE FUNCTION ");
       const userId = JSON.parse(localStorage.getItem("userId") || "");
+      console.log("Submitting Form Data:", JSON.stringify(formData, null, 2));
       const response = await fetch(
         `/api/users/addressBook/${userId}/${selectedAddress._id}`,
         {
