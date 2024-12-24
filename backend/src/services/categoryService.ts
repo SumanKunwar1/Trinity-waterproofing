@@ -25,7 +25,7 @@ export class CategoryService {
       const categories = await Category.find();
 
       if (!categories || categories.length === 0) {
-        throw httpMessages.NOT_FOUND("categories");
+        return [];
       }
 
       // Step 2: Fetch SubCategories and Products separately

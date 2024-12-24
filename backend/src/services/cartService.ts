@@ -89,7 +89,7 @@ export class CartService {
       });
 
       if (!cart) {
-        throw httpMessages.NOT_FOUND("Cart not found");
+        return null;
       }
 
       const modifiedItems = cart.items.map((item) => {

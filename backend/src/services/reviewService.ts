@@ -74,7 +74,7 @@ export class ReviewService {
         .select("name review");
 
       if (!products || products.length === 0) {
-        throw httpMessages.NOT_FOUND("No products with reviews found");
+        return [];
       }
 
       return products;
@@ -88,7 +88,7 @@ export class ReviewService {
       const reviews = await Review.find({ user: userId });
 
       if (!reviews || reviews.length === 0) {
-        throw httpMessages.NOT_FOUND("reviews for this user");
+        return [];
       }
 
       return reviews;

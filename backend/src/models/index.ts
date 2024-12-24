@@ -7,3 +7,4 @@ export { Brand } from "./brand";
 export { Order } from "./order";
 export { WishList } from "./whishList";
 export { Cart } from "./cart";
+export { Enquiry } from "./enquiry";

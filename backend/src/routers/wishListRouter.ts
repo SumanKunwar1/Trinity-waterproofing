@@ -26,6 +26,14 @@ router.delete(
   handleResponse
 );
 
+router.get(
+  "/:id/",
+  isAuthenticated,
+  isAuthorizedUser,
+  wishListController.getWishlist.bind(wishListController),
+  handleResponse
+);
+
 router.use(handleError);
 
 export default router;

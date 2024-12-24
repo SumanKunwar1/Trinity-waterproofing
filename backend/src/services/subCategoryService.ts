@@ -33,7 +33,7 @@ export class SubCategoryService {
       });
 
       if (!subCategories || subCategories.length === 0) {
-        throw httpMessages.NOT_FOUND("subcategories");
+        return [];
       }
 
       const subCategoryResponse = await Promise.all(

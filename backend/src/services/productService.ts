@@ -140,7 +140,7 @@ export class ProductService {
         });
 
       if (!products || products.length === 0) {
-        throw httpMessages.NOT_FOUND("products");
+        return [];
       }
 
       const productResponse = products.map((product) => ({
@@ -167,7 +167,7 @@ export class ProductService {
       });
 
       if (!product) {
-        throw httpMessages.NOT_FOUND(`product`);
+        return null;
       }
 
       const productResponse = {
@@ -191,7 +191,7 @@ export class ProductService {
       const product = await Product.findById(productId);
 
       if (!product) {
-        throw httpMessages.NOT_FOUND(`product`);
+        return null;
       }
       const filesToDelete: string[] = [];
 
@@ -236,7 +236,7 @@ export class ProductService {
         });
 
       if (!products || products.length === 0) {
-        throw httpMessages.NOT_FOUND("products");
+        return [];
       }
 
       const wishlistProductIds = new Set(
