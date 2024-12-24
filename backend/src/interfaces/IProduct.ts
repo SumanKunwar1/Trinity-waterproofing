@@ -13,17 +13,29 @@ interface IVariant {
 }
 
 interface IProduct {
-  name: string; // Product name
-  description: string; // Product description
+  name: string;
+  description: string;
   wholeSalePrice: number;
   retailPrice: number;
-  productImage: string; // Main product image URL
-  image: string[]; // Additional images URLs
-  subCategory: Types.ObjectId; // Subcategory ID
-  features: string[]; // Features of the product
-  brand: Types.ObjectId; // Brand name
+  productImage: string;
+  image: string[];
+  subCategory: Types.ObjectId;
+  features: string;
+  brand: Types.ObjectId;
   colors?: IColor[];
-  inStock: number; // Product stock quantity
+  inStock: number;
+}
+
+export interface IEditableProduct {
+  name?: string;
+  description?: string;
+  wholeSalePrice?: number;
+  retailPrice?: number;
+  colors?: { name: string; hex: string }[];
+  features?: string;
+  brand?: Types.ObjectId;
+  inStock?: number;
+  subCategory?: Types.ObjectId;
 }
 
 export { IProduct };

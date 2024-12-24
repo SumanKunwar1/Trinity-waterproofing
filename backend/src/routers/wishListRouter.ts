@@ -19,7 +19,7 @@ router.post(
 );
 
 router.delete(
-  "/:id/:wishListId",
+  "/:id/:productId",
   isAuthenticated,
   isAuthorizedUser,
   wishListController.removeFromWishList.bind(wishListController),

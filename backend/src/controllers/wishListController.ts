@@ -32,8 +32,12 @@ export class WishListController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { wishListId } = req.params;
-      const result = await this.wishListService.removeFromWishlist(wishListId);
+      const { productId } = req.params;
+      const userId = req.params.id;
+      const result = await this.wishListService.removeFromWishlist(
+        userId,
+        productId
+      );
       res.locals.responseData = result;
       next();
     } catch (error: any) {

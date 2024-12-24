@@ -6,3 +6,4 @@ export { ReviewController } from "./reviewController";
 export { BrandController } from "./brandController";
 export { OrderController } from "./orderController";
 export { WishListController } from "./wishListController";
+export { CartController } from "./cartController";

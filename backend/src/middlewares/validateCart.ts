@@ -2,12 +2,12 @@ import Joi from "joi";
 import { Request, Response, NextFunction } from "express";
 import { httpMessages } from "../middlewares";
 
-const validateOrder = (
+const validateCart = (
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
-  const orderItemSchema = Joi.object({
+  const schema = Joi.object({
     productId: Joi.string().required().messages({
       "string.base": "productId must be a string",
       "any.required": "productId is required",
@@ -22,14 +22,6 @@ const validateOrder = (
     price: Joi.number().required().messages({
       "number.base": "Quantity must be a number",
       "any.required": "Quantity is required",
-    }),
-  });
-
-  const schema = Joi.object({
-    products: Joi.array().items(orderItemSchema).min(1).required().messages({
-      "array.base": "Items must be an array",
-      "array.min": "At least one item is required in the order",
-      "any.required": "Items are required",
     }),
   });
 
@@ -50,4 +42,4 @@ const validateOrder = (
   next();
 };
 
-export { validateOrder };
+export { validateCart };

@@ -6,3 +6,4 @@ export { SubCategory, ISubCategory } from "./subCategory";
 export { Brand } from "./brand";
 export { Order } from "./order";
 export { WishList } from "./whishList";
+export { Cart } from "./cart";
