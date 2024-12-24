@@ -2,11 +2,14 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import ProductCard from "../common/ProductCard";
-import { products } from "../../constants/products";
+import axios from "axios";
 
 const FeaturedProductsCarousel: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const featuredProducts = products.slice(0, 8);
+  const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
   const carouselRef = useRef<HTMLDivElement>(null);
 
   // Responsive breakpoints
@@ -21,6 +24,22 @@ const FeaturedProductsCarousel: React.FC = () => {
   const [slidesPerView, setSlidesPerView] = useState(
     getResponsiveSlidesPerView()
   );
+
+  // Fetch featured products from the API
+  useEffect(() => {
+    const fetchFeaturedProducts = async () => {
+      try {
+        const response = await axios.get("/api/product?featured=true"); // Adjust this based on your API endpoint
+        setFeaturedProducts(response.data);
+      } catch (err) {
+        setError("Failed to fetch featured products.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedProducts();
+  }, []);
 
   // Handle window resize
   useEffect(() => {
@@ -58,6 +77,18 @@ const FeaturedProductsCarousel: React.FC = () => {
   // Calculate total number of slides
   const totalSlides = Math.ceil(featuredProducts.length / slidesPerView);
 
+  if (loading) {
+    return <p>Loading featured products...</p>;
+  }
+
+  if (error) {
+    return <p>{error}</p>;
+  }
+
+  if (featuredProducts.length === 0) {
+    return <p>No featured products available.</p>;
+  }
+
   return (
     <div className="relative w-full pb-6">
       {/* Carousel Container */}
@@ -71,7 +102,7 @@ const FeaturedProductsCarousel: React.FC = () => {
         >
           {featuredProducts.map((product) => (
             <div
-              key={product.id}
+              key={product._id} // Assuming _id is the product identifier
               className="flex-shrink-0"
               style={{ width: `${100 / slidesPerView}%` }}
             >

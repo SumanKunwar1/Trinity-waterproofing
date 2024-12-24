@@ -6,6 +6,8 @@ import {
   isAuthenticated,
   isAuthorized,
   handleError,
+  validateProductImage,
+  validateEditProduct,
 } from "../middlewares";
 import {
   uploadMiddleware,
@@ -29,12 +31,12 @@ router.post(
 );
 
 router.patch(
-  "image/:id",
+  "/image/:id",
   isAuthenticated,
   isAuthorized("admin"),
   uploadMiddleware,
   appendFileDataToBody,
-  validateProduct,
+  validateProductImage,
   productController.editProductImages.bind(productController),
   handleResponse
 );
@@ -42,7 +44,7 @@ router.patch(
   "/:id",
   isAuthenticated,
   isAuthorized("admin"),
-  validateProduct,
+  validateEditProduct,
   productController.editProductImages.bind(productController),
   handleResponse
 );

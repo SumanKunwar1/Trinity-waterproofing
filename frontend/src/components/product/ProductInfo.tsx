@@ -1,76 +1,65 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Product } from "../../types/product";
 import Button from "../common/Button";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
 import Ratings from "../common/Ratings";
 import { FaHeart } from "react-icons/fa";
 import { toast } from "react-toastify";
+interface IColor {
+  name: string;
+  hex: string;
+}
 
+interface IProduct {
+  _id: string;
+  name: string;
+  description: string;
+  wholeSalePrice: number;
+  retailPrice: number;
+  productImage: string;
+  image: string[];
+  subCategory: string;
+  features: string;
+  brand: string;
+  colors?: IColor[];
+  inStock: number;
+  review: { rating: number; comment: string }[];
+}
 interface ProductInfoProps {
-  product: Product;
+  product: IProduct;
 }
 
 const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
   const navigate = useNavigate();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
 
-  const variantTypes = Object.keys(
-    product.variants.reduce((acc, variant) => {
-      Object.keys(variant).forEach((key) => {
-        if (key !== "label" && key !== "value" && key !== "price") {
-          acc[key] = true;
-        }
-      });
-      return acc;
-    }, {} as Record<string, boolean>)
-  );
-
-  const [selectedVariants, setSelectedVariants] = useState<
-    Record<string, string>
-  >(
-    variantTypes.reduce((acc, type) => {
-      const options = product.variants
-        .map((v) => v[type as keyof typeof v])
-        .filter(Boolean);
-      acc[type] = options[0] || "";
-      return acc;
-    }, {} as Record<string, string>)
-  );
-
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [price, setPrice] = useState(product.retailPrice);
   const { addToCart } = useCart();
 
-  useEffect(() => {
-    const matchedVariant = product.variants.find((variant) =>
-      variantTypes.every(
-        (type) =>
-          variant[type as keyof typeof variant] === selectedVariants[type]
-      )
-    );
+  const colors = product.colors || [];
 
-    if (matchedVariant) {
-      setPrice(matchedVariant.price);
+  useEffect(() => {
+    // If no color is selected, set the first color as default
+    if (!selectedColor && colors.length > 0) {
+      setSelectedColor(colors[0].hex);
     }
-  }, [selectedVariants, product.variants, variantTypes]);
+  }, [colors, selectedColor]);
 
   const toggleWishlist = () => {
-    if (isInWishlist(product.id)) {
-      removeFromWishlist(product.id);
+    if (isInWishlist(product._id)) {
+      removeFromWishlist(product._id);
       toast.info(`${product.name} removed from your wishlist.`);
     } else {
       addToWishlist(product);
     }
   };
 
-  const handleVariantChange = (type: string, value: string) => {
-    setSelectedVariants((prev) => ({
-      ...prev,
-      [type]: value,
-    }));
+  const handleColorChange = (colorHex: string) => {
+    setSelectedColor(colorHex);
   };
 
   const handleQuantityIncrease = () => {
@@ -89,18 +78,13 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
 
   const handleAddToCart = () => {
     if (quantity <= product.inStock) {
-      const variantKey = Object.keys(selectedVariants)
-        .map((key) => `${key}:${selectedVariants[key]}`)
-        .join("|");
-
-      const productWithVariant = {
+      const productWithColor = {
         ...product,
-        selectedVariants,
-        variantKey,
+        selectedColor,
         price,
       };
 
-      addToCart(productWithVariant, quantity);
+      addToCart(productWithColor, quantity);
     } else {
       toast.error("Not enough stock available");
     }
@@ -110,7 +94,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
     if (quantity <= product.inStock) {
       const checkoutData = {
         product,
-        selectedVariants,
+        selectedColor,
         quantity,
         price,
       };
@@ -121,9 +105,9 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
     }
   };
 
-  const averageRating = product.reviews.length
-    ? product.reviews.reduce((acc, review) => acc + review.rating, 0) /
-      product.reviews.length
+  const averageRating = product.review.length
+    ? product.review.reduce((acc, review) => acc + review.rating, 0) /
+      product.review.length
     : 0;
 
   // Get user role from localStorage
@@ -141,14 +125,14 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
         <div className="flex items-center space-x-2">
           <Ratings
             rating={averageRating}
-            ratingCount={`${product.reviews.length} Ratings`}
+            ratingCount={`${product.review.length} Ratings`}
           />
         </div>
 
         <button onClick={toggleWishlist} className="text-red-500 text-lg">
           <FaHeart
             className={`cursor-pointer ${
-              isInWishlist(product.id) ? "text-red-500" : "text-gray-400"
+              isInWishlist(product._id) ? "text-red-500" : "text-gray-400"
             }`}
           />
         </button>
@@ -161,62 +145,42 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
       <p className="text-gray-600 mb-2">{product.description}</p>
       <p className="text-gray-500 mb-2">In Stock: {product.inStock}</p>
 
-      {variantTypes.map((type) => {
-        const options = [
-          ...new Set(
-            product.variants
-              .map((v) => v[type as keyof typeof v])
-              .filter(Boolean)
-          ),
-        ];
-
-        return options.length > 0 ? (
-          <div key={type} className="mb-3">
-            <h2 className="text-lg font-medium mb-2">
-              Select {type.charAt(0).toUpperCase() + type.slice(1)}
-            </h2>
-            <div className="flex flex-wrap gap-4">
-              {options.map((option) => {
-                const isColorType = type.toLowerCase() === "color"; // Check if this variant type is 'color'
-                return (
-                  <label
-                    key={option}
-                    className={`flex items-center gap-3 cursor-pointer ${
-                      selectedVariants[type] === option
-                        ? "ring-1 ring-blue-500 scale-110"
-                        : ""
-                    } p-2 rounded-md transition-all duration-200`}
-                  >
-                    <input
-                      type="radio"
-                      name={type}
-                      value={option}
-                      checked={selectedVariants[type] === option}
-                      onChange={() => handleVariantChange(type, option)}
-                      className="hidden " // Hide the default radio input
-                    />
-                    {isColorType ? (
-                      // Render color boxes for 'color' type
-                      <span
-                        className={`w-8 h-8 rounded-full ${
-                          selectedVariants[type] === option
-                            ? "ring-0 border border-blue-500"
-                            : "ring-0"
-                        }`}
-                        style={{ backgroundColor: option }}
-                        title={option} // Tooltip for the color name
-                      ></span>
-                    ) : (
-                      // Render default text for other types
-                      <span className="text-base">{option}</span>
-                    )}
-                  </label>
-                );
-              })}
-            </div>
+      {/* Color Selection */}
+      {colors.length > 0 && (
+        <div className="mb-3">
+          <h2 className="text-lg font-medium mb-2">Select Color</h2>
+          <div className="flex flex-wrap gap-4">
+            {colors.map((color) => (
+              <label
+                key={color.hex}
+                className={`flex items-center gap-3 cursor-pointer ${
+                  selectedColor === color.hex
+                    ? "ring-1 ring-blue-500 scale-110"
+                    : ""
+                } p-2 rounded-md transition-all duration-200`}
+              >
+                <input
+                  type="radio"
+                  name="color"
+                  value={color.hex}
+                  checked={selectedColor === color.hex}
+                  onChange={() => handleColorChange(color.hex)}
+                  className="hidden"
+                />
+                <span
+                  className={`w-8 h-8 rounded-full ${
+                    selectedColor === color.hex
+                      ? "ring-0 border border-blue-500"
+                      : "ring-0"
+                  }`}
+                  style={{ backgroundColor: color.hex }}
+                  title={color.name}
+                ></span>
+              </label>
+            ))}
           </div>
-        ) : null;
-      })}
+        </div>
+      )}
 
       <div className="mb-6">
         <label

@@ -36,8 +36,8 @@ interface User {
 }
 
 const Header: React.FC = () => {
-  const { cartItems } = useCart();
-  const { wishlist } = useWishlist();
+  const { cartItems = [] } = useCart(); // Default to empty array if undefined
+  const { wishlist = [] } = useWishlist(); // Default to empty array if undefined
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -82,6 +82,7 @@ const Header: React.FC = () => {
 
   const cartItemCount = cartItems.length;
   const wishlistItemCount = wishlist.length;
+
   return (
     <header className="bg-brand shadow-md relative">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -107,13 +108,8 @@ const Header: React.FC = () => {
           }`}
         >
           {/* Navigation Links */}
-          {/* Navigation Links */}
           {!isSearchOpen && (
-            <nav
-              className={`hidden md:flex space-x-6 ${
-                isSearchOpen ? "hidden" : "block"
-              }`}
-            >
+            <nav className="hidden md:flex space-x-6">
               {navigationItems.map((item) =>
                 item.title === "Products" ? (
                   <HoverCard
@@ -146,6 +142,7 @@ const Header: React.FC = () => {
               )}
             </nav>
           )}
+
           {/* Search, User, Cart, and Wishlist Icons */}
           <div className="flex items-center space-x-4">
             {isSearchOpen ? (

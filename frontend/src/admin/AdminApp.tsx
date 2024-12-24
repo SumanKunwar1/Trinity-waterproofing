@@ -21,6 +21,7 @@ import Solutions from "./pages/Solutions";
 import Sliders from "./pages/Sliders";
 import GenerateReport from "./pages/GenerateReport";
 import ProductForm from "./pages/ProductForm";
+import EditProductImages from "./pages/EditProductImage";
 function AdminApp() {
   return (
     <ErrorBoundary>
@@ -63,6 +64,14 @@ function AdminApp() {
           element={
             <PrivateRoute>
               <ProductForm />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/edit-product-images/:id"
+          element={
+            <PrivateRoute>
+              <EditProductImages />
             </PrivateRoute>
           }
         />

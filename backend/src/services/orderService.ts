@@ -17,32 +17,27 @@ export class OrderService {
     userRole: string
   ) {
     try {
-      // Fetch user by ID
       const user = await User.findById(userId);
       if (!user) {
-        throw httpMessages.NOT_FOUND(`User with ID ${userId}`);
+        throw httpMessages.NOT_FOUND("User");
       }
 
       let subtotal = 0;
-      const validatedProducts: any[] = [];
+      const validatedProducts = [];
 
-      // Loop through the order items to validate each
       for (const orderItem of orderData) {
         const { productId, color, quantity } = orderItem;
 
-        // Fetch product by ID
         const product = await Product.findById(productId);
         if (!product) {
           throw httpMessages.NOT_FOUND(`Product with ID ${productId}`);
         }
 
-        // Determine price based on user role (B2B or regular retail)
         const price =
           userRole.toLowerCase() === "b2b"
             ? product.wholeSalePrice
             : product.retailPrice;
 
-        // Check if product has colors and if color is provided and valid
         if (product.colors && product.colors.length > 0) {
           if (!color) {
             throw httpMessages.BAD_REQUEST(
@@ -51,7 +46,11 @@ export class OrderService {
               } with available colors: ${product.colors.join(", ")}`
             );
           }
-          if (!product.colors.includes(color)) {
+          const colorExists = product.colors.some(
+            (c) => c.name === color || c.hex === color
+          );
+
+          if (!colorExists) {
             throw httpMessages.BAD_REQUEST(
               `Invalid color '${color}' for product ${
                 product.name
@@ -62,14 +61,12 @@ export class OrderService {
           }
         }
 
-        // Check if sufficient stock is available for the requested quantity
         if (product.inStock < quantity) {
           throw httpMessages.BAD_REQUEST(
             `Insufficient stock for product ${product.name}. Available: ${product.inStock}, Requested: ${quantity}`
           );
         }
 
-        // Push validated product to the validatedProducts array
         validatedProducts.push({
           productId,
           color: color || null,
@@ -77,11 +74,9 @@ export class OrderService {
           price,
         });
 
-        // Add to subtotal
         subtotal += price * quantity;
       }
 
-      // Create a new order object
       const newOrder = new Order({
         products: validatedProducts.map((item) => ({
           productId: item.productId,
@@ -93,10 +88,8 @@ export class OrderService {
         status: "pending",
       });
 
-      // Save the new order
       await newOrder.save();
 
-      // Update the stock of each product after the order is placed
       for (const { productId, quantity } of validatedProducts) {
         await Product.findByIdAndUpdate(productId, {
           $inc: { inStock: -quantity },
@@ -122,29 +115,8 @@ export class OrderService {
         await this.cartService.clearCart(userId);
       }
 
-      // Validate if the order items match the cart items
-      const cart = await Cart.findOne({ userId });
-      if (!cart) {
-        throw httpMessages.NOT_FOUND("Cart not found");
-      }
-
-      const cartItemsMatch = validatedProducts.every((orderItem) =>
-        cart.items.some(
-          (cartItem) =>
-            cartItem.productId.toString() === orderItem.productId.toString() &&
-            cartItem.color === orderItem.color &&
-            cartItem.quantity === orderItem.quantity
-        )
-      );
-
-      if (cartItemsMatch) {
-        await this.cartService.clearCart(userId);
-      }
-
-      // Return the newly created order
       return newOrder;
     } catch (error) {
-      // Pass the error to the next error handler
       throw error;
     }
   }

@@ -162,11 +162,8 @@ export class ProductService {
   public async getProductById(productId: string) {
     try {
       const product = await Product.findById(productId).populate({
-        path: "subCategory",
-        populate: {
-          path: "category",
-          model: "Category",
-        },
+        path: "review",
+        model: "Review",
       });
 
       if (!product) {

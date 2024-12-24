@@ -4,37 +4,63 @@ import ProductGallery from "../components/product/ProductGallery";
 import ProductInfo from "../components/product/ProductInfo";
 import RelatedProducts from "../components/product/RelatedProducts";
 import TestimonialCard from "../components/common/TestimonialCard";
-import { products } from "../constants/products"; // Import products from your local data
-import { Product } from "../types/product"; // Assuming you're importing the Product type
 import ProductDescription from "../components/common/ProductDescription";
 import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
+import axios from "axios";
+import { toast } from "react-toastify";
+
+interface IColor {
+  name: string;
+  hex: string;
+}
+
+interface IProduct {
+  _id: string;
+  name: string;
+  description: string;
+  wholeSalePrice: number;
+  retailPrice: number;
+  productImage: string;
+  image: string[];
+  subCategory: string;
+  features: string;
+  brand: string;
+  colors?: IColor[];
+  inStock: number;
+  review: { rating: number; comment: string }[];
+}
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [reviews, setReviews] = useState<any[]>([]); // Reviews state
+  const [product, setProduct] = useState<IProduct | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
 
-  // Fetch product details from the local products data
   useEffect(() => {
-    const fetchProductAndReviews = () => {
-      const productData = products.find(
-        (product) => product.id === parseInt(id) // Match product by ID
-      );
-      if (productData) {
-        setProduct(productData);
-        setReviews(productData.reviews); // Set reviews from product data
+    const fetchProduct = async () => {
+      try {
+        const response = await axios.get(`/api/product/${id}`);
+        setProduct(response.data);
         setLoading(false);
-      } else {
-        setError("Product not found");
+      } catch (error) {
+        setError("Failed to fetch product");
         setLoading(false);
       }
     };
 
-    fetchProductAndReviews();
+    fetchProduct();
   }, [id]);
+
+  const handleBuyNow = async () => {
+    try {
+      // Implement the buy now logic here
+      // This could involve creating an order, redirecting to a checkout page, etc.
+      toast.success("Redirecting to checkout...");
+    } catch (error) {
+      toast.error("Failed to process the purchase. Please try again.");
+    }
+  };
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
@@ -56,25 +82,23 @@ const ProductDetail: React.FC = () => {
                 />
               </div>
               <div className="w-full md:w-1/2 md:pl-8">
-                <ProductInfo product={product} />
+                <ProductInfo product={product} onBuyNow={handleBuyNow} />
               </div>
             </div>
             <div className="mb-16 py-3 px-6">
-              {/* Product Description Component */}
               <ProductDescription features={product.features} />
             </div>
           </div>
 
-          {/* Pass reviews to TestimonialCard */}
-          {reviews.length > 0 ? (
-            <TestimonialCard reviews={reviews} />
+          {product.review.length > 0 ? (
+            <TestimonialCard reviews={product.review} />
           ) : (
             <div>No reviews yet</div>
           )}
 
           <RelatedProducts
-            currentProductId={product.id}
-            categoryId={product.categoryId}
+            currentProductId={product._id}
+            categoryId={product.subCategory}
           />
         </div>
       </main>

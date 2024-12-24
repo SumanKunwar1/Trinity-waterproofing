@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
-import { FaEdit, FaTrash, FaEye } from "react-icons/fa";
+import { FaEdit, FaTrash, FaEye, FaImage } from "react-icons/fa";
 import {
   Card,
   CardHeader,
@@ -156,6 +156,11 @@ const Products: React.FC = () => {
           <Link to={`/admin/add-product/${row._id}`}>
             <Button variant="outline" size="sm">
               <FaEdit className="mr-2" /> Edit
+            </Button>
+          </Link>
+          <Link to={`/admin/edit-product-images/${row._id}`}>
+            <Button variant="outline" size="sm">
+              <FaImage className="mr-2" /> Edit Images
             </Button>
           </Link>
           <Button

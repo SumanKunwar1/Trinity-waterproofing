@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import { FaPlus, FaTimes } from "react-icons/fa";
@@ -56,6 +56,8 @@ interface ProductFormData {
 const ProductForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  //const isEditingImages = location.pathname.includes("edit-product-images"); // Removed
 
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -375,44 +377,48 @@ const ProductForm: React.FC = () => {
                       required
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="productImage">Main Product Image</Label>
-                    <Input
-                      id="productImage"
-                      name="productImage"
-                      type="file"
-                      onChange={(e) => handleImageChange(e, true)}
-                      accept="image/*"
-                    />
-                    {formData.productImage && (
-                      <img
-                        src={URL.createObjectURL(formData.productImage)}
-                        alt="Product preview"
-                        className="mt-2 w-32 h-32 object-cover"
-                      />
-                    )}
-                  </div>
-                  <div>
-                    <Label htmlFor="image">Additional Images</Label>
-                    <Input
-                      id="image"
-                      name="image"
-                      type="file"
-                      onChange={(e) => handleImageChange(e, false)}
-                      accept="image/*"
-                      multiple
-                    />
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {formData.image.map((image, index) => (
-                        <img
-                          key={index}
-                          src={URL.createObjectURL(image)}
-                          alt={`Product image ${index + 1}`}
-                          className="w-24 h-24 object-cover"
+                  {!id && (
+                    <>
+                      <div>
+                        <Label htmlFor="productImage">Main Product Image</Label>
+                        <Input
+                          id="productImage"
+                          name="productImage"
+                          type="file"
+                          onChange={(e) => handleImageChange(e, true)}
+                          accept="image/*"
                         />
-                      ))}
-                    </div>
-                  </div>
+                        {formData.productImage && (
+                          <img
+                            src={URL.createObjectURL(formData.productImage)}
+                            alt="Product preview"
+                            className="mt-2 w-32 h-32 object-cover"
+                          />
+                        )}
+                      </div>
+                      <div>
+                        <Label htmlFor="image">Additional Images</Label>
+                        <Input
+                          id="image"
+                          name="image"
+                          type="file"
+                          onChange={(e) => handleImageChange(e, false)}
+                          accept="image/*"
+                          multiple
+                        />
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {formData.image.map((image, index) => (
+                            <img
+                              key={index}
+                              src={URL.createObjectURL(image)}
+                              alt={`Product image ${index + 1}`}
+                              className="w-24 h-24 object-cover"
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
                   <div>
                     <Label htmlFor="features">Features</Label>
                     <Editor
