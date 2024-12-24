@@ -128,7 +128,7 @@ export class OrderService {
       );
 
       if (!orders || orders.length === 0) {
-        throw httpMessages.NOT_FOUND("Orders for this user");
+        return [];
       }
 
       return orders;
@@ -144,7 +144,7 @@ export class OrderService {
       );
 
       if (!order) {
-        throw httpMessages.NOT_FOUND("Order");
+        return null;
       }
 
       return order;
@@ -239,7 +239,7 @@ export class OrderService {
         });
 
       if (!orders || orders.length === 0) {
-        throw httpMessages.NOT_FOUND("Orders");
+        return [];
       }
 
       return orders;

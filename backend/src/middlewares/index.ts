@@ -1,5 +1,3 @@
-import { validateOrder } from "./validateOrder";
-
 export { handleResponse } from "./handleResponse";
 export { connectToDatabase } from "./databaseConnection";
 export { httpMessages } from "./HttpMessage";
@@ -21,4 +19,5 @@ export { validateEditReview } from "./validateEditReview";
 export { validateBrand } from "./validateBrand";
 export { validateOrder } from "./validateOrder";
 export { validateCart } from "./validateCart";
+export { validateEnquiry } from "./validateEnquiry";
 export { handleError } from "./handleError";

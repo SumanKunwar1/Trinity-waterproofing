@@ -44,4 +44,18 @@ export class WishListController {
       next(error);
     }
   }
+  public async getWishlist(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const userId = req.params.id;
+      const result = await this.wishListService.getWishlist(userId);
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
 }

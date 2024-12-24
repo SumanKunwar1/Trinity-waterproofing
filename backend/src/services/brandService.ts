@@ -53,7 +53,7 @@ export class BrandService {
     try {
       const brands = await Brand.find();
       if (!brands || brands.length === 0) {
-        throw httpMessages.NOT_FOUND("brands");
+        return [];
       }
       const brandResponse = brands.map((brand) => ({
         _id: brand._id,
@@ -70,7 +70,7 @@ export class BrandService {
     try {
       const brand = await Brand.findById(brandId);
       if (!brand) {
-        throw httpMessages.NOT_FOUND("brand");
+        return null;
       }
       const brandResponse = {
         name: brand.name,

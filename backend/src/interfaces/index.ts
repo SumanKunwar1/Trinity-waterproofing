@@ -5,4 +5,5 @@ export { ISubCategory } from "./ISubCategory";
 export { IUser, IAddress } from "./IUser";
 export { IBrand } from "./IBrand";
 export { IOrderItem } from "./IOrdeItem";
-export { ICartItem } from "../interfaces/ICartItem";
+export { ICartItem } from "./ICartItem";
+export { IEnquiry } from "./IEnquiry";
