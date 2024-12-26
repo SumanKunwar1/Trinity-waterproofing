@@ -4,7 +4,7 @@ import categoryRoutes from "./categoryRoutes";
 import subCategoryRoutes from "./subCategoryRoutes";
 import productRoutes from "./productRoutes";
 import imageRoutes from "./imageRoutes";
-import wishListRoutes from "./wishListRouter";
+import wishListRoutes from "./wishListRoutes";
 import brandRoutes from "./brandRoutes";
 import cartRoutes from "./cartRoutes";
 import orderRoutes from "./orderRoutes";

@@ -93,7 +93,7 @@ export class CartController {
     try {
       const userId = req.params.id;
       const result = await this.cartService.clearCart(userId);
-      res.locals.responseData = { message: "Cart cleared" };
+      res.locals.responseData = result;
       next();
     } catch (error: any) {
       next(error);

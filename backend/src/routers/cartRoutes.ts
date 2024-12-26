@@ -13,7 +13,7 @@ const router = Router();
 const cartController = new CartController();
 
 router.post(
-  "/",
+  "/:id",
   isAuthenticated,
   isAuthorizedUser,
   validateCart,
@@ -46,7 +46,7 @@ router.get(
 );
 
 router.delete(
-  "/clear/:id",
+  "/:id",
   isAuthenticated,
   isAuthorizedUser,
   cartController.clearCart.bind(cartController),

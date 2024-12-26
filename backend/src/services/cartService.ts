@@ -1,9 +1,8 @@
 // cart.service.ts
-import { Cart, Product } from "../models";
+import { Cart, Product, IProduct } from "../models";
 import { ICartItem } from "../interfaces";
 import { httpMessages } from "../middlewares";
-import { Types } from "mongoose";
-
+import { cp } from "fs";
 export class CartService {
   public async addToCart(userId: string, cartItem: ICartItem) {
     try {
@@ -83,30 +82,52 @@ export class CartService {
 
   public async getCartByUserId(userId: string) {
     try {
-      const cart = await Cart.findOne({ userId }).populate({
-        path: "items.productId",
-        select: "name productImage",
-      });
+      // Retrieve the cart by userId
+      const cart = await Cart.findOne({ userId }).exec();
 
       if (!cart) {
         return null;
       }
 
+      // Get an array of productIds from the cart items
+      const productIds = cart.items.map((item) => item.productId);
+
+      // Fetch the products by the productIds
+      const products = await Product.find({ _id: { $in: productIds } }).exec();
+
+      // Create a map of product _id to product document
+      const productMap: { [key: string]: IProduct } = products.reduce(
+        (acc, product) => {
+          acc[product._id.toString()] = product; // Map productId (converted to string) to product document
+          return acc;
+        },
+        {} as { [key: string]: IProduct }
+      );
+
+      // Create a modified items array manually
       const modifiedItems = cart.items.map((item) => {
-        const product = item.productId as any;
-        return {
-          ...item,
-          productId: {
-            ...product,
-            productImage: product.productImage
-              ? `/api/image/${product.productImage}`
-              : null,
-          },
+        const product = productMap[item.productId.toString()]; // Access product using the string version of the ObjectId
+
+        // Manually create the item object with relevant data
+        const modifiedItem = {
+          _id: item._id,
+          productId: product._id,
+          name: product.name,
+          description: product.description,
+          inStock: product.inStock,
+          productImage: product.productImage
+            ? `/api/image/${product.productImage}`
+            : null,
+          quantity: item.quantity,
+          price: item.price,
+          color: item.color,
         };
+        return modifiedItem;
       });
 
+      // Construct the final cart object manually (use created_at and updated_at)
       const cartItems = {
-        ...cart.toObject(),
+        userId: cart.userId,
         items: modifiedItems,
       };
 
@@ -118,15 +139,14 @@ export class CartService {
 
   public async clearCart(userId: string) {
     try {
-      const cart = await Cart.findOne({ userId });
+      const cart = await Cart.findOne({ userId: userId });
 
       if (!cart) {
         throw httpMessages.NOT_FOUND("Cart not found");
       }
 
-      await cart.deleteOne({ _id: userId });
-
-      return "Cart cleared successfully!";
+      await Cart.deleteOne({ _id: cart._id.toString() });
+      return cart;
     } catch (error) {
       throw error;
     }

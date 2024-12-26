@@ -27,7 +27,7 @@ interface AddToCartButtonProps {
 
 const AddToCartButton: React.FC<AddToCartButtonProps> = ({
   product,
-  quantity = 1,
+  quantity,
   color,
 }) => {
   const { addToCart, isLoading } = useCart();

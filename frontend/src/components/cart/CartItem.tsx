@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { CartItem as CartItemType } from "../../types/cart";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import Button from "../common/Button";
+import { ICartItem, ICart } from "../../types/ICartItem"; // Assuming the interface is imported from a types file
 
 interface CartItemProps {
-  item: CartItemType & { selectedVariants: any };
+  item: ICartItem;
   onRemove: () => void;
   onUpdateQuantity: (quantity: number) => void;
 }
@@ -16,6 +16,7 @@ const CartItem: React.FC<CartItemProps> = ({
   onUpdateQuantity,
 }) => {
   const [quantity, setQuantity] = useState(item.quantity);
+  console.log("Item:", item);
 
   const handleIncrease = () => {
     if (quantity < item.inStock) {
@@ -57,7 +58,7 @@ const CartItem: React.FC<CartItemProps> = ({
   return (
     <div className="flex items-center justify-between mb-6 p-4 border-b border-gray-300">
       {/* Left side: Image and Details */}
-      <Link to={`/product/${item.id}`}>
+      <Link to={`/product/${item.productId}`}>
         <div className="flex items-center gap-4">
           {/* Product Image */}
           <img

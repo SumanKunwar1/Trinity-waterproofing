@@ -198,8 +198,8 @@ export const ManageProfile = () => {
         animate={{ x: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="flex justify-between items-center pb-4">
-          <div className="avatar mb-3">
+        <div className="flex justify-between items-center pb-2 pt-2">
+          <div className="avatar">
             <div className="avatar-inner w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-secondary flex items-center justify-center">
               <span className="text-xl text-white">
                 {getInitials(userInfo.fullName)}
@@ -209,7 +209,12 @@ export const ManageProfile = () => {
           <div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="secondary">Update Profile</Button>
+                <Button
+                  variant="secondary"
+                  className="hover:bg-hover transition-all duration-300 font-semibold"
+                >
+                  Update Profile
+                </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
@@ -290,7 +295,10 @@ export const ManageProfile = () => {
               onOpenChange={setIsPasswordDialogOpen}
             >
               <DialogTrigger asChild>
-                <Button variant="outline" className="ml-2">
+                <Button
+                  variant="outline"
+                  className="ml-2 hover:bg-secondary hover:text-white transition-all duration-300 font-semibold"
+                >
                   Change Password
                 </Button>
               </DialogTrigger>
@@ -406,7 +414,12 @@ export const ManageProfile = () => {
       >
         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="destructive">Delete Account</Button>
+            <Button
+              variant="outline"
+              className="border-red-600 hover:bg-red-600 hover:text-white transition-all duration-300 font-semibold"
+            >
+              Delete Account
+            </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>

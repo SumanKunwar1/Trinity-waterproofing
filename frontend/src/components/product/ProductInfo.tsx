@@ -54,7 +54,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
       removeFromWishlist(product._id);
       toast.info(`${product.name} removed from your wishlist.`);
     } else {
-      addToWishlist(product);
+      addToWishlist(product._id);
     }
   };
 
@@ -78,13 +78,13 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
 
   const handleAddToCart = () => {
     if (quantity <= product.inStock) {
-      const productWithColor = {
-        ...product,
-        selectedColor,
-        price,
-      };
+      if (!selectedColor && product.colors?.length > 0) {
+        toast.error("Please select a color");
+        return;
+      }
 
-      addToCart(productWithColor, quantity);
+      addToCart(product._id, quantity, price, selectedColor);
+      toast.success("Product added to cart successfully!");
     } else {
       toast.error("Not enough stock available");
     }

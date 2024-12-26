@@ -1,52 +1,143 @@
+// WishlistContext.tsx
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { Product } from "../types/product";
-import { toast } from "react-toastify"; // Import the toast function
-import "react-toastify/dist/ReactToastify.css"; // Import the CSS for toast notifications
+import { toast } from "react-toastify";
+
+interface WishlistItem {
+  productId: string;
+}
 
 interface WishlistContextType {
-  wishlist: Product[];
-  addToWishlist: (product: Product) => void;
-  removeFromWishlist: (productId: number) => void;
-  isInWishlist: (productId: number) => boolean;
+  wishlist: WishlistItem[];
+  addToWishlist: (productId: string) => Promise<void>;
+  removeFromWishlist: (productId: string) => Promise<void>;
+  isInWishlist: (productId: string) => boolean;
+}
+
+// API response interfaces
+interface ApiWishlistItem {
+  product_id: string;
 }
 
 const WishlistContext = createContext<WishlistContextType | undefined>(
   undefined
 );
 
+const transformApiData = (data: any): WishlistItem[] => {
+  // If data is not an array but has a wishlist property that is an array
+  if (!Array.isArray(data) && data?.wishlist && Array.isArray(data.wishlist)) {
+    data = data.wishlist;
+  }
+
+  // If data is not an array at all, return empty array
+  if (!Array.isArray(data)) {
+    console.error("Expected array response from API, received:", data);
+    return [];
+  }
+
+  return data.map((item: any) => ({
+    productId: item.product_id || item.productId || item._id || "",
+  }));
+};
+
 export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [wishlist, setWishlist] = useState<Product[]>([]);
+  const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
 
   useEffect(() => {
-    const savedWishlist = localStorage.getItem("wishlist");
-    if (savedWishlist) {
-      setWishlist(JSON.parse(savedWishlist));
-    }
+    fetchWishlist();
   }, []);
 
-  useEffect(() => {
-    if (wishlist.length > 0) {
-      localStorage.setItem("wishlist", JSON.stringify(wishlist));
-    } else {
-      localStorage.removeItem("wishlist");
+  const fetchWishlist = async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+      if (!userId) throw new Error("User ID not found");
+
+      const response = await fetch(`/api/wishlist/${JSON.parse(userId)}/`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch wishlist");
+
+      const data = await response.json();
+      console.log("Fetch wishlist response:", data); // Debug log
+      setWishlist(transformApiData(data));
+    } catch (error) {
+      console.error("Error fetching wishlist:", error);
+      toast.error("Failed to fetch wishlist. Please try again.");
+      setWishlist([]);
     }
-  }, [wishlist]);
-
-  const addToWishlist = (product: Product) => {
-    setWishlist((prevWishlist) => [...prevWishlist, product]);
-    toast.success(`${product.name} has been added to your wishlist!`); // Show toast message
   };
 
-  const removeFromWishlist = (productId: number) => {
-    setWishlist((prevWishlist) =>
-      prevWishlist.filter((item) => item.id !== productId)
-    );
+  const addToWishlist = async (productId: string) => {
+    try {
+      const userId = localStorage.getItem("userId");
+      if (!userId) throw new Error("User ID not found");
+
+      const response = await fetch(
+        `/api/wishlist/${JSON.parse(userId)}/${productId}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to add to wishlist");
+
+      const data = await response.json();
+      console.log("Add to wishlist response:", data); // Debug log
+
+      // If we get a single item response, wrap it in an array
+      const newData = Array.isArray(data)
+        ? data
+        : data.item
+        ? [data.item]
+        : [data];
+      setWishlist(transformApiData(newData));
+      toast.success("Product added to wishlist successfully");
+    } catch (error) {
+      console.error("Error adding to wishlist:", error);
+      toast.error("Failed to add product to wishlist. Please try again.");
+    }
   };
 
-  const isInWishlist = (productId: number) => {
-    return wishlist.some((item) => item.id === productId);
+  const removeFromWishlist = async (productId: string) => {
+    try {
+      const userId = localStorage.getItem("userId");
+      if (!userId) throw new Error("User ID not found");
+
+      const response = await fetch(
+        `/api/wishlist/${JSON.parse(userId)}/${productId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to remove from wishlist");
+
+      const data = await response.json();
+      console.log("Remove from wishlist response:", data); // Debug log
+      setWishlist(transformApiData(data));
+      toast.success("Product removed from wishlist successfully");
+    } catch (error) {
+      console.error("Error removing from wishlist:", error);
+      toast.error("Failed to remove product from wishlist. Please try again.");
+    }
+  };
+
+  const isInWishlist = (productId: string): boolean => {
+    return wishlist.some((item) => item.productId === productId);
   };
 
   return (

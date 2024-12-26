@@ -7,7 +7,8 @@ import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
 
 const Cart: React.FC = () => {
-  const { cartItems, removeFromCart, updateQuantity } = useCart();
+  const { cart, removeFromCart, updateQuantity, clearCart, isLoading } =
+    useCart();
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -15,34 +16,32 @@ const Cart: React.FC = () => {
       <main className="flex-grow">
         <div className="container mx-auto px-4 py-8">
           <h1 className="text-3xl font-bold mb-8">Your Cart</h1>
-          {cartItems.length === 0 ? (
+          {isLoading ? (
+            <p className="text-gray-600">Loading cart...</p>
+          ) : cart.length === 0 ? (
             <p className="text-gray-600">Your cart is empty.</p>
           ) : (
             <div className="flex flex-col md:flex-row">
-              {/* Cart Items */}
               <div className="w-full md:w-2/3 md:pr-8">
-                {cartItems.map(
-                  (item: CartItemType & { selectedVariants: any }) => (
-                    <CartItem
-                      key={item.id}
-                      item={item}
-                      onRemove={() => removeFromCart(item.id)}
-                      onUpdateQuantity={(quantity) =>
-                        updateQuantity(item.id, quantity)
-                      }
-                    />
-                  )
-                )}
+                {cart.map((item) => (
+                  <CartItem
+                    key={item._id}
+                    item={item}
+                    onRemove={() => removeFromCart(item._id)}
+                    onUpdateQuantity={(quantity) =>
+                      updateQuantity(item._id, quantity)
+                    }
+                  />
+                ))}
+                <Button
+                  onClick={clearCart}
+                  className="mt-4 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700"
+                >
+                  Clear Cart
+                </Button>
               </div>
-
-              {/* Order Summary and Checkout Button */}
               <div className="w-full md:w-1/3 mt-8 md:mt-0">
-                <OrderSummary
-                  cartItems={cartItems}
-                  variantDetails={cartItems.map(
-                    (item) => item.selectedVariants
-                  )}
-                />
+                <OrderSummary cartItems={cart} />
                 <Button
                   to="/checkout"
                   className="w-full mt-4 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"

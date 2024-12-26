@@ -52,11 +52,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   // Handle adding/removing from wishlist
   const toggleWishlist = async () => {
     try {
-      if (isInWishlist(parseInt(product._id))) {
-        await removeFromWishlist(parseInt(product._id));
+      if (isInWishlist(product._id)) {
+        await removeFromWishlist(product._id);
         toast.info(`${product.name} removed from your wishlist.`);
       } else {
-        await addToWishlist(parseInt(product._id));
+        await addToWishlist(product._id);
         toast.success(`${product.name} added to your wishlist.`);
       }
     } catch (error) {
@@ -111,9 +111,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       >
         <FaHeart
           className={`${
-            isInWishlist(parseInt(product._id))
-              ? "text-red-500"
-              : "text-gray-400"
+            isInWishlist(product._id) ? "text-red-500" : "text-gray-400"
           }`}
           size={20}
         />

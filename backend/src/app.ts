@@ -14,6 +14,7 @@ declare global {
 }
 // Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 // Route handlers
 app.use("/api", routes);
