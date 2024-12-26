@@ -3,22 +3,21 @@ import { Request, Response, NextFunction } from "express";
 import { httpMessages } from "../middlewares";
 import { deleteImages } from "../config/deleteImages";
 
-const validateBrand = (
+const validateEditBrand = (
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
   const schema = Joi.object({
-    name: Joi.string().required().messages({
+    name: Joi.string().optional().messages({
       "string.base": "Name must be a string",
-      "any.required": "Name is required",
     }),
-    image: Joi.string().required().messages({
-      "string.base": "image must be a string",
-      "any.required": "image is required",
+    image: Joi.string().optional().allow("").messages({
+      "string.base": "Description must be a string",
     }),
   });
-  console.log(req.body);
+
+  console.log("validateEditBrand", req.body);
   const { error } = schema.validate(req.body);
   if (error) {
     const errors = error.details.map((err) => ({
@@ -40,4 +39,4 @@ const validateBrand = (
   next();
 };
 
-export { validateBrand };
+export { validateEditBrand };
