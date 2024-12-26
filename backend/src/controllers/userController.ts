@@ -57,6 +57,7 @@ export class UserController {
     next: NextFunction
   ): Promise<void> {
     try {
+      console.log(req.cookies);
       const refreshToken = req.cookies.refresh_token;
       if (!refreshToken) {
         httpMessages.NOT_FOUND("Refresh Token");

@@ -8,11 +8,6 @@ import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
 import axios from "axios";
 
-interface IColor {
-  name: string;
-  hex: string;
-}
-
 interface IProduct {
   _id: string;
   name: string;
@@ -21,12 +16,24 @@ interface IProduct {
   retailPrice: number;
   productImage: string;
   image: string[];
-  subCategory: string;
+  subCategory: ISubCategory;
   features: string;
   brand: string;
-  colors?: IColor[];
   inStock: number;
   review: { rating: number }[];
+}
+
+interface ICategory {
+  _id: string;
+  name: string;
+  subCategories: Array<{ _id: string; name: string }>;
+}
+
+interface ISubCategory {
+  _id: string;
+  name: string;
+  category: ICategory;
+  product: any[];
 }
 
 const ITEMS_PER_PAGE = 9;
@@ -39,46 +46,37 @@ const ProductListing: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [categories, setCategories] = useState<string[]>([]);
-  const [subCategories, setSubCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<ICategory[]>([]);
+  const [subCategories, setSubCategories] = useState<ISubCategory[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // Get user role from localStorage
   const userRole = localStorage.getItem("userRole");
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get("/api/product");
-        setProducts(response.data);
-        setFilteredProducts(response.data);
+        setLoading(true);
+
+        // Fetch all data in parallel
+        const [productsRes, categoriesRes, subCategoriesRes] =
+          await Promise.all([
+            axios.get("/api/product"),
+            axios.get("/api/category"),
+            axios.get("/api/subcategory"),
+          ]);
+
+        setProducts(productsRes.data);
+        setFilteredProducts(productsRes.data);
+        setCategories(categoriesRes.data);
+        setSubCategories(subCategoriesRes.data);
         setLoading(false);
       } catch (error) {
-        setError("Failed to fetch products");
+        setError("Failed to fetch data");
         setLoading(false);
       }
     };
 
-    const fetchCategories = async () => {
-      try {
-        const response = await axios.get("/api/category");
-        setCategories(response.data);
-      } catch (error) {
-        console.error("Failed to fetch categories", error);
-      }
-    };
-
-    const fetchSubCategories = async () => {
-      try {
-        const response = await axios.get("/api/subcategory");
-        setSubCategories(response.data);
-      } catch (error) {
-        console.error("Failed to fetch subcategories", error);
-      }
-    };
-
-    fetchProducts();
-    fetchCategories();
-    fetchSubCategories();
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -99,30 +97,38 @@ const ProductListing: React.FC = () => {
   }, [location, products]);
 
   const handleFilter = (filters: any) => {
-    let filtered = products;
+    let filtered = [...products];
 
+    console.log("Filters:", filters);
+
+    // Filter by category
     if (filters.category) {
       filtered = filtered.filter(
-        (product) => product.subCategory.toString() === filters.category
+        (product) => product.subCategory.category._id === filters.category
       );
     }
 
+    // Filter by subcategory
     if (filters.subcategory) {
       filtered = filtered.filter(
-        (product) => product.subCategory.toString() === filters.subcategory
+        (product) => product.subCategory._id === filters.subcategory
       );
     }
 
-    filtered = filtered.filter(
-      (product) =>
-        (userRole === "b2b" ? product.wholeSalePrice : product.retailPrice) >=
-          filters.minPrice &&
-        (userRole === "b2b" ? product.wholeSalePrice : product.retailPrice) <=
-          filters.maxPrice
-    );
-
-    if (filters.rating.length > 0) {
+    // Filter by price
+    if (filters.minPrice !== undefined && filters.maxPrice !== undefined) {
       filtered = filtered.filter((product) => {
+        const price =
+          userRole === "b2b" ? product.wholeSalePrice : product.retailPrice;
+        return price >= filters.minPrice && price <= filters.maxPrice;
+      });
+    }
+
+    // Filter by rating
+    if (filters.rating && filters.rating.length > 0) {
+      filtered = filtered.filter((product) => {
+        if (product.review.length === 0) return false;
+
         const avgRating =
           product.review.reduce((acc, review) => acc + review.rating, 0) /
           product.review.length;
@@ -130,10 +136,23 @@ const ProductListing: React.FC = () => {
       });
     }
 
+    // Filter by stock
     if (filters.inStock) {
       filtered = filtered.filter((product) => product.inStock > 0);
     }
 
+    // Filter by search term
+    if (searchTerm) {
+      const lowerSearchTerm = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (product) =>
+          product.name.toLowerCase().includes(lowerSearchTerm) ||
+          product.description.toLowerCase().includes(lowerSearchTerm) ||
+          product.brand.toLowerCase().includes(lowerSearchTerm)
+      );
+    }
+
+    console.log("Filtered Products:", filtered);
     setFilteredProducts(filtered);
     setCurrentPage(1);
   };
@@ -144,26 +163,24 @@ const ProductListing: React.FC = () => {
 
     switch (option) {
       case "price_asc":
-        sorted.sort((a, b) =>
-          userRole === "b2b"
-            ? a.wholeSalePrice - b.wholeSalePrice
-            : a.retailPrice - b.retailPrice
-        );
+        sorted.sort((a, b) => {
+          const priceA = userRole === "b2b" ? a.wholeSalePrice : a.retailPrice;
+          const priceB = userRole === "b2b" ? b.wholeSalePrice : b.retailPrice;
+          return priceA - priceB;
+        });
         break;
       case "price_desc":
-        sorted.sort((a, b) =>
-          userRole === "b2b"
-            ? b.wholeSalePrice - a.wholeSalePrice
-            : b.retailPrice - a.retailPrice
-        );
+        sorted.sort((a, b) => {
+          const priceA = userRole === "b2b" ? a.wholeSalePrice : a.retailPrice;
+          const priceB = userRole === "b2b" ? b.wholeSalePrice : b.retailPrice;
+          return priceB - priceA;
+        });
         break;
       case "name_asc":
         sorted.sort((a, b) => a.name.localeCompare(b.name));
         break;
       case "name_desc":
         sorted.sort((a, b) => b.name.localeCompare(a.name));
-        break;
-      default:
         break;
     }
 
@@ -177,7 +194,6 @@ const ProductListing: React.FC = () => {
     indexOfFirstItem,
     indexOfLastItem
   );
-
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
 
   const handlePageChange = (pageNumber: number) => {
@@ -195,6 +211,13 @@ const ProductListing: React.FC = () => {
           <h1 className="text-3xl font-bold mb-8">Our Products</h1>
           <div className="flex flex-col md:flex-row">
             <div className="w-full md:w-1/4 mb-8 md:mb-0">
+              <input
+                type="text"
+                placeholder="Search products..."
+                className="p-2 border rounded w-full mb-4"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
               <ProductFilter
                 onFilter={handleFilter}
                 categories={categories}

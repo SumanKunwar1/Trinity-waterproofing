@@ -66,8 +66,8 @@ export class UserService {
   public async refreshToken(refreshToken: string) {
     try {
       const decoded: any = verifyToken(refreshToken);
-
-      const user = await User.findById(decoded.userId);
+      console.log(decoded);
+      const user = await User.findById(decoded.id);
       if (!user) {
         throw httpMessages.NOT_FOUND("User");
       }

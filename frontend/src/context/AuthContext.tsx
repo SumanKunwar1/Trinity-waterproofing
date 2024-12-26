@@ -55,11 +55,33 @@ export const AuthProvider: React.FC = ({ children }) => {
     localStorage.removeItem("authToken");
   };
 
-  const refreshToken = () => {
-    // Logic to refresh the token (maybe an API call to refresh it)
-    console.log("Refreshing token...");
-    // For example: Fetch new token from API and update the context state
-  };
+  async function refreshToken() {
+    try {
+      const response = await fetch("/api/users/refreshToken", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", // If needed, but not strictly necessary for a simple POST request
+        },
+        credentials: "include", // Include cookies in the request
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to refresh access token");
+      }
+
+      // Assuming the response contains the new access token
+      const data = await response.json();
+      console.log(data);
+      const newAccessToken = data.token; // Modify according to your API's response format
+      console.log("New Access Token:", newAccessToken);
+
+      // Store the new access token in local storage or a global state if needed
+      localStorage.setItem("authToken", newAccessToken);
+      setToken(newAccessToken);
+    } catch (error) {
+      console.error("Error refreshing access token:", error);
+    }
+  }
 
   useEffect(() => {
     const storedToken = localStorage.getItem("authToken");
@@ -75,17 +97,17 @@ export const AuthProvider: React.FC = ({ children }) => {
       if (
         token &&
         checkTokenExpiry(token) &&
-        Date.now() - lastActiveTime > 5 * 60 * 1000 // 5 minutes of inactivity
+        Date.now() - lastActiveTime > 15 * 60 * 1000 // 15 minutes of inactivity
       ) {
-        logout(); // Log out after 5 minutes of inactivity
+        logout(); // Log out after 15 minutes of inactivity
       } else if (
         token &&
         checkTokenExpiry(token) &&
-        Date.now() - lastActiveTime < 5 * 60 * 1000
+        Date.now() - lastActiveTime < 15 * 60 * 1000
       ) {
         refreshToken(); // Refresh token if still valid and user is active
       }
-    }, 10000); // Check every 10 seconds
+    }, 5 * 60 * 1000); // Check every 10 seconds
 
     return () => clearInterval(intervalId);
   }, [lastActiveTime, token]);

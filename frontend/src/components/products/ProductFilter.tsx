@@ -1,13 +1,16 @@
-import React, { useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { Formik, Form, Field } from "formik";
-import Slider from "rc-slider"; // Import the rc-slider component
+import Slider from "rc-slider";
 import { Checkbox } from "../ui/checkbox";
 import { Input } from "../ui/input";
-import { categories } from "../../constants/categories";
-import "rc-slider/assets/index.css"; // Import the CSS for the rc-slider
+import { toast } from "react-toastify";
+import axios from "axios";
+import "rc-slider/assets/index.css";
 
 interface ProductFilterProps {
   onFilter: (filters: FilterValues) => void;
+  categories: ICategory[];
+  subCategories: ISubcategory[];
 }
 
 interface FilterValues {
@@ -19,16 +22,71 @@ interface FilterValues {
   inStock: boolean;
 }
 
+interface ICategory {
+  _id: string;
+  name: string;
+  description: string;
+  subCategories: ISubcategory[];
+}
+
+interface ISubcategory {
+  _id: string;
+  name: string;
+  description: string;
+  category: string;
+  product: Array<{ price: number }>;
+}
+
 const ProductFilter: React.FC<ProductFilterProps> = ({ onFilter }) => {
+  const [categories, setCategories] = useState<ICategory[]>([]);
+  const [allSubcategories, setAllSubcategories] = useState<ISubcategory[]>([]);
+
+  // Fetch categories from API
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get("/api/category");
+      console.log("Categories fetched:", response.data);
+      setCategories(response.data);
+    } catch (error) {
+      toast.error("Failed to fetch categories");
+    }
+  };
+
+  // Fetch subcategories from API
+  const fetchSubcategories = async () => {
+    try {
+      const response = await axios.get("/api/subcategory");
+      console.log("Subcategories fetched:", response.data);
+      setAllSubcategories(response.data);
+    } catch (error) {
+      toast.error("Failed to fetch subcategories");
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+    fetchSubcategories();
+  }, []);
+
+  // Get filtered subcategories based on selected category
+  const getFilteredSubcategories = (categoryId: string) => {
+    return allSubcategories.filter(
+      (subcategory) => subcategory.category === categoryId
+    );
+  };
+
   // Get max price for the selected category
   const getMaxPrice = (categoryId: string) => {
-    const category = categories.find((cat) => cat.id === categoryId);
-    if (!category) return 1000; // Default max price if category is not found
+    const subcategories = getFilteredSubcategories(categoryId);
+    let maxPrice = 1000; // Default max price
 
-    // Get the highest price from the products in the selected category
-    const maxPrice = category.products.reduce((max, product) => {
-      return product.price > max ? product.price : max;
-    }, 0);
+    subcategories.forEach((subcategory) => {
+      subcategory.product.forEach((product) => {
+        if (product.price > maxPrice) {
+          maxPrice = product.price;
+        }
+      });
+    });
 
     return maxPrice;
   };
@@ -50,13 +108,17 @@ const ProductFilter: React.FC<ProductFilterProps> = ({ onFilter }) => {
         }}
       >
         {({ values, setFieldValue }) => {
-          // Dynamically compute the maximum price for the selected category
           const maxPriceForCategory = values.category
             ? getMaxPrice(values.category)
             : 1000;
 
+          const filteredSubcategories = values.category
+            ? getFilteredSubcategories(values.category)
+            : [];
+
           return (
             <Form>
+              {/* Category Dropdown */}
               <div className="mb-4">
                 <label
                   htmlFor="category"
@@ -72,20 +134,20 @@ const ProductFilter: React.FC<ProductFilterProps> = ({ onFilter }) => {
                     const categoryId = e.target.value;
                     setFieldValue("category", categoryId);
                     setFieldValue("subcategory", "");
-                    setFieldValue("minPrice", 0); // Reset minPrice when category changes
-                    setFieldValue("maxPrice", getMaxPrice(categoryId)); // Set maxPrice to the max for the selected category
+                    setFieldValue("minPrice", 0);
+                    setFieldValue("maxPrice", getMaxPrice(categoryId));
                   }}
                 >
                   <option value="">All Categories</option>
                   {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
+                    <option key={category._id} value={category._id}>
                       {category.name}
                     </option>
                   ))}
                 </Field>
               </div>
 
-              {/* Subcategory dropdown */}
+              {/* Subcategory Dropdown */}
               {values.category && (
                 <div className="mb-4">
                   <label
@@ -100,15 +162,11 @@ const ProductFilter: React.FC<ProductFilterProps> = ({ onFilter }) => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="">All Subcategories</option>
-                    {categories
-                      .find(
-                        (category) => category.id === parseInt(values.category)
-                      )
-                      ?.subcategories.map((subcategory) => (
-                        <option key={subcategory.id} value={subcategory.id}>
-                          {subcategory.name}
-                        </option>
-                      ))}
+                    {filteredSubcategories.map((subcategory) => (
+                      <option key={subcategory._id} value={subcategory._id}>
+                        {subcategory.name}
+                      </option>
+                    ))}
                   </Field>
                 </div>
               )}
@@ -151,7 +209,6 @@ const ProductFilter: React.FC<ProductFilterProps> = ({ onFilter }) => {
                   />
                 </div>
 
-                {/* Slider for Price using rc-slider */}
                 <Slider
                   range
                   value={[values.minPrice, values.maxPrice]}
