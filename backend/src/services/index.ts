@@ -1,3 +1,5 @@
+export { EnquiryService } from "./enquiryService";
+
 export { UserService } from "./userService";
 export { CategoryService } from "./categoryService";
 export { SubCategoryService } from "./subCategoryService";

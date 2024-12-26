@@ -12,6 +12,17 @@ export class EnquiryService {
     }
   }
 
+  public async createEnquiry(enquiryData: IEnquiry) {
+    try {
+      const enquiry = new Enquiry(enquiryData);
+      await enquiry.save();
+
+      return enquiry;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   public async deleteEnquiry(enquiryId: string) {
     try {
       const enquiry = await Enquiry.findById(enquiryId);

@@ -1,3 +1,5 @@
+export { validateSlider } from "./validateSlider";
+
 export { handleResponse } from "./handleResponse";
 export { connectToDatabase } from "./databaseConnection";
 export { httpMessages } from "./HttpMessage";

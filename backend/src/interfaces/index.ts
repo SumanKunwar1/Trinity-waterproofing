@@ -7,3 +7,4 @@ export { IBrand } from "./IBrand";
 export { IOrderItem } from "./IOrdeItem";
 export { ICartItem } from "./ICartItem";
 export { IEnquiry } from "./IEnquiry";
+export { ISlider } from "./ISlider";

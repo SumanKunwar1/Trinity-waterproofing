@@ -7,7 +7,7 @@ import { Types } from "mongoose";
 export class CartService {
   public async addToCart(userId: string, cartItem: ICartItem) {
     try {
-      const { productId } = cartItem;
+      const { productId, color, quantity } = cartItem;
 
       const product = await Product.findById(productId);
       if (!product) {
@@ -23,10 +23,25 @@ export class CartService {
         });
         await cart.save();
       } else {
-        cart.items.push(cartItem);
+        // If cart exists, check if the product with the same variant already exists
+        const existingItemIndex = cart.items.findIndex(
+          (item) => item.productId.equals(productId) && item.color === color
+        );
 
+        if (existingItemIndex !== -1) {
+          // Product with the same color exists; update the quantity
+          console.log("the ditto product in the cart exists! ");
+          cart.items[existingItemIndex].quantity += quantity;
+        } else {
+          // Different variant or new product; add as a new item
+          console.log("the product is not ditto!");
+          cart.items.push(cartItem);
+        }
+
+        // Save the updated cart
         await cart.save();
       }
+
       return cart;
     } catch (error) {
       throw error;

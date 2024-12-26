@@ -13,7 +13,7 @@ const router = Router();
 const cartController = new CartController();
 
 router.post(
-  "/",
+  "/:id",
   isAuthenticated,
   isAuthorizedUser,
   validateCart,
