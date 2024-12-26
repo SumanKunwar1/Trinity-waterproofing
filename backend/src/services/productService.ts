@@ -243,13 +243,13 @@ export class ProductService {
         wishlist ? wishlist.product_id.map((id) => id) : []
       );
 
-      const cartProductIds = new Set(
-        cart ? cart.items.map((item) => item.productId) : []
-      );
+      // const cartProductIds = new Set(
+      //   cart ? cart.items.map((item) => item.productId) : []
+      // );
 
       const productResponse = products.map((product) => {
         const isAddedToWishlist = wishlistProductIds.has(product._id);
-        const isAddedToCart = cartProductIds.has(product._id);
+        // const isAddedToCart = cartProductIds.has(product._id);
 
         return {
           ...product.toObject(),
@@ -260,7 +260,7 @@ export class ProductService {
             ? product.image.map((img: string) => `/api/image/${img}`)
             : [],
           isAddedToWishlist,
-          isAddedToCart,
+          // isAddedToCart,
         };
       });
 
