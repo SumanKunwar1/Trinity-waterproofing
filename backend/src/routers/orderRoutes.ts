@@ -55,7 +55,7 @@ router.delete(
   "/:id",
   isAuthenticated,
   isAuthorizedUser,
-  orderController.deleteOrderById.bind(orderController),
+  orderController.cancelOrderById.bind(orderController),
   handleResponse
 );
 

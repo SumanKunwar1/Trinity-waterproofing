@@ -32,12 +32,37 @@ export class SliderService {
       throw error;
     }
   }
-  public async editSlider(sliderData: ISlider, sliderId: string) {
+
+  public async editSlider(sliderData: Partial<ISlider>, sliderId: string) {
     try {
+      const { title, subtitle, image, isvisible } = sliderData;
       const slider = await Slider.findById(sliderId);
       if (!slider) {
         throw httpMessages.NOT_FOUND("Slider");
       }
+      if (image && image !== "") {
+        const filesToDelete: string[] = [];
+        if (slider.image && slider.image !== image) {
+          filesToDelete.push(slider.image);
+        }
+        if (filesToDelete.length > 0) {
+          await deleteImages(filesToDelete);
+        }
+
+        slider.image = image;
+      }
+      if (title) {
+        slider.title = title;
+      }
+      if (subtitle) {
+        slider.subtitle = subtitle;
+      }
+
+      if (typeof isvisible !== "undefined") {
+        slider.isvisible = isvisible;
+      }
+
+      await slider.save();
 
       return slider;
     } catch (error) {

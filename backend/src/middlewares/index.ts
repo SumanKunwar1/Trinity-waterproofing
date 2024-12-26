@@ -1,3 +1,5 @@
+export { validateEditBrand } from "./validateEditBrand";
+
 export { validateSlider } from "./validateSlider";
 
 export { handleResponse } from "./handleResponse";

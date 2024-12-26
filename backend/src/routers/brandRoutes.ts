@@ -4,6 +4,7 @@ import {
   isAuthenticated,
   isAuthorized,
   validateBrand,
+  validateEditBrand,
   handleResponse,
   handleError,
 } from "../middlewares";
@@ -41,7 +42,7 @@ router.patch(
   isAuthorized("admin"),
   imageUploadMiddleware,
   appendImageDataToBody,
-  validateBrand,
+  validateEditBrand,
   brandController.editBrand.bind(brandController),
   handleResponse
 );

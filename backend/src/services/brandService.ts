@@ -29,7 +29,7 @@ export class BrandService {
       if (!existingBrand) {
         throw httpMessages.NOT_FOUND("Brand");
       }
-      if (image) {
+      if (image && image !== "") {
         const filesToDelete: string[] = [];
         if (existingBrand.image && existingBrand.image !== image) {
           filesToDelete.push(existingBrand.image);

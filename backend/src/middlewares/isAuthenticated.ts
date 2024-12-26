@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { httpMessages } from "../middlewares"; // Assuming this contains your error messages
-import jwt from "jsonwebtoken";
-import { string } from "joi";
-
+import { verifyToken } from "../config/tokenUtils";
 const isAuthenticated = (
   req: Request,
   res: Response,
@@ -15,11 +13,7 @@ const isAuthenticated = (
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
-      id: string;
-      email: string;
-      role: string;
-    };
+    const decoded = verifyToken(token);
     if (!decoded.email) {
       return next(httpMessages.UNAUTHORIZED_NO_DATA);
     }

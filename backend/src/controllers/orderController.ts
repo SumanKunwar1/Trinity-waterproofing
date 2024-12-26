@@ -78,14 +78,14 @@ export class OrderController {
     }
   }
 
-  public async deleteOrderById(
+  public async cancelOrderById(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     try {
       const orderId = req.params.id;
-      const result = await this.orderService.deleteOrderById(orderId);
+      const result = await this.orderService.cancelOrderById(orderId);
       res.locals.responseData = result;
       next();
     } catch (error: any) {

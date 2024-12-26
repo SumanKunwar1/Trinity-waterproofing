@@ -110,6 +110,12 @@ router.delete(
   handleResponse
 );
 
+router.post(
+  "/refreshToken",
+  userController.refreshToken.bind(userController),
+  handleResponse
+);
+
 router.use(handleError);
 
 export default router;

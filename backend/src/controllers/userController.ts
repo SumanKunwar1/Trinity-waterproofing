@@ -1,6 +1,9 @@
+import dotenv from "dotenv";
+dotenv.config();
 import { NextFunction, Request, Response } from "express";
 import { UserService } from "../services";
 import { IUser } from "../interfaces";
+import { httpMessages } from "../middlewares";
 
 export class UserController {
   private userService: UserService;
@@ -33,10 +36,44 @@ export class UserController {
       const { email, password } = req.body;
       const result = await this.userService.loginUser(email, password);
       res.locals.responseData = result;
+
+      res.cookie("refresh_token", result.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
       console.log("we got the result");
       next();
     } catch (error: any) {
       console.log("we got the error");
+      next(error);
+    }
+  }
+
+  public async refreshToken(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const refreshToken = req.cookies.refresh_token;
+      if (!refreshToken) {
+        httpMessages.NOT_FOUND("Refresh Token");
+        return;
+      }
+
+      const result = await this.userService.refreshToken(refreshToken);
+      res.locals.responseData = result;
+
+      res.cookie("refresh_token", result.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      next();
+    } catch (error: any) {
       next(error);
     }
   }
