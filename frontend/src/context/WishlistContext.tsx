@@ -101,7 +101,6 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({
         ? [data.item]
         : [data];
       setWishlist(transformApiData(newData));
-      toast.success("Product added to wishlist successfully");
     } catch (error) {
       console.error("Error adding to wishlist:", error);
       toast.error("Failed to add product to wishlist. Please try again.");
@@ -129,7 +128,6 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({
       const data = await response.json();
       console.log("Remove from wishlist response:", data); // Debug log
       setWishlist(transformApiData(data));
-      toast.success("Product removed from wishlist successfully");
     } catch (error) {
       console.error("Error removing from wishlist:", error);
       toast.error("Failed to remove product from wishlist. Please try again.");

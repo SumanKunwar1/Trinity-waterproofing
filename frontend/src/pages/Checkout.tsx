@@ -1,60 +1,119 @@
 import React, { useState, useEffect } from "react";
-import { Formik, Form } from "formik";
-import * as Yup from "yup";
-import { useLocation } from "react-router-dom";
-import Input from "../components/common/Input";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import OrderSummary from "../components/cart/OrderSummary";
 import { useCart } from "../hooks/useCart";
-import PhoneInput from "react-phone-input-2";
-import "react-phone-input-2/lib/style.css";
-import { CartItem } from "../types/cart";
+import { toast } from "react-hot-toast";
 import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
+import AddressCard from "../components/common/AddressCard";
 
-const checkoutSchema = Yup.object().shape({
-  firstName: Yup.string().required("First name is required"),
-  lastName: Yup.string().required("Last name is required"),
-  phone: Yup.string().required("Phone number is required"),
-  email: Yup.string().email("Invalid email").required("Email is required"),
-  address: Yup.string().required("Address is required"),
-  city: Yup.string().required("City is required"),
-  state: Yup.string().required("State is required"),
-  zipCode: Yup.string().required("ZIP code is required"),
-});
+interface Address {
+  _id: string;
+  street: string;
+  city: string;
+  province: string;
+  district: string;
+  postalCode: string;
+  country: string;
+  default: boolean;
+}
+
+interface ICartItem {
+  productId: string;
+  name: string;
+  description: string;
+  retailPrice: number;
+  productImage: string;
+  quantity: number;
+  color?: {
+    name: string;
+    hex: string;
+  };
+  inStock: number;
+}
 
 const Checkout: React.FC = () => {
   const location = useLocation();
-  const [buyNowItems, setBuyNowItems] = useState<CartItem[]>([]);
-  const { cartItems } = useCart();
+  const [buyNowItem, setBuyNowItem] = useState<ICartItem | null>(null);
+  const { cart } = useCart();
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
-    // Check if there's state passed from Buy Now action
-    if (location.state) {
-      const { product, selectedVariants, quantity, price } = location.state;
-
-      // Create a CartItem from the buy now product
-      const buyNowCartItem: CartItem = {
-        ...product,
-        selectedVariants,
-        quantity,
-        price,
-        variantKey: Object.keys(selectedVariants)
-          .map((key) => `${key}:${selectedVariants[key]}`)
-          .join("|"),
-      };
-
-      setBuyNowItems([buyNowCartItem]);
+    if (location.state && location.state.product) {
+      setBuyNowItem(location.state.product);
     }
+    fetchAddresses();
   }, [location.state]);
 
-  const handleSubmit = (values: any) => {
-    console.log("Checkout values:", values);
-    // Implement checkout logic here
+  const fetchAddresses = async () => {
+    setIsLoading(true);
+    try {
+      const userId = JSON.parse(localStorage.getItem("userId") || "");
+      if (!userId) {
+        throw new Error("User ID not found in localStorage");
+      }
+      const response = await fetch(`/api/users/addressBook/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
+      if (!response.ok) throw new Error("Failed to fetch addresses");
+
+      const data = await response.json();
+      console.log("Fetched data:", data);
+
+      if (data && Array.isArray(data.addressBook)) {
+        setAddresses(data.addressBook);
+        const defaultAddress = data.addressBook.find(
+          (address: Address) => address.default
+        );
+        if (defaultAddress) {
+          setSelectedAddressId(defaultAddress._id);
+        }
+      } else {
+        console.error("Invalid data structure:", data);
+        setAddresses([]);
+      }
+    } catch (error) {
+      console.error("Error fetching addresses:", error);
+      toast.error("Failed to load addresses");
+      setAddresses([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Determine which items to show in OrderSummary
-  const itemsToDisplay = buyNowItems.length > 0 ? buyNowItems : cartItems;
+  const handleSetDefault = async (addressId: string) => {
+    try {
+      const userId = JSON.parse(localStorage.getItem("userId") || "");
+      const response = await fetch(
+        `/api/users/addressBook/default/${userId}/${addressId}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
+      if (!response.ok) throw new Error("Failed to set default address");
+      await fetchAddresses();
+      toast.success("Default address updated");
+    } catch (error) {
+      console.error("Error setting default address:", error);
+      toast.error("Failed to set default address");
+    }
+  };
+
+  const handleSelectAddress = (addressId: string) => {
+    setSelectedAddressId(addressId);
+  };
+
+  const itemsToDisplay = buyNowItem ? [buyNowItem] : cart;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -64,84 +123,35 @@ const Checkout: React.FC = () => {
           <h1 className="text-3xl font-bold mb-8">Checkout</h1>
           <div className="flex flex-col md:flex-row">
             <div className="w-full md:w-2/3 md:pr-8">
-              <Formik
-                initialValues={{
-                  firstName: "",
-                  lastName: "",
-                  phone: "",
-                  email: "",
-                  address: "",
-                  city: "",
-                  state: "",
-                  zipCode: "",
-                }}
-                validationSchema={checkoutSchema}
-                onSubmit={handleSubmit}
-              >
-                {({ errors, touched, setFieldValue }) => (
-                  <Form>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                      <Input label="First Name" name="firstName" type="text" />
-                      <Input label="Last Name" name="lastName" type="text" />
-                    </div>
-                    <div className="mb-4">
-                      <label
-                        htmlFor="phone"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Phone Number
-                      </label>
-                      <PhoneInput
-                        country="np" // Default country Nepal
-                        value={""}
-                        onChange={(phone) => setFieldValue("phone", phone)}
-                        inputClass={`${
-                          errors.phone && touched.phone
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        }`}
-                        containerStyle={{ width: "100%" }}
-                        inputStyle={{
-                          width: "100%",
-                          padding: "20px",
-                          paddingLeft: "70px",
-                          fontSize: "16px",
-                          border: "1px solid #d1d5db",
-                          borderRadius: "4px",
-                        }}
-                        buttonStyle={{
-                          padding: "0 12px",
-                          borderRight: "1px solid #d1d5db",
-                        }}
+              <h2 className="text-2xl font-semibold mb-4">Select Address</h2>
+              {isLoading ? (
+                <p>Loading addresses...</p>
+              ) : addresses.length > 0 ? (
+                addresses.map(
+                  (address) => (
+                    console.log("Address:", address),
+                    (
+                      <AddressCard
+                        key={address._id}
+                        address={address}
+                        onSetDefault={handleSetDefault}
+                        isSelected={selectedAddressId === address._id}
+                        onSelect={handleSelectAddress}
                       />
-                      {errors.phone && touched.phone && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {errors.phone}
-                        </p>
-                      )}
-                    </div>
-                    <Input label="Email" name="email" type="email" />
-                    <Input label="Address" name="address" type="text" />
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                      <Input label="City" name="city" type="text" />
-                      <Input label="State" name="state" type="text" />
-                      <Input label="ZIP Code" name="zipCode" type="text" />
-                    </div>
-                  </Form>
-                )}
-              </Formik>
+                    )
+                  )
+                )
+              ) : (
+                <p>No addresses found. Please add an address.</p>
+              )}
             </div>
             <div className="w-full md:w-1/3 mt-8 md:mt-0">
-              <OrderSummary
-                cartItems={itemsToDisplay}
-                variantDetails={itemsToDisplay.map(
-                  (item) => item.selectedVariants
-                )}
-              />
+              <OrderSummary cartItems={itemsToDisplay} />
               <Button
                 type="submit"
-                className="w-full mt-4 "
+                className="w-full mt-4"
                 variant="secondary"
+                disabled={!selectedAddressId}
               >
                 Place Order
               </Button>

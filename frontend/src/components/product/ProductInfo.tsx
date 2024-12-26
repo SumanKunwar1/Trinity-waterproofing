@@ -96,10 +96,12 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
         product,
         selectedColor,
         quantity,
-        price,
+        price: displayedPrice, // Make sure to use displayedPrice instead of price
       };
 
-      navigate("/checkout", { state: checkoutData });
+      navigate("/checkout", {
+        state: { checkoutData }, // Wrap in checkoutData object
+      });
     } else {
       toast.error("Not enough stock available");
     }

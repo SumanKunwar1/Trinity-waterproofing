@@ -1,4 +1,5 @@
 import React from "react";
+import { useLocation } from "react-router-dom";
 
 interface CartItem {
   productId: string;
@@ -9,12 +10,28 @@ interface CartItem {
 }
 
 interface OrderSummaryProps {
-  cartItems: CartItem[];
+  cartItems?: CartItem[];
 }
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({ cartItems }) => {
-  // Calculate the total price of the cart
-  const total = cartItems.reduce((total, item) => {
+  const location = useLocation();
+  const directPurchaseItem = location.state?.checkoutData;
+
+  // Determine which items to display
+  const itemsToDisplay = directPurchaseItem
+    ? [
+        {
+          productId: directPurchaseItem.product._id,
+          name: directPurchaseItem.product.name,
+          price: directPurchaseItem.price,
+          quantity: directPurchaseItem.quantity,
+          color: directPurchaseItem.selectedColor,
+        },
+      ]
+    : cartItems || [];
+
+  // Calculate the total price
+  const total = itemsToDisplay.reduce((total, item) => {
     return total + item.price * item.quantity;
   }, 0);
 
@@ -22,29 +39,30 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ cartItems }) => {
     <div className="bg-gray-100 rounded-lg p-6">
       <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
       <div className="space-y-2">
-        {/* Iterate over each cart item */}
-        {cartItems.map((item) => (
+        {itemsToDisplay.map((item) => (
           <div key={item.productId} className="border-b border-gray-300 pb-4">
-            {/* Display item name and total price for this item */}
             <div className="flex justify-between">
               <span className="font-semibold text-brand">{item.name}</span>
               <span>Rs {(item.price * item.quantity).toFixed(2)}</span>
             </div>
-            {/* Optionally display color if available */}
             {item.color && (
-              <p className="text-sm text-gray-600 mt-1">
-                Color: <span className="font-semibold">{item.color}</span>
+              <p className="text-sm text-gray-600 mt-1 flex flex-row gap-2 items-center">
+                Color:{" "}
+                <span className="font-semibold">
+                  <span
+                    style={{ backgroundColor: item.color }}
+                    className="w-5 h-5 rounded-full flex items-center justify-center"
+                  ></span>
+                </span>
               </p>
             )}
-            {/* Display the quantity */}
             <div className="flex justify-between">
               <span>Quantity:</span>
               <span>{item.quantity}</span>
             </div>
           </div>
         ))}
-        {/* Display the total price for all items */}
-        <div className="border-t border-gray-300 pt-2 mt-2">
+        <div className="border-gray-300 pt-2 mt-2">
           <div className="flex justify-between font-semibold">
             <span>Total:</span>
             <span>Rs {total.toFixed(2)}</span>

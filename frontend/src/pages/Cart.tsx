@@ -1,4 +1,3 @@
-import React from "react";
 import { useCart } from "../context/CartContext";
 import CartItem from "../components/cart/CartItem";
 import OrderSummary from "../components/cart/OrderSummary";
@@ -7,8 +6,7 @@ import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
 
 const Cart: React.FC = () => {
-  const { cart, removeFromCart, updateQuantity, clearCart, isLoading } =
-    useCart();
+  const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -16,9 +14,7 @@ const Cart: React.FC = () => {
       <main className="flex-grow">
         <div className="container mx-auto px-4 py-8">
           <h1 className="text-3xl font-bold mb-8">Your Cart</h1>
-          {isLoading ? (
-            <p className="text-gray-600">Loading cart...</p>
-          ) : cart.length === 0 ? (
+          {cart.length === 0 ? (
             <p className="text-gray-600">Your cart is empty.</p>
           ) : (
             <div className="flex flex-col md:flex-row">

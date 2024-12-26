@@ -7,6 +7,9 @@ interface CartItem {
   retailPrice: number;
   quantity: number;
   color?: string;
+  productImage: string;
+  description: string;
+  inStock: number;
 }
 
 interface CartContextType {
@@ -21,6 +24,8 @@ interface CartContextType {
   updateQuantity: (productId: string, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
   isLoading: boolean;
+  isInitialized: boolean;
+  cartFetched: boolean;
 }
 
 export const CartContext = createContext<CartContextType | undefined>(
@@ -32,10 +37,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [cartFetched, setCartFetched] = useState(false);
 
-  useEffect(() => {
-    fetchCart();
-  }, []);
+  // Fetch cart when the component is mounted
 
   const fetchCart = async () => {
     setIsLoading(true);
@@ -49,12 +54,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       });
       if (!response.ok) throw new Error("Failed to fetch cart");
       const data = await response.json();
-      setCart(data.items || []);
+      setCart(data.items || []); // Ensure data.items exists and is set
+      setCartFetched(true); // Add this line
     } catch (error) {
       console.error("Error fetching cart:", error);
       toast.error("Failed to fetch cart. Please try again.");
     } finally {
       setIsLoading(false);
+      setIsInitialized(true); // Set isInitialized to true after fetching
     }
   };
 
@@ -83,8 +90,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       });
       if (!response.ok) throw new Error("Failed to add item to cart");
       const data = await response.json();
-      setCart(data.items || []);
-      toast.success("Item added to cart successfully");
+      setCart(data.items || []); // Update cart state after adding
     } catch (error) {
       console.error("Error adding item to cart:", error);
       toast.error("Failed to add item to cart. Please try again.");
@@ -106,8 +112,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       });
       if (!response.ok) throw new Error("Failed to remove item from cart");
       const data = await response.json();
-      setCart(data.items || []);
-      toast.success("Item removed from cart successfully");
+      setCart(data.items || []); // Update cart state after removing
+      window.location.reload();
     } catch (error) {
       console.error("Error removing item from cart:", error);
       toast.error("Failed to remove item from cart. Please try again.");
@@ -131,7 +137,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       });
       if (!response.ok) throw new Error("Failed to update item quantity");
       const data = await response.json();
-      setCart(data.items || []);
+      setCart(data.items || []); // Update cart state after quantity update
       toast.success("Item quantity updated successfully");
     } catch (error) {
       console.error("Error updating item quantity:", error);
@@ -153,8 +159,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         },
       });
       if (!response.ok) throw new Error("Failed to clear cart");
-      setCart([]);
+      setCart([]); // Clear the cart state
       toast.success("Cart cleared successfully");
+      window.location.reload();
     } catch (error) {
       console.error("Error clearing cart:", error);
       toast.error("Failed to clear cart. Please try again.");
@@ -162,6 +169,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsLoading(false);
     }
   };
+  useEffect(() => {
+    fetchCart();
+  }, []);
 
   return (
     <CartContext.Provider
@@ -172,6 +182,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         updateQuantity,
         clearCart,
         isLoading,
+        isInitialized,
+        cartFetched, // Add this line
       }}
     >
       {children}

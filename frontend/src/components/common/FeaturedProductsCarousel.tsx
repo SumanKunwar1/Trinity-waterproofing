@@ -29,7 +29,7 @@ const FeaturedProductsCarousel: React.FC = () => {
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       try {
-        const response = await axios.get("/api/product?featured=true"); // Adjust this based on your API endpoint
+        const response = await axios.get("/api/product"); // Adjust this based on your API endpoint
         setFeaturedProducts(response.data);
       } catch (err) {
         setError("Failed to fetch featured products.");

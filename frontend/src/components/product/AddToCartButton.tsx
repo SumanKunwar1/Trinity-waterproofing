@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import Button from "../common/Button";
 import { LuShoppingCart } from "react-icons/lu";
@@ -27,17 +28,25 @@ interface AddToCartButtonProps {
 
 const AddToCartButton: React.FC<AddToCartButtonProps> = ({
   product,
-  quantity,
+  quantity = 1,
   color,
 }) => {
   const { addToCart, isLoading } = useCart();
+  const navigate = useNavigate();
 
   const handleAddToCart = async () => {
+    const userRole = localStorage.getItem("userRole");
+    if (userRole !== "b2b" && userRole !== "b2c") {
+      toast.error("Please log in to add items to your cart.");
+      navigate("/login");
+      return;
+    }
+
     try {
-      await addToCart(product._id, quantity, color);
+      await addToCart(product._id, quantity, product.retailPrice, color);
       toast.success(`${product.name} added to cart!`);
     } catch (error) {
-      toast.error("Failed to add item to cart. Please try again.");
+      // Error is already handled in the CartContext
     }
   };
 

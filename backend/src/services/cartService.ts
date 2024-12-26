@@ -101,7 +101,7 @@ export class CartService {
       const cart = await Cart.findOne({ userId }).exec();
 
       if (!cart) {
-        return null;
+        return null; // No cart found
       }
 
       // Get an array of productIds from the cart items
@@ -109,6 +109,9 @@ export class CartService {
 
       // Fetch the products by the productIds
       const products = await Product.find({ _id: { $in: productIds } }).exec();
+
+      // Log to ensure products are fetched correctly
+      console.log("Fetched Products:", products);
 
       // Create a map of product _id to product document
       const productMap: { [key: string]: IProduct } = products.reduce(
@@ -119,11 +122,20 @@ export class CartService {
         {} as { [key: string]: IProduct }
       );
 
+      // Log to verify product mapping
+      console.log("Product Map:", productMap);
+
       // Create a modified items array manually
       const modifiedItems = cart.items.map((item) => {
-        const product = productMap[item.productId.toString()]; // Access product using the string version of the ObjectId
+        // Convert productId to string to match the key in productMap
+        const product = productMap[item.productId.toString()];
 
-        // Manually create the item object with relevant data
+        if (!product) {
+          console.warn(`Product not found for productId: ${item.productId}`);
+          return null; // Handle missing product gracefully
+        }
+
+        // Construct the modified item object
         const modifiedItem = {
           _id: item._id,
           productId: product._id,
@@ -140,14 +152,18 @@ export class CartService {
         return modifiedItem;
       });
 
-      // Construct the final cart object manually (use created_at and updated_at)
+      // Filter out null items (if any product was missing)
+      const validItems = modifiedItems.filter((item) => item !== null);
+
+      // Construct the final cart object
       const cartItems = {
         userId: cart.userId,
-        items: modifiedItems,
+        items: validItems,
       };
 
       return cartItems;
     } catch (error) {
+      console.error("Error in getCartByUserId:", error);
       throw error;
     }
   }
