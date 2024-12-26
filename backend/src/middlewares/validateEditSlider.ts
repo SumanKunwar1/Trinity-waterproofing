@@ -3,21 +3,26 @@ import { Request, Response, NextFunction } from "express";
 import { httpMessages } from "../middlewares";
 import { deleteImages } from "../config/deleteImages";
 
-const validateEditBrand = (
+const validateEditSlider = (
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
   const schema = Joi.object({
-    name: Joi.string().optional().messages({
-      "string.base": "Name must be a string",
+    title: Joi.string().optional().messages({
+      "string.base": "Title must be a string",
+    }),
+    description: Joi.string().optional().messages({
+      "string.base": "Description must be a string",
     }),
     image: Joi.string().optional().allow("").messages({
       "string.base": "Description must be a string",
     }),
+    isVisible: Joi.bool().optional().messages({
+      "bool.base": "isVisible must be a boolean",
+    }),
   });
-
-  console.log("validateEditBrand", req.body);
+  console.log(req.body);
   const { error } = schema.validate(req.body);
   if (error) {
     const errors = error.details.map((err) => ({
@@ -39,4 +44,4 @@ const validateEditBrand = (
   next();
 };
 
-export { validateEditBrand };
+export { validateEditSlider };

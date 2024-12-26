@@ -11,11 +11,9 @@ const validateSlider = (
   const schema = Joi.object({
     title: Joi.string().optional().messages({
       "string.base": "Title must be a string",
-      "any.required": "Title is required",
     }),
     description: Joi.string().optional().messages({
       "string.base": "Description must be a string",
-      "any.required": "Description is required",
     }),
     image: Joi.string().required().messages({
       "string.base": "Description must be a string",
