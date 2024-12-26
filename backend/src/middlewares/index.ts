@@ -1,3 +1,5 @@
+export { validateEditSlider } from "./validateEditSlider";
+
 export { validateEditBrand } from "./validateEditBrand";
 
 export { validateSlider } from "./validateSlider";

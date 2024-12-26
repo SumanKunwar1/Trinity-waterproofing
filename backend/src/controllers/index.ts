@@ -1,3 +1,5 @@
+export { SliderController } from "./sliderController";
+
 export { EnquiryController } from "./enquiryController";
 
 export { UserController } from "./userController"; // Export UserService from the userService file
