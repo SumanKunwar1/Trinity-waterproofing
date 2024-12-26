@@ -2,6 +2,7 @@ import { Product, SubCategory, Brand, WishList, Cart } from "../models";
 import { IProduct, IEditableProduct } from "../interfaces";
 import { httpMessages } from "../middlewares";
 import { deleteImages } from "../config/deleteImages";
+import { Types } from "mongoose";
 
 export class ProductService {
   public async createProduct(productData: IProduct) {
@@ -19,6 +20,7 @@ export class ProductService {
       const newProduct = new Product(productData);
       isPresent.product.push(newProduct._id);
 
+      await isPresent.save();
       await newProduct.save();
       return newProduct;
     } catch (error) {
@@ -88,6 +90,7 @@ export class ProductService {
         subCategory,
       } = productData;
 
+      // Handle brand validation if provided
       if (brand) {
         const isBrandPresent = await Brand.findById(brand);
         if (!isBrandPresent) {
@@ -95,13 +98,35 @@ export class ProductService {
         }
       }
 
+      // Handle subCategory logic
       if (subCategory) {
-        const isSubCategoryPresent = await SubCategory.findById(subCategory);
-        if (!isSubCategoryPresent) {
+        const isNewSubCategoryPresent = await SubCategory.findById(subCategory);
+        if (!isNewSubCategoryPresent) {
           throw httpMessages.NOT_FOUND("SubCategory");
         }
+
+        const oldSubCategoryId = existingProduct.subCategory;
+
+        // If subCategory is changing, update the relationships
+        if (oldSubCategoryId && oldSubCategoryId !== subCategory) {
+          const oldSubCategory = await SubCategory.findById(oldSubCategoryId);
+          if (oldSubCategory) {
+            // Remove the product ID from the old subcategory
+            oldSubCategory.product = oldSubCategory.product.filter(
+              (id) => id !== existingProduct._id
+            );
+            await oldSubCategory.save();
+          }
+
+          // Add the product ID to the new subcategory
+          isNewSubCategoryPresent.product.push(existingProduct._id);
+          await isNewSubCategoryPresent.save();
+        }
+
+        existingProduct.subCategory = subCategory;
       }
 
+      // Update other product details
       if (name) existingProduct.name = name;
       if (description) existingProduct.description = description;
       if (wholeSalePrice) existingProduct.wholeSalePrice = wholeSalePrice;
@@ -110,7 +135,6 @@ export class ProductService {
       if (features) existingProduct.features = features;
       if (brand) existingProduct.brand = brand;
       if (inStock) existingProduct.inStock = inStock;
-      if (subCategory) existingProduct.subCategory = subCategory;
 
       await existingProduct.save();
 

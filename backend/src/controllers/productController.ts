@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { ProductService } from "../services";
 import { IProduct, IEditableProduct } from "../interfaces";
 import { deleteProductImages } from "../config/deleteImages";
+import { Types } from "mongoose";
 
 export class ProductController {
   private productService: ProductService;

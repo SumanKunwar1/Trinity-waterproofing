@@ -28,7 +28,7 @@ const orderSchema: Schema = new Schema(
     status: {
       type: String,
       enum: Object.values(OrderStatus),
-      default: OrderStatus.Pending,
+      default: OrderStatus.ORDER_REQUESTED,
     },
   },
   { timestamps: true }

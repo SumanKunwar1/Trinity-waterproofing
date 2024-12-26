@@ -85,7 +85,7 @@ export class OrderService {
         })),
         userId,
         subtotal,
-        status: "pending",
+        status: OrderStatus.ORDER_REQUESTED,
       });
 
       await newOrder.save();
@@ -173,7 +173,121 @@ export class OrderService {
     }
   }
 
-  public async deleteOrderById(orderId: string) {
+  private async updateOrderStatusInternal(
+    orderId: string,
+    status: OrderStatus
+  ) {
+    const existingOrder = await Order.findById(orderId);
+
+    if (!existingOrder) {
+      throw httpMessages.NOT_FOUND("Order");
+    }
+
+    existingOrder.status = status;
+    await existingOrder.save();
+
+    return existingOrder;
+  }
+
+  public async confirmOrder(orderId: string) {
+    try {
+      const existingOrder = await Order.findById(orderId);
+
+      if (!existingOrder) {
+        throw httpMessages.NOT_FOUND("Order");
+      }
+
+      if (existingOrder.status !== OrderStatus.ORDER_REQUESTED) {
+        throw httpMessages.BAD_REQUEST(
+          "Only requested orders can be confirmed."
+        );
+      }
+
+      const updatedOrder = await this.updateOrderStatusInternal(
+        orderId,
+        OrderStatus.ORDER_CONFIRMED
+      );
+
+      // await NotificationService.sendOrderConfirmation(updatedOrder);
+
+      return updatedOrder;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async cancelOrder(orderId: string) {
+    try {
+      const existingOrder = await Order.findById(orderId);
+
+      if (!existingOrder) {
+        throw httpMessages.NOT_FOUND("Order");
+      }
+
+      // Business-specific validation
+      if (existingOrder.status !== OrderStatus.ORDER_REQUESTED) {
+        throw httpMessages.BAD_REQUEST(
+          "Only requested orders can be canceled."
+        );
+      }
+
+      const updatedOrder = await this.updateOrderStatusInternal(
+        orderId,
+        OrderStatus.ORDER_CANCELLED
+      );
+
+      // Handle stock restoration or other cancellation tasks
+      for (const productItem of existingOrder.products) {
+        await Product.findByIdAndUpdate(productItem.productId, {
+          $inc: { inStock: productItem.quantity },
+        });
+      }
+
+      // Notify the customer about cancellation
+      // await NotificationService.sendOrderCancellation(updatedOrder);
+
+      return updatedOrder;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async approveReturn(orderId: string) {
+    try {
+      const existingOrder = await Order.findById(orderId);
+
+      if (!existingOrder) {
+        throw httpMessages.NOT_FOUND("Order");
+      }
+
+      if (existingOrder.status !== OrderStatus.RETURN_REQUESTED) {
+        throw httpMessages.BAD_REQUEST(
+          "Only orders with return requested can be approved."
+        );
+      }
+
+      const updatedOrder = await this.updateOrderStatusInternal(
+        orderId,
+        OrderStatus.RETURN_APPROVED
+      );
+
+      // Handle return stock restoration or other tasks
+      for (const productItem of existingOrder.products) {
+        await Product.findByIdAndUpdate(productItem.productId, {
+          $inc: { inStock: productItem.quantity },
+        });
+      }
+
+      // Notify the customer about return approval
+      // await NotificationService.sendReturnApproval(updatedOrder);
+
+      return updatedOrder;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async cancelOrderById(orderId: string) {
     try {
       const order = await Order.findById(orderId);
 
@@ -186,18 +300,21 @@ export class OrderService {
 
       if (timeDifference > 30) {
         throw httpMessages.BAD_REQUEST(
-          "Orders older than 30 minutes cannot be deleted."
+          "Orders older than 30 minutes cannot be cancelled."
         );
       }
+
       for (const productItem of order.products) {
         await Product.findByIdAndUpdate(productItem.productId, {
           $inc: { inStock: productItem.quantity },
         });
       }
-      await Order.deleteOne({ _id: orderId });
+
+      order.status = OrderStatus.ORDER_CANCELLED;
+      await order.save();
 
       return {
-        message: "Order deleted successfully",
+        message: "Order cancelled successfully",
       };
     } catch (error) {
       throw error;
@@ -211,8 +328,7 @@ export class OrderService {
       if (!order) {
         throw httpMessages.NOT_FOUND("Order");
       }
-      if (order.status !== "completed") {
-        // Update stock for each product in the order
+      if (order.status !== OrderStatus.SERVICE_COMPLETED) {
         for (const productItem of order.products) {
           await Product.findByIdAndUpdate(productItem.productId, {
             $inc: { inStock: productItem.quantity },

@@ -1,8 +1,12 @@
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import { User } from "../models";
 import { IUser, IAddress } from "../interfaces";
 import { httpMessages } from "../middlewares";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyToken,
+} from "../config/tokenUtils";
 
 export class UserService {
   public async createUser(userData: IUser) {
@@ -40,15 +44,48 @@ export class UserService {
         throw httpMessages.INVALID_CREDENTIALS;
       }
 
-      const token = jwt.sign(
-        { id: user._id, email: user.email, role: user.role },
-        process.env.JWT_SECRET!,
-        { expiresIn: "1h" }
+      const token = generateAccessToken(
+        user._id.toString(),
+        user.email,
+        user.role
       );
 
-      return { token, user };
+      const refreshToken = generateRefreshToken(
+        user._id.toString(),
+        user.email,
+        user.role
+      );
+
+      return { token, user, refreshToken };
     } catch (error) {
       console.log(error);
+      throw error;
+    }
+  }
+
+  public async refreshToken(refreshToken: string) {
+    try {
+      const decoded: any = verifyToken(refreshToken);
+
+      const user = await User.findById(decoded.userId);
+      if (!user) {
+        throw httpMessages.NOT_FOUND("User");
+      }
+
+      const newAccessToken = generateAccessToken(
+        user._id.toString(),
+        user.email,
+        user.role
+      );
+
+      const newRefreshToken = generateRefreshToken(
+        user._id.toString(),
+        user.email,
+        user.role
+      );
+
+      return { token: newAccessToken, refreshToken: newRefreshToken };
+    } catch (error) {
       throw error;
     }
   }

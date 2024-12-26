@@ -30,7 +30,7 @@ export class ReviewService {
         );
       }
 
-      if (order.status !== OrderStatus.Completed) {
+      if (order.status !== OrderStatus.SERVICE_COMPLETED) {
         throw httpMessages.FORBIDDEN(
           "You can only review products from completed orders"
         );
