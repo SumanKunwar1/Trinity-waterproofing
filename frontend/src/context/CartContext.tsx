@@ -1,19 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-
-interface CartItem {
-  productId: string;
-  name: string;
-  retailPrice: number;
-  quantity: number;
-  color?: string;
-  productImage: string;
-  description: string;
-  inStock: number;
-}
+import { ICartItem } from "../types/cart";
 
 interface CartContextType {
-  cart: CartItem[];
+  cart: ICartItem[];
   addToCart: (
     productId: string,
     quantity: number,
@@ -35,13 +25,13 @@ export const CartContext = createContext<CartContextType | undefined>(
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<ICartItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [cartFetched, setCartFetched] = useState(false);
+  const isLoggedIn = !!localStorage.getItem("authToken");
 
   // Fetch cart when the component is mounted
-
   const fetchCart = async () => {
     setIsLoading(true);
     try {
@@ -56,9 +46,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       const data = await response.json();
       setCart(data.items || []); // Ensure data.items exists and is set
       setCartFetched(true); // Add this line
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage =
+        error?.response?.data?.error || "Failed to fetch cart.";
       console.error("Error fetching cart:", error);
-      toast.error("Failed to fetch cart. Please try again.");
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
       setIsInitialized(true); // Set isInitialized to true after fetching
@@ -91,9 +83,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       if (!response.ok) throw new Error("Failed to add item to cart");
       const data = await response.json();
       setCart(data.items || []); // Update cart state after adding
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage =
+        error?.response?.data?.error || "Failed to add item to cart.";
       console.error("Error adding item to cart:", error);
-      toast.error("Failed to add item to cart. Please try again.");
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -114,9 +108,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       const data = await response.json();
       setCart(data.items || []); // Update cart state after removing
       window.location.reload();
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage =
+        error?.response?.data?.error || "Failed to remove item from cart.";
       console.error("Error removing item from cart:", error);
-      toast.error("Failed to remove item from cart. Please try again.");
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -139,9 +135,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       const data = await response.json();
       setCart(data.items || []); // Update cart state after quantity update
       toast.success("Item quantity updated successfully");
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage =
+        error?.response?.data?.error || "Failed to update item quantity.";
       console.error("Error updating item quantity:", error);
-      toast.error("Failed to update item quantity. Please try again.");
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -162,15 +160,20 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       setCart([]); // Clear the cart state
       toast.success("Cart cleared successfully");
       window.location.reload();
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage =
+        error?.response?.data?.error || "Failed to clear cart.";
       console.error("Error clearing cart:", error);
-      toast.error("Failed to clear cart. Please try again.");
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
+
   useEffect(() => {
-    fetchCart();
+    if (isLoggedIn) {
+      fetchCart();
+    }
   }, []);
 
   return (

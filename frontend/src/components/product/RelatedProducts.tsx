@@ -2,32 +2,11 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import ProductCard from "../common/ProductCard";
 import axios from "axios";
-
+import { IProduct } from "../../types/product";
+import { toast } from "react-toastify";
 interface RelatedProductsProps {
   currentProductId: string; // Assuming the product ID is a string
   categoryId: number;
-}
-
-interface IColor {
-  name: string;
-  hex: string;
-}
-
-interface IProduct {
-  _id: string;
-  name: string;
-  description: string;
-  wholeSalePrice: number;
-  retailPrice: number;
-  productImage: string;
-  image: string[];
-  subCategory: string;
-  features: string;
-  brand: string;
-  colors?: IColor[];
-  inStock: number;
-  review: { rating: number }[];
-  categoryId: number; // Assuming the product has a categoryId property
 }
 
 const RelatedProducts: React.FC<RelatedProductsProps> = ({
@@ -50,8 +29,12 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({
           (product: IProduct) => product._id !== currentProductId
         );
         setRelatedProducts(filteredProducts.slice(0, 4)); // Limit to 4 products
-      } catch (err) {
-        setError("Failed to fetch related products. Please try again.");
+      } catch (error: any) {
+        const errorMessage =
+          error.response?.data?.error ||
+          "Failed to fetch related products. Please try again.";
+        setError(errorMessage); // Set the error message
+        toast.error(errorMessage); // Optionally show a toast notification
       } finally {
         setLoading(false);
       }

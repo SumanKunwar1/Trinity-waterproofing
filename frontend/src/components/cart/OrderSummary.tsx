@@ -1,16 +1,9 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
-
-interface CartItem {
-  productId: string;
-  name: string;
-  price: number;
-  quantity: number;
-  color?: string;
-}
+import { ICartItem } from "../../types/cart";
 
 interface OrderSummaryProps {
-  cartItems?: CartItem[];
+  cartItems?: ICartItem[];
 }
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({ cartItems }) => {

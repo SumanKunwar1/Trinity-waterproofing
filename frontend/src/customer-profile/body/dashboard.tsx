@@ -17,17 +17,7 @@ import {
   DialogTrigger,
 } from "../../components/ui/dialog";
 import { AddressForm } from "./address-form";
-
-interface Address {
-  _id: string;
-  street: string;
-  city: string;
-  province: string;
-  district: string;
-  postalCode: string;
-  country: string;
-  default: boolean;
-}
+import { Address } from "../../types/address";
 
 export const Dashboard = () => {
   const [defaultAddress, setDefaultAddress] = useState<Address | null>(null);

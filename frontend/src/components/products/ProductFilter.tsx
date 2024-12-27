@@ -6,49 +6,30 @@ import { Input } from "../ui/input";
 import { toast } from "react-toastify";
 import axios from "axios";
 import "rc-slider/assets/index.css";
-
+import { Category } from "../../types/category";
+import { SubCategory } from "../../types/subCategory";
+import { FilterValues } from "../../types/filterValues";
 interface ProductFilterProps {
   onFilter: (filters: FilterValues) => void;
-  categories: ICategory[];
-  subCategories: ISubcategory[];
-}
-
-interface FilterValues {
-  category: string;
-  subcategory: string;
-  minPrice: number;
-  maxPrice: number;
-  rating: number[];
-  inStock: boolean;
-}
-
-interface ICategory {
-  _id: string;
-  name: string;
-  description: string;
-  subCategories: ISubcategory[];
-}
-
-interface ISubcategory {
-  _id: string;
-  name: string;
-  description: string;
-  category: string;
-  product: Array<{ price: number }>;
+  categories: Category[];
+  subCategories: SubCategory[];
 }
 
 const ProductFilter: React.FC<ProductFilterProps> = ({ onFilter }) => {
-  const [categories, setCategories] = useState<ICategory[]>([]);
-  const [allSubcategories, setAllSubcategories] = useState<ISubcategory[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [allSubcategories, setAllSubcategories] = useState<SubCategory[]>([]);
 
+  // Fetch categories from API
   // Fetch categories from API
   const fetchCategories = async () => {
     try {
       const response = await axios.get("/api/category");
       console.log("Categories fetched:", response.data);
       setCategories(response.data);
-    } catch (error) {
-      toast.error("Failed to fetch categories");
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.error || "Failed to fetch categories";
+      toast.error(errorMessage); // Show error message in toast notification
     }
   };
 
@@ -58,8 +39,10 @@ const ProductFilter: React.FC<ProductFilterProps> = ({ onFilter }) => {
       const response = await axios.get("/api/subcategory");
       console.log("Subcategories fetched:", response.data);
       setAllSubcategories(response.data);
-    } catch (error) {
-      toast.error("Failed to fetch subcategories");
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.error || "Failed to fetch subcategories";
+      toast.error(errorMessage); // Show error message in toast notification
     }
   };
 

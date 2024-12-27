@@ -7,35 +7,10 @@ import Pagination from "../components/common/Pagination";
 import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
 import axios from "axios";
-
-interface IProduct {
-  _id: string;
-  name: string;
-  description: string;
-  wholeSalePrice: number;
-  retailPrice: number;
-  productImage: string;
-  image: string[];
-  subCategory: ISubCategory;
-  features: string;
-  brand: string;
-  inStock: number;
-  review: { rating: number }[];
-}
-
-interface ICategory {
-  _id: string;
-  name: string;
-  subCategories: Array<{ _id: string; name: string }>;
-}
-
-interface ISubCategory {
-  _id: string;
-  name: string;
-  category: ICategory;
-  product: any[];
-}
-
+import Loader from "../components/common/Loader";
+import { IProduct } from "../types/product";
+import { Category } from "../types/category";
+import { SubCategory } from "../types/subCategory";
 const ITEMS_PER_PAGE = 9;
 
 const ProductListing: React.FC = () => {
@@ -46,24 +21,41 @@ const ProductListing: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [categories, setCategories] = useState<ICategory[]>([]);
-  const [subCategories, setSubCategories] = useState<ISubCategory[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
   const userRole = localStorage.getItem("userRole");
+  const isLoggedIn = !!localStorage.getItem("authToken");
+  const unParsedUserId = localStorage.getItem("userId");
+  let userId = null;
+
+  if (unParsedUserId) {
+    try {
+      userId = JSON.parse(unParsedUserId);
+    } catch (error) {
+      console.error("Error parsing userId:", error);
+    }
+  }
+
+  console.log("userId:", userId);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
 
-        // Fetch all data in parallel
-        const [productsRes, categoriesRes, subCategoriesRes] =
-          await Promise.all([
-            axios.get("/api/product"),
-            axios.get("/api/category"),
-            axios.get("/api/subcategory"),
-          ]);
+        let productsRes;
+        if (isLoggedIn && userId) {
+          productsRes = await axios.get(`/api/product/user/${userId}`);
+        } else {
+          productsRes = await axios.get("/api/product");
+        }
+
+        const [categoriesRes, subCategoriesRes] = await Promise.all([
+          axios.get("/api/category"),
+          axios.get("/api/subcategory"),
+        ]);
 
         setProducts(productsRes.data);
         setFilteredProducts(productsRes.data);
@@ -77,7 +69,7 @@ const ProductListing: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [isLoggedIn, userId]);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -99,23 +91,18 @@ const ProductListing: React.FC = () => {
   const handleFilter = (filters: any) => {
     let filtered = [...products];
 
-    console.log("Filters:", filters);
-
-    // Filter by category
     if (filters.category) {
       filtered = filtered.filter(
         (product) => product.subCategory.category._id === filters.category
       );
     }
 
-    // Filter by subcategory
     if (filters.subcategory) {
       filtered = filtered.filter(
         (product) => product.subCategory._id === filters.subcategory
       );
     }
 
-    // Filter by price
     if (filters.minPrice !== undefined && filters.maxPrice !== undefined) {
       filtered = filtered.filter((product) => {
         const price =
@@ -124,7 +111,6 @@ const ProductListing: React.FC = () => {
       });
     }
 
-    // Filter by rating
     if (filters.rating && filters.rating.length > 0) {
       filtered = filtered.filter((product) => {
         if (product.review.length === 0) return false;
@@ -136,12 +122,10 @@ const ProductListing: React.FC = () => {
       });
     }
 
-    // Filter by stock
     if (filters.inStock) {
       filtered = filtered.filter((product) => product.inStock > 0);
     }
 
-    // Filter by search term
     if (searchTerm) {
       const lowerSearchTerm = searchTerm.toLowerCase();
       filtered = filtered.filter(
@@ -152,7 +136,6 @@ const ProductListing: React.FC = () => {
       );
     }
 
-    console.log("Filtered Products:", filtered);
     setFilteredProducts(filtered);
     setCurrentPage(1);
   };
@@ -200,7 +183,7 @@ const ProductListing: React.FC = () => {
     setCurrentPage(pageNumber);
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <Loader />;
   if (error) return <div>{error}</div>;
 
   return (

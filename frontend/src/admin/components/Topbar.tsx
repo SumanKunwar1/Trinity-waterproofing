@@ -22,7 +22,7 @@ import { useNavigate } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { Avatar, AvatarFallback } from "../components/ui/avatar";
-
+import { useLogout } from "../../utils/authUtils";
 // Notification types
 interface Notification {
   id: number;
@@ -33,6 +33,7 @@ interface Notification {
 }
 
 const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
+  const handleLogout = useLogout();
   const [notifications, setNotifications] = useState<Notification[]>([
     {
       id: 1,
@@ -128,22 +129,6 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
   };
 
   // Handle logout
-  const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("userRole");
-    localStorage.removeItem("user");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("userFullName");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("userPassword");
-    localStorage.removeItem("userNumber");
-    toast({
-      title: "Logged Out",
-      description: "You have been successfully logged out.",
-    });
-    navigate("/login");
-    window.location.reload();
-  };
 
   // Handle change password submission
   const handleChangePassword = async (

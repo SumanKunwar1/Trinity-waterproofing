@@ -1,14 +1,45 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import FeaturedProductsHeader from "./FeaturedProductsHeader";
+import { toast } from "react-toastify"; // Assuming you're using react-toastify for notifications
+import { Brand } from "../../types/brand"; // Import the Brand type from the types folder
 
-interface BrandSectionProps {
-  brands: string[]; // Array of brand image URLs
-}
-
-const BrandSection: React.FC<BrandSectionProps> = ({ brands }) => {
+const BrandSection: React.FC = () => {
+  const [brands, setBrands] = useState<Brand[]>([]); // Store brand objects
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const itemsPerPage = 5; // Number of logos to display at once
+
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        const response = await fetch("/api/brand", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Add your auth token if needed
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setBrands(data); // Assuming API returns an array of brands with name and image
+        } else {
+          const errorData = await response.json();
+          const errorMessage = errorData.error || "Failed to fetch brands";
+          setError(errorMessage);
+          toast.error(errorMessage); // Display error to user
+        }
+      } catch (error: any) {
+        const errorMessage = error.message || "Error fetching brands";
+        setError(errorMessage);
+        toast.error(errorMessage); // Display error to user
+      } finally {
+        setLoading(false); // Set loading to false when the request finishes
+      }
+    };
+
+    fetchBrands();
+  }, []);
 
   const nextSlide = () => {
     if (currentIndex + itemsPerPage < brands.length) {
@@ -21,6 +52,14 @@ const BrandSection: React.FC<BrandSectionProps> = ({ brands }) => {
       setCurrentIndex(currentIndex - 1); // Move back by one logo at a time
     }
   };
+
+  if (loading) {
+    return <div>Loading...</div>; // Loading state
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>; // Error state
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -43,8 +82,8 @@ const BrandSection: React.FC<BrandSectionProps> = ({ brands }) => {
             .map((brand, index) => (
               <img
                 key={index}
-                src={brand}
-                alt={`Brand ${index + 1}`}
+                src={brand.image}
+                alt={`Brand ${brand.name}`}
                 className="h-32 w-32 object-contain mx-4 space-x-3"
               />
             ))}

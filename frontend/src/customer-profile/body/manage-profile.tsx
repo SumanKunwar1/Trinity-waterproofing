@@ -18,7 +18,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../../components/ui/dialog";
-import { useNavigate } from "react-router-dom";
 
 // User info interface
 interface UserInfo {

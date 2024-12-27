@@ -3,14 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { FaStar, FaStarHalfAlt, FaFilter } from "react-icons/fa";
 import { IoChevronDownOutline } from "react-icons/io5";
 import Pagination from "./Pagination";
-
-interface Review {
-  id: string;
-  name: string;
-  content: string;
-  rating: number;
-  date: string;
-}
+import { Review } from "../../types/review";
 
 interface TestimonialCardProps {
   reviews: Review[];

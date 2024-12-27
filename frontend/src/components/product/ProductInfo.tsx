@@ -7,26 +7,9 @@ import { useWishlist } from "../../context/WishlistContext";
 import Ratings from "../common/Ratings";
 import { FaHeart } from "react-icons/fa";
 import { toast } from "react-toastify";
-interface IColor {
-  name: string;
-  hex: string;
-}
 
-interface IProduct {
-  _id: string;
-  name: string;
-  description: string;
-  wholeSalePrice: number;
-  retailPrice: number;
-  productImage: string;
-  image: string[];
-  subCategory: string;
-  features: string;
-  brand: string;
-  colors?: IColor[];
-  inStock: number;
-  review: { rating: number; comment: string }[];
-}
+import { IProduct } from "../../types/product";
+
 interface ProductInfoProps {
   product: IProduct;
 }
@@ -34,27 +17,30 @@ interface ProductInfoProps {
 const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
   const navigate = useNavigate();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
-
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [price, setPrice] = useState(product.retailPrice);
   const { addToCart } = useCart();
-
   const colors = product.colors || [];
+  const isLoggedIn = !!localStorage.getItem("authToken");
 
   useEffect(() => {
-    // If no color is selected, set the first color as default
     if (!selectedColor && colors.length > 0) {
       setSelectedColor(colors[0].hex);
     }
   }, [colors, selectedColor]);
 
   const toggleWishlist = () => {
+    if (!isLoggedIn) {
+      navigate("/login");
+      return;
+    }
     if (isInWishlist(product._id)) {
       removeFromWishlist(product._id);
       toast.info(`${product.name} removed from your wishlist.`);
     } else {
       addToWishlist(product._id);
+      toast.success(`${product.name} added to your wishlist.`);
     }
   };
 
@@ -77,6 +63,10 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
   };
 
   const handleAddToCart = () => {
+    if (!isLoggedIn) {
+      navigate("/login");
+      return;
+    }
     if (quantity <= product.inStock) {
       if (!selectedColor && product.colors?.length > 0) {
         toast.error("Please select a color");
@@ -91,16 +81,20 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
   };
 
   const handleBuyNow = () => {
+    if (!isLoggedIn) {
+      navigate("/login");
+      return;
+    }
     if (quantity <= product.inStock) {
       const checkoutData = {
         product,
         selectedColor,
         quantity,
-        price: displayedPrice, // Make sure to use displayedPrice instead of price
+        price: displayedPrice,
       };
 
       navigate("/checkout", {
-        state: { checkoutData }, // Wrap in checkoutData object
+        state: { checkoutData },
       });
     } else {
       toast.error("Not enough stock available");
@@ -112,10 +106,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
       product.review.length
     : 0;
 
-  // Get user role from localStorage
   const userRole = localStorage.getItem("userRole");
-
-  // Determine price based on user role (B2B or B2C)
   const displayedPrice =
     userRole === "b2b" ? product.wholeSalePrice : product.retailPrice;
 
@@ -140,14 +131,12 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
         </button>
       </div>
 
-      {/* Display the price based on user role */}
       <p className="text-2xl font-semibold text-blue-600 mb-2">
         Rs {displayedPrice.toFixed(2)}
       </p>
       <p className="text-gray-600 mb-2">{product.description}</p>
       <p className="text-gray-500 mb-2">In Stock: {product.inStock}</p>
 
-      {/* Color Selection */}
       {colors.length > 0 && (
         <div className="mb-3">
           <h2 className="text-lg font-medium mb-2">Select Color</h2>

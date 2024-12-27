@@ -90,14 +90,18 @@ const Users: React.FC = () => {
         },
       });
       if (!response.ok) {
-        throw new Error("Failed to fetch users");
+        // Parse the error response to get the API's structured error
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to fetch users"); // Use API error message if available
       }
+
+      // Parse and use the successful response
       const data = await response.json();
       setUsers(data);
       setFilteredUsers(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching users:", error);
-      toast.error("Failed to fetch users");
+      toast.error(error.message); // Display the error message in a toast notification
     }
   };
 
@@ -142,7 +146,9 @@ const Users: React.FC = () => {
         body: JSON.stringify(values),
       });
       if (!response.ok) {
-        throw new Error("Failed to add user");
+        // Parse the error response to get the API's structured error
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to add user"); // Use API error message if available
       }
       const newUser = await response.json();
       setUsers([...users, newUser]);
@@ -150,9 +156,9 @@ const Users: React.FC = () => {
       toast.success("User added successfully");
       setIsDialogOpen(false);
       resetForm();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting user:", error);
-      toast.error("Failed to submit user");
+      toast.error(error.message);
     }
   };
 
@@ -166,18 +172,17 @@ const Users: React.FC = () => {
       });
       console.log(response);
       if (!response.ok) {
-        return response.json().then((error) => {
-          toast.error(error.error);
-          throw new Error(error.error);
-        });
+        // Parse the error response to get the API's structured error
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete user"); // Use API error message if available
       }
       const updatedUsers = users.filter((u) => u._id !== id);
       setUsers(updatedUsers);
       setFilteredUsers(updatedUsers);
       toast.success("User deleted successfully");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting user:", error);
-      toast.error("Failed to delete user");
+      toast.error(error.message);
     }
   };
 

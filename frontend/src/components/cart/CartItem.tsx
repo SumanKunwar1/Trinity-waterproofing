@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import Button from "../common/Button";
-import { ICartItem } from "../../types/ICartItem";
+import { ICartItem } from "../../types/cart";
 
 interface CartItemProps {
   item: ICartItem;
@@ -54,27 +54,28 @@ const CartItem: React.FC<CartItemProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-between mb-6 p-4 border-b border-gray-300">
-      <Link to={`/product/${item.productId}`}>
-        <div className="flex items-center gap-4">
-          <img
-            src={item.productImage}
-            alt={item.name}
-            className="w-20 h-20 object-cover"
-          />
-          <div>
-            <h3 className="text-lg font-semibold">{item.name}</h3>
-            <p className="text-sm text-gray-600">{item.description}</p>
-            {item.color && (
-              <p className="text-sm text-gray-600 flex flex-row gap-2 items-center">
-                Color:{" "}
-                <span
-                  style={{ backgroundColor: item.color }}
-                  className="w-5 h-5 rounded-full flex items-center justify-center"
-                ></span>
-              </p>
-            )}
-          </div>
+    <div className="flex flex-col md:flex-row items-center justify-between mb-6 p-4 border-b border-gray-300">
+      <Link
+        to={`/product/${item.productId}`}
+        className="flex items-center gap-4 mb-4 md:mb-0"
+      >
+        <img
+          src={item.productImage}
+          alt={item.name}
+          className="w-20 h-20 object-cover"
+        />
+        <div>
+          <h3 className="text-lg font-semibold">{item.name}</h3>
+          <p className="text-sm text-gray-600">{item.description}</p>
+          {item.color && (
+            <p className="text-sm text-gray-600 flex flex-row gap-2 items-center">
+              Color:{" "}
+              <span
+                style={{ backgroundColor: item.color }}
+                className="w-5 h-5 rounded-full flex items-center justify-center"
+              ></span>
+            </p>
+          )}
         </div>
       </Link>
 
@@ -105,7 +106,11 @@ const CartItem: React.FC<CartItemProps> = ({
             +
           </Button>
         </div>
-        <Button variant="outline" onClick={handleRemove}>
+        <Button
+          variant="outline"
+          onClick={handleRemove}
+          className="mt-2 md:mt-0"
+        >
           Remove
         </Button>
       </div>

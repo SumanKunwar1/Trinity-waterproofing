@@ -21,7 +21,7 @@ import { Toaster } from "../components/ui/toaster";
 import { useNavigate } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-
+import { useLogout } from "../utils/authUtils";
 // Notification types
 interface Notification {
   id: number;
@@ -32,6 +32,7 @@ interface Notification {
 }
 
 const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
+  const handleLogout = useLogout();
   const [notifications, setNotifications] = useState<Notification[]>([
     {
       id: 1,
@@ -111,23 +112,6 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
     markNotificationAsRead(id);
     navigate(link);
     setIsNotificationOpen(false);
-  };
-
-  // Handle logout
-  const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("userRole");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("user");
-    localStorage.removeItem("userFullName");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("userPassword");
-    localStorage.removeItem("userNumber");
-    toast({
-      title: "Logged Out",
-      description: "You have been successfully logged out.",
-    });
-    navigate("/login");
   };
 
   // Handle change password submission

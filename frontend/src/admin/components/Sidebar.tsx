@@ -18,6 +18,7 @@ import {
   FaLightbulb,
   FaSignOutAlt,
 } from "react-icons/fa";
+import { useLogout } from "../../utils/authUtils";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -27,21 +28,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   const location = useLocation();
   const navigate = useNavigate(); // Hook to navigate to different routes
-
-  // Handle logout
-  const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("userRole");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("userFullName");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("userPassword");
-    localStorage.removeItem("userNumber");
-
-    // Redirect to login page
-    navigate("/login"); // Use the navigate hook to redirect the user
-    window.location.reload();
-  };
+  const handleLogout = useLogout();
 
   const menuItems = [
     { icon: FaChartBar, text: "Dashboard", link: "/admin/dashboard" },

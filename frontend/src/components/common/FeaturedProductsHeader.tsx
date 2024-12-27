@@ -1,10 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-
-interface FeaturedProductsHeaderProps {
-  title?: string;
-  link?: string;
-}
+import { FeaturedProductsHeaderProps } from "../../types/featuredHeader";
 
 const FeaturedProductsHeader: React.FC<FeaturedProductsHeaderProps> = ({
   title = "Featured Products",

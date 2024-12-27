@@ -7,31 +7,8 @@ import { toast } from "react-hot-toast";
 import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
 import AddressCard from "../components/common/AddressCard";
-
-interface Address {
-  _id: string;
-  street: string;
-  city: string;
-  province: string;
-  district: string;
-  postalCode: string;
-  country: string;
-  default: boolean;
-}
-
-interface ICartItem {
-  productId: string;
-  name: string;
-  description: string;
-  retailPrice: number;
-  productImage: string;
-  quantity: number;
-  color?: {
-    name: string;
-    hex: string;
-  };
-  inStock: number;
-}
+import { Address } from "../types/address";
+import { ICartItem } from "../types/cart";
 
 const Checkout: React.FC = () => {
   const location = useLocation();

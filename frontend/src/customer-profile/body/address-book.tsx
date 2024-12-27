@@ -25,17 +25,7 @@ import {
 } from "../../components/ui/dialog";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-interface Address {
-  _id: string;
-  street: string;
-  city: string;
-  province: string;
-  district: string;
-  postalCode: string;
-  country: string;
-  default: boolean;
-}
+import { Address } from "../../types/address";
 
 export const AddressBook = () => {
   const [addresses, setAddresses] = useState<Address[]>([]);

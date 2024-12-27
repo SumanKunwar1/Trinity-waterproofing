@@ -4,21 +4,7 @@ import { useCart } from "../../context/CartContext";
 import Button from "../common/Button";
 import { LuShoppingCart } from "react-icons/lu";
 import { toast } from "react-toastify";
-
-interface IProduct {
-  _id: string;
-  name: string;
-  description: string;
-  wholeSalePrice: number;
-  retailPrice: number;
-  productImage: string;
-  image: string[];
-  subCategory: string;
-  features: string;
-  brand: string;
-  colors?: { name: string; hex: string }[];
-  inStock: number;
-}
+import { IProduct } from "../../types/product";
 
 interface AddToCartButtonProps {
   product: IProduct;

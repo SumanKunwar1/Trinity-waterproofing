@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import ProductCard from "../common/ProductCard";
 import axios from "axios";
-
+import { toast } from "react-toastify";
 const FeaturedProductsCarousel: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
@@ -16,7 +16,7 @@ const FeaturedProductsCarousel: React.FC = () => {
   const getResponsiveSlidesPerView = () => {
     const width = window.innerWidth;
     if (width >= 1024) return 4;
-    if (width >= 640) return 3;
+    if (width >= 640) return 2;
     if (width >= 480) return 2;
     return 1;
   };
@@ -25,21 +25,41 @@ const FeaturedProductsCarousel: React.FC = () => {
     getResponsiveSlidesPerView()
   );
 
+  const isLoggedIn = !!localStorage.getItem("authToken");
+  const unParsedUserId = localStorage.getItem("userId");
+  let userId = null;
+
+  if (unParsedUserId) {
+    try {
+      userId = JSON.parse(unParsedUserId);
+    } catch (error) {
+      console.error("Error parsing userId:", error);
+    }
+  }
+
   // Fetch featured products from the API
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       try {
-        const response = await axios.get("/api/product"); // Adjust this based on your API endpoint
+        let response;
+        if (isLoggedIn && userId) {
+          response = await axios.get(`/api/product/user/${userId}`);
+        } else {
+          response = await axios.get("/api/product");
+        }
         setFeaturedProducts(response.data);
-      } catch (err) {
-        setError("Failed to fetch featured products.");
+      } catch (err: any) {
+        const errorMessage =
+          err.response?.data?.error || "Failed to fetch featured products.";
+        setError(errorMessage);
+        toast.error(errorMessage); // Display error to the user
       } finally {
         setLoading(false);
       }
     };
 
     fetchFeaturedProducts();
-  }, []);
+  }, [isLoggedIn, userId]);
 
   // Handle window resize
   useEffect(() => {
@@ -102,7 +122,7 @@ const FeaturedProductsCarousel: React.FC = () => {
         >
           {featuredProducts.map((product) => (
             <div
-              key={product._id} // Assuming _id is the product identifier
+              key={product._id}
               className="flex-shrink-0"
               style={{ width: `${100 / slidesPerView}%` }}
             >

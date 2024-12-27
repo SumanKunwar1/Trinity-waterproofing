@@ -1,6 +1,13 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { jwtDecode } from "jwt-decode";
-
+import { useLogout } from "../utils/authUtils";
+import { toast } from "react-toastify";
 // Utility function to decode token and check expiration
 const decodeToken = (token: string) => {
   try {
@@ -18,6 +25,11 @@ interface AuthContextType {
   refreshToken: () => void;
 }
 
+// Define the props for the AuthProvider
+interface AuthProviderProps {
+  children: ReactNode; // Allows the component to accept `children`
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
@@ -28,11 +40,11 @@ export const useAuth = () => {
   return context;
 };
 
-export const AuthProvider: React.FC = ({ children }) => {
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [lastActiveTime, setLastActiveTime] = useState<number>(Date.now());
-
+  const handleLogout = useLogout();
   const checkTokenExpiry = (token: string | null) => {
     if (token) {
       const decoded: any = decodeToken(token);
@@ -52,36 +64,34 @@ export const AuthProvider: React.FC = ({ children }) => {
   const logout = () => {
     setToken(null);
     setIsAuthenticated(false);
-    localStorage.removeItem("authToken");
+    handleLogout;
   };
 
-  async function refreshToken() {
+  const refreshToken = async () => {
     try {
       const response = await fetch("/api/users/refreshToken", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json", // If needed, but not strictly necessary for a simple POST request
+          "Content-Type": "application/json",
         },
-        credentials: "include", // Include cookies in the request
+        credentials: "include",
       });
 
       if (!response.ok) {
-        throw new Error("Failed to refresh access token");
+        // Parse the error response to get the API's structured error
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to refresh token"); // Use API error message if available
       }
 
-      // Assuming the response contains the new access token
       const data = await response.json();
-      console.log(data);
-      const newAccessToken = data.token; // Modify according to your API's response format
-      console.log("New Access Token:", newAccessToken);
-
-      // Store the new access token in local storage or a global state if needed
+      const newAccessToken = data.token;
       localStorage.setItem("authToken", newAccessToken);
       setToken(newAccessToken);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error refreshing access token:", error);
+      toast.error(error.message);
     }
-  }
+  };
 
   useEffect(() => {
     const storedToken = localStorage.getItem("authToken");
@@ -91,43 +101,39 @@ export const AuthProvider: React.FC = ({ children }) => {
     }
   }, []);
 
-  // Handle token expiry and user activity tracking
   useEffect(() => {
     const intervalId = setInterval(() => {
       if (
         token &&
         checkTokenExpiry(token) &&
-        Date.now() - lastActiveTime > 15 * 60 * 1000 // 15 minutes of inactivity
+        Date.now() - lastActiveTime > 15 * 60 * 1000
       ) {
-        logout(); // Log out after 15 minutes of inactivity
+        logout();
       } else if (
         token &&
         checkTokenExpiry(token) &&
-        Date.now() - lastActiveTime < 15 * 60 * 1000
+        Date.now() - lastActiveTime < 10 * 60 * 1000
       ) {
-        refreshToken(); // Refresh token if still valid and user is active
+        refreshToken();
       }
-    }, 5 * 60 * 1000); // Check every 10 seconds
+    }, 5 * 60 * 1000);
 
     return () => clearInterval(intervalId);
   }, [lastActiveTime, token]);
 
-  // Event listeners to track user activity
   useEffect(() => {
     const handleActivity = () => {
-      setLastActiveTime(Date.now()); // Update last active time on activity
+      setLastActiveTime(Date.now());
     };
 
-    // Adding multiple event listeners to track different activities
     window.addEventListener("mousemove", handleActivity);
     window.addEventListener("keydown", handleActivity);
-    window.addEventListener("mousedown", handleActivity); // Mouse clicks
-    window.addEventListener("touchstart", handleActivity); // Touch events (mobile)
-    window.addEventListener("scroll", handleActivity); // Scrolling
-    window.addEventListener("focus", handleActivity); // Page focus (window focus)
-    window.addEventListener("resize", handleActivity); // Window resizing
+    window.addEventListener("mousedown", handleActivity);
+    window.addEventListener("touchstart", handleActivity);
+    window.addEventListener("scroll", handleActivity);
+    window.addEventListener("focus", handleActivity);
+    window.addEventListener("resize", handleActivity);
 
-    // Cleanup function to remove event listeners when the component unmounts
     return () => {
       window.removeEventListener("mousemove", handleActivity);
       window.removeEventListener("keydown", handleActivity);
@@ -137,7 +143,7 @@ export const AuthProvider: React.FC = ({ children }) => {
       window.removeEventListener("focus", handleActivity);
       window.removeEventListener("resize", handleActivity);
     };
-  }, []); // Empty dependency array means these listeners are added once when component mounts
+  }, []);
 
   return (
     <AuthContext.Provider
