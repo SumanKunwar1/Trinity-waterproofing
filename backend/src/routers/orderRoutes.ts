@@ -12,6 +12,7 @@ import {
 const router = Router();
 const orderController = new OrderController();
 
+// Create an order
 router.post(
   "/",
   isAuthenticated,
@@ -21,6 +22,7 @@ router.post(
   handleResponse
 );
 
+// Get all orders (admin only)
 router.get(
   "/admin",
   isAuthenticated,
@@ -29,44 +31,78 @@ router.get(
   handleResponse
 );
 
+// Get orders by user ID
 router.get(
-  "/:id",
+  "/user/:id",
   isAuthenticated,
+  isAuthorizedUser,
   orderController.getOrdersByUserId.bind(orderController),
   handleResponse
 );
 
+// Get order by ID
 router.get(
-  "/:id",
+  "/:orderId",
   isAuthenticated,
   orderController.getOrderById.bind(orderController),
   handleResponse
 );
 
+// Confirm an order (admin only)
 router.patch(
-  "/admin/:id",
+  "/admin/:id/confirm",
   isAuthenticated,
   isAuthorized("admin"),
-  orderController.updateOrderStatus.bind(orderController),
+  orderController.confirmOrder.bind(orderController),
   handleResponse
 );
 
+// Cancel order (user only)
 router.delete(
-  "/:id",
+  "/:id/cancel/:orderId",
   isAuthenticated,
   isAuthorizedUser,
-  orderController.cancelOrderById.bind(orderController),
+  orderController.cancelOrderByUser.bind(orderController),
   handleResponse
 );
 
+// Cancel order by admin
 router.delete(
-  "/admin/:id",
+  "/admin/:id/cancel",
+  isAuthenticated,
+  isAuthorized("admin"),
+  orderController.cancelOrderByAdmin.bind(orderController),
+  handleResponse
+);
+
+// Return request (user)
+router.patch(
+  "/:id/return-request/:orderId",
+  isAuthenticated,
+  isAuthorizedUser,
+  orderController.returnRequest.bind(orderController),
+  handleResponse
+);
+
+// Approve return request (admin only)
+router.patch(
+  "/admin/:orderId/approve-return",
+  isAuthenticated,
+  isAuthorized("admin"),
+  orderController.approveReturn.bind(orderController),
+  handleResponse
+);
+
+// Delete order (admin only)
+router.delete(
+  "/admin/:orderId",
   isAuthenticated,
   isAuthorized("admin"),
   orderController.deleteOrderByAdmin.bind(orderController),
   handleResponse
 );
 
+// Error handler middleware
 router.use(handleError);
 
 export default router;

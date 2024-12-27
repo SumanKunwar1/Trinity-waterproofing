@@ -216,7 +216,7 @@ export class OrderService {
     }
   }
 
-  public async cancelOrder(orderId: string) {
+  public async cancelOrderByAdmin(orderId: string) {
     try {
       const existingOrder = await Order.findById(orderId);
 
@@ -224,7 +224,6 @@ export class OrderService {
         throw httpMessages.NOT_FOUND("Order");
       }
 
-      // Business-specific validation
       if (existingOrder.status !== OrderStatus.ORDER_REQUESTED) {
         throw httpMessages.BAD_REQUEST(
           "Only requested orders can be canceled."
@@ -236,7 +235,6 @@ export class OrderService {
         OrderStatus.ORDER_CANCELLED
       );
 
-      // Handle stock restoration or other cancellation tasks
       for (const productItem of existingOrder.products) {
         await Product.findByIdAndUpdate(productItem.productId, {
           $inc: { inStock: productItem.quantity },
@@ -245,6 +243,34 @@ export class OrderService {
 
       // Notify the customer about cancellation
       // await NotificationService.sendOrderCancellation(updatedOrder);
+
+      return updatedOrder;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async returnRequest(orderId: string) {
+    try {
+      const existingOrder = await Order.findById(orderId);
+
+      if (!existingOrder) {
+        throw httpMessages.NOT_FOUND("Order");
+      }
+
+      if (existingOrder.status !== OrderStatus.SERVICE_COMPLETED) {
+        throw httpMessages.BAD_REQUEST(
+          "Only completed orders are eligible for return requests."
+        );
+      }
+
+      const updatedOrder = await this.updateOrderStatusInternal(
+        orderId,
+        OrderStatus.RETURN_REQUESTED
+      );
+
+      // Notify the customer about the return request
+      // await NotificationService.sendReturnRequestNotification(updatedOrder);
 
       return updatedOrder;
     } catch (error) {
@@ -287,7 +313,7 @@ export class OrderService {
     }
   }
 
-  public async cancelOrderById(orderId: string) {
+  public async cancelOrderByUser(orderId: string) {
     try {
       const order = await Order.findById(orderId);
 
