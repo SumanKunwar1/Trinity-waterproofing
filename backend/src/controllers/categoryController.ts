@@ -44,7 +44,7 @@ export class CategoryController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const categoryId = req.params.id;
+      const categoryId = req.params.categoryId;
       const updateData: Partial<ICategory> = req.body;
       const result = await this.categoryService.editCategory(
         categoryId,
@@ -63,7 +63,7 @@ export class CategoryController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const categoryId = req.params.id;
+      const categoryId = req.params.categoryId;
       const result = await this.categoryService.deleteCategory(categoryId);
       res.locals.responseData = result;
       next();

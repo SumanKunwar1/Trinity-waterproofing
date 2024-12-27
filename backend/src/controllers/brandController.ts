@@ -46,7 +46,7 @@ export class BrandController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const brandId = req.params.id;
+      const brandId = req.params.brandId;
       const result = await this.brandService.getBrandById(brandId);
       res.locals.responseData = result;
       next();
@@ -61,7 +61,7 @@ export class BrandController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const brandId = req.params.id;
+      const brandId = req.params.brandId;
       const updateData: Partial<IBrand> = req.body;
       const result = await this.brandService.editBrand(brandId, updateData);
       res.locals.responseData = result;
@@ -78,7 +78,7 @@ export class BrandController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const brandId = req.params.id;
+      const brandId = req.params.brandId;
       const result = await this.brandService.deleteBrandById(brandId);
       res.locals.responseData = result;
       next();

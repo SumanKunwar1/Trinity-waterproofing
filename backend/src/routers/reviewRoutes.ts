@@ -30,7 +30,7 @@ router.get(
 );
 
 router.get(
-  "/user/:id",
+  "/user/:userId",
   isAuthenticated,
   isAuthorizedUser,
   reviewController.getReviewsByUser.bind(reviewController),
@@ -38,7 +38,7 @@ router.get(
 );
 
 router.patch(
-  "/:id",
+  "/:reviewId",
   isAuthenticated,
   validateEditReview,
   reviewController.updateReviewById.bind(reviewController),
@@ -46,7 +46,7 @@ router.patch(
 );
 
 router.delete(
-  "/:id",
+  "/:reviewId",
   isAuthenticated,
   isAuthorized("admin"),
   reviewController.deleteReviewById.bind(reviewController),

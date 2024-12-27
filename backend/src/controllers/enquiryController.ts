@@ -42,7 +42,7 @@ export class EnquiryController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const enquiryId = req.params.id;
+      const enquiryId = req.params.enquiryId;
       const result = await this.enquiryService.deleteEnquiry(enquiryId);
       res.locals.responseData = result;
     } catch (error) {

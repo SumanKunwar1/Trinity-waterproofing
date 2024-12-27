@@ -38,7 +38,7 @@ export class OrderController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const userId = req.params.id;
+      const userId = req.params.userId;
       const result = await this.orderService.getOrdersByUserId(userId);
       res.locals.responseData = result;
       next();
@@ -53,7 +53,7 @@ export class OrderController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const orderId = req.params.id;
+      const orderId = req.params.orderId;
       const result = await this.orderService.getOrderById(orderId);
       res.locals.responseData = result;
       next();
@@ -78,14 +78,74 @@ export class OrderController {
     }
   }
 
-  public async cancelOrderById(
+  public async confirmOrder(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     try {
-      const orderId = req.params.id;
-      const result = await this.orderService.cancelOrderById(orderId);
+      const orderId = req.params.orderId;
+      const result = await this.orderService.confirmOrder(orderId);
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  public async cancelOrderByAdmin(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const orderId = req.params.orderId;
+      const result = await this.orderService.cancelOrderByAdmin(orderId);
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  public async returnRequest(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const orderId = req.params.orderId;
+      const result = await this.orderService.returnRequest(orderId);
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  public async approveReturn(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const orderId = req.params.orderId;
+      const result = await this.orderService.approveReturn(orderId);
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  public async cancelOrderByUser(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const orderId = req.params.orderId;
+      const result = await this.orderService.cancelOrderByUser(orderId);
       res.locals.responseData = result;
       next();
     } catch (error: any) {

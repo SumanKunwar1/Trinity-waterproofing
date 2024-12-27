@@ -46,7 +46,7 @@ export class SubCategoryController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const subCategoryId = req.params.id;
+      const subCategoryId = req.params.subCategoryId;
       const updateData: Partial<ISubCategory> = req.body;
       const result = await this.subCategoryService.editSubCategory(
         subCategoryId,
@@ -65,7 +65,7 @@ export class SubCategoryController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const subCategoryId = req.params.id;
+      const subCategoryId = req.params.subCategoryId;
       const result = await this.subCategoryService.deleteSubCategory(
         subCategoryId
       );

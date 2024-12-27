@@ -16,7 +16,7 @@ export class CartController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const userId = req.params.id;
+      const userId = req.params.userId;
       const cartItem: ICartItem = req.body;
       const result = await this.cartService.addToCart(userId, cartItem);
       res.locals.responseData = result;
@@ -32,7 +32,7 @@ export class CartController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const userId = req.params.id;
+      const userId = req.params.userId;
       const cartItemId = req.params.cartItemId;
       const { quantity } = req.body;
 
@@ -60,7 +60,7 @@ export class CartController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const userId = req.params.id;
+      const userId = req.params.userId;
       const cartItemId = req.params.cartItemId;
       const message = await this.cartService.removeFromCart(userId, cartItemId);
       res.locals.responseData = { message };
@@ -76,7 +76,7 @@ export class CartController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const userId = req.params.id;
+      const userId = req.params.userId;
       const result = await this.cartService.getCartByUserId(userId);
       res.locals.responseData = result;
       next();
@@ -91,7 +91,7 @@ export class CartController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const userId = req.params.id;
+      const userId = req.params.userId;
       const result = await this.cartService.clearCart(userId);
       res.locals.responseData = result;
       next();
