@@ -5,6 +5,7 @@ import { OrderStatus } from "../config/orderStatusEnum";
 export interface IOrder extends Document {
   products: IOrderItem[];
   userId: Types.ObjectId;
+  AddressId: Types.ObjectId;
   subtotal: number;
   tax: number;
   total: number;
@@ -24,6 +25,11 @@ const orderSchema: Schema = new Schema(
       },
     ],
     userId: { type: Types.ObjectId, ref: "User", required: true },
+    addressId: {
+      type: Types.ObjectId,
+      ref: "User.addressBook",
+      required: true,
+    },
     subtotal: { type: Number, required: true },
     status: {
       type: String,

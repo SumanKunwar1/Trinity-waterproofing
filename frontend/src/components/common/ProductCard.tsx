@@ -1,56 +1,38 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import Button from "./Button";
 import { useWishlist } from "../../context/WishlistContext";
 import { FaHeart } from "react-icons/fa";
-import Ratings from "./Ratings";
 import { FiEye } from "react-icons/fi";
 import { toast } from "react-toastify";
 import AddToCartButton from "../product/AddToCartButton";
-
-interface IColor {
-  name: string;
-  hex: string;
-}
-
-interface IProduct {
-  _id: string;
-  name: string;
-  description: string;
-  wholeSalePrice: number;
-  retailPrice: number;
-  productImage: string;
-  image: string[];
-  subCategory: string;
-  features: string;
-  brand: string;
-  colors?: IColor[];
-  inStock: number;
-  review: { rating: number }[];
-}
+import { IProduct } from "../../types/product";
 
 interface ProductCardProps {
   product: IProduct;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+  const navigate = useNavigate();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const isLoggedIn = !!localStorage.getItem("authToken");
 
-  // Calculate average rating from reviews
   const averageRating =
     product.review && product.review.length
       ? product.review.reduce((acc, review) => acc + review.rating, 0) /
         product.review.length
       : 0;
 
-  // Determine the price based on the user role
   const userRole = localStorage.getItem("userRole");
   const displayedPrice =
     userRole === "b2b" ? product.wholeSalePrice : product.retailPrice;
 
-  // Handle adding/removing from wishlist
   const toggleWishlist = async () => {
+    if (!isLoggedIn) {
+      navigate("/login");
+      return;
+    }
     try {
       if (isInWishlist(product._id)) {
         await removeFromWishlist(product._id);
@@ -86,10 +68,23 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         <div className="flex justify-between items-center">
           <span className="text-xl font-bold">Rs {displayedPrice}</span>
-          <Ratings
-            rating={averageRating}
-            ratingCount={`${product.review ? product.review.length : 0}`}
-          />
+          <div className="flex items-center">
+            {[...Array(5)].map((_, index) => (
+              <span
+                key={index}
+                className={`text-xl ${
+                  index < Math.round(averageRating)
+                    ? "text-yellow-400"
+                    : "text-gray-300"
+                }`}
+              >
+                ★
+              </span>
+            ))}
+            <span className="ml-1 text-sm text-gray-600">
+              ({product.review ? product.review.length : 0})
+            </span>
+          </div>
         </div>
 
         <div className="flex items-center justify-between mt-4">
@@ -101,7 +96,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <FiEye className="mr-2 font-semibold" />
             View Details
           </Button>
-          <AddToCartButton product={product} />
+          {isLoggedIn ? (
+            <AddToCartButton product={product} />
+          ) : (
+            <Button
+              onClick={() => navigate("/login")}
+              size="sm"
+              className="flex align-middle text-center justify-between"
+            >
+              Add to Cart
+            </Button>
+          )}
         </div>
       </div>
 

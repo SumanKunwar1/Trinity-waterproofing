@@ -1,17 +1,6 @@
 import React from "react";
 import { Button } from "../ui/button";
-
-interface Address {
-  _id: string;
-  street: string;
-  city: string;
-  province: string;
-  district: string;
-  postalCode: string;
-  country: string;
-  default: boolean;
-}
-
+import { Address } from "../../types/address";
 interface AddressCardProps {
   address: Address;
   onSetDefault: (addressId: string) => void;

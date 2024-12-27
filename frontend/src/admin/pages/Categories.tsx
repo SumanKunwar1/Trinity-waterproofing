@@ -92,8 +92,13 @@ const Categories: React.FC = () => {
     try {
       const response = await axios.get("/api/category");
       setCategories(response.data);
-    } catch (error) {
-      toast.error("Failed to fetch categories");
+    } catch (error: any) {
+      // Extract error message from the Axios error object
+      const errorMessage =
+        error.response?.data?.error ||
+        error.message ||
+        "Failed to fetch categories";
+      toast.error(errorMessage);
     }
   };
 
@@ -101,8 +106,13 @@ const Categories: React.FC = () => {
     try {
       const response = await axios.get("/api/subcategory");
       setSubcategories(response.data);
-    } catch (error) {
-      toast.error("Failed to fetch subcategories");
+    } catch (error: any) {
+      // Extract error message from the Axios error object
+      const errorMessage =
+        error.response?.data?.error ||
+        error.message ||
+        "Failed to fetch subcategories";
+      toast.error(errorMessage);
     }
   };
 
@@ -130,8 +140,12 @@ const Categories: React.FC = () => {
       setEditingCategory(null);
       setIsCategoryDialogOpen(false);
       resetForm();
-    } catch (error) {
-      toast.error("Failed to save category");
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.error ||
+        error.message ||
+        "Failed to save category";
+      toast.error(errorMessage);
     }
   };
 
@@ -163,8 +177,12 @@ const Categories: React.FC = () => {
       setEditingSubcategory(null);
       setIsSubcategoryDialogOpen(false);
       resetForm();
-    } catch (error) {
-      toast.error("Failed to save subcategory");
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.error ||
+        error.message ||
+        "Failed to save subcategory";
+      toast.error(errorMessage);
     }
   };
 
@@ -184,8 +202,12 @@ const Categories: React.FC = () => {
         toast.success("Category deleted successfully");
         fetchCategories();
         fetchSubcategories();
-      } catch (error) {
-        toast.error("Failed to delete category");
+      } catch (error: any) {
+        const errorMessage =
+          error.response?.data?.error ||
+          error.message ||
+          "Failed to delete category";
+        toast.error(errorMessage);
       }
     }
     setIsDeleteCategoryDialogOpen(false);
@@ -207,8 +229,12 @@ const Categories: React.FC = () => {
         });
         toast.success("Subcategory deleted successfully");
         fetchSubcategories();
-      } catch (error) {
-        toast.error("Failed to delete subcategory");
+      } catch (error: any) {
+        const errorMessage =
+          error.response?.data?.error ||
+          error.message ||
+          "Failed to delete subcategory";
+        toast.error(errorMessage);
       }
     }
     setIsDeleteSubcategoryDialogOpen(false);

@@ -14,7 +14,7 @@ const orderController = new OrderController();
 
 // Create an order
 router.post(
-  "/",
+  "/:userId",
   isAuthenticated,
   isAuthorizedUser,
   validateOrder,

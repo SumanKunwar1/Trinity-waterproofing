@@ -3,37 +3,13 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { toast } from "react-toastify";
-
+import { Category } from "../../types/category";
 interface ProductDropdownProps {
   isOpen: boolean;
   onClose: () => void;
 }
-interface Category {
-  _id: string;
-  name: string;
-  description?: string;
-  subCategories: SubCategory[];
-}
 
-interface SubCategory {
-  _id: string;
-  name: string;
-  products: Product[]; // Each subCategory directly contains products
-}
-
-interface Product {
-  _id: string;
-  name: string;
-  brand: { _id: string; name: string };
-  retailPrice: number;
-  wholeSalePrice: number;
-  inStock: number;
-  colors: { name: string; hex: string }[];
-  description: string;
-  features: string;
-}
-
-const ProductDropdown: React.FC<ProductDropdownProps> = ({
+export const ProductDropdown: React.FC<ProductDropdownProps> = ({
   isOpen,
   onClose,
 }) => {
@@ -45,8 +21,10 @@ const ProductDropdown: React.FC<ProductDropdownProps> = ({
     try {
       const response = await axios.get("/api/category");
       setCategories(response.data);
-    } catch (error) {
-      toast.error("Failed to fetch categories");
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.error || "Failed to fetch categories.";
+      toast.error(errorMessage); // Display error message to the user
     }
   };
 

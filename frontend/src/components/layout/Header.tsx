@@ -25,15 +25,8 @@ import {
 } from "../ui/hover-card";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import Loader from "../common/Loader";
-
-interface User {
-  _id: string;
-  fullName: string;
-  email: string;
-  role: string;
-  number: string;
-  createdAt: string;
-}
+import { User } from "../../types/user";
+import { useLogout } from "../../utils/authUtils";
 
 const Header: React.FC = () => {
   const { cart, isLoading: cartLoading } = useCart();
@@ -45,13 +38,13 @@ const Header: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const navigate = useNavigate();
-
+  const handleLogout = useLogout();
   const userString = localStorage.getItem("user");
   const user: User | null = userString ? JSON.parse(userString) : null;
   const userRole = localStorage.getItem("userRole");
+  const isLoggedIn = !!localStorage.getItem("authToken");
 
   useEffect(() => {
-    // Simulate loading
     const timer = setTimeout(() => setIsLoading(false), 1000);
     return () => clearTimeout(timer);
   }, []);
@@ -65,20 +58,9 @@ const Header: React.FC = () => {
       .substr(0, 2);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("userRole");
-    localStorage.removeItem("user");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("userFullName");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("userPassword");
-    localStorage.removeItem("userNumber");
-    navigate("/login");
-  };
-
   const handleMenuItemClick = (path: string) => {
     navigate(path);
+    setIsOpen(false);
   };
 
   const cartItemCount = cart?.length || 0;
@@ -90,31 +72,27 @@ const Header: React.FC = () => {
 
   return (
     <header className="bg-brand shadow-md relative">
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        {/* Logo and brand name */}
-        <div className="flex items-center">
-          <Link to="/" className="h-16 w-16 sm:block hidden">
-            <img
-              src="/assets/logo.png"
-              alt="Brand Logo"
-              className="h-16 w-16"
-            />
-          </Link>
-          <Link to="/" className="hidden md:block">
-            <span className="text-2xl font-bold text-hover">
-              Trinity Waterproofing
-            </span>
-          </Link>
-        </div>
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex items-center justify-between">
+          {/* Logo and Brand Name */}
+          <div className="flex items-center">
+            <Link to="/" className="h-16 w-16">
+              <img
+                src="/assets/logo.png"
+                alt="Brand Logo"
+                className="h-16 w-16"
+              />
+            </Link>
+            <Link to="/" className="hidden md:block">
+              <span className="text-2xl font-bold text-hover">
+                Trinity Waterproofing
+              </span>
+            </Link>
+          </div>
 
-        {/* Navigation and icons */}
-        <div
-          className={`flex items-center ${
-            isSearchOpen ? "justify-center" : "space-x-3"
-          }`}
-        >
-          {!isSearchOpen && (
-            <nav className="hidden md:flex space-x-6">
+          <div className="flex items-center space-x-4">
+            {/* Desktop Navigation */}
+            <nav className="hidden gap-4 md:flex">
               {navigationItems.map((item) =>
                 item.title === "Products" ? (
                   <HoverCard
@@ -146,183 +124,222 @@ const Header: React.FC = () => {
                 )
               )}
             </nav>
-          )}
 
-          {/* Search, User, Cart, and Wishlist Icons */}
-          <div className="flex items-center space-x-4">
-            {isSearchOpen ? (
-              <AnimatePresence>
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  className="relative w-full max-w-md"
-                >
-                  <input
-                    type="text"
-                    placeholder="Search products..."
-                    className="w-full py-2 pl-3 pr-10 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+            {/* Right Section - Icons */}
+            <div className="flex items-center space-x-4 ">
+              {!isSearchOpen ? (
+                <>
+                  {/* Always visible icons */}
                   <button
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-500"
-                    onClick={() => setIsSearchOpen(false)}
+                    onClick={() =>
+                      isLoggedIn ? navigate("/cart") : navigate("/login")
+                    }
+                    className="relative p-2 hover:bg-slate-400 rounded-full"
                   >
-                    <IoCloseOutline size={25} />
-                  </button>
-                </motion.div>
-              </AnimatePresence>
-            ) : (
-              <>
-                <button
-                  onClick={() => setIsSearchOpen(true)}
-                  className="text-white p-2 hover:bg-slate-400 rounded-full"
-                >
-                  <IoSearchOutline size={25} />
-                </button>
-
-                <Link
-                  to="/cart"
-                  className="relative p-2 hover:bg-slate-400 rounded-full"
-                >
-                  <LuShoppingCart
-                    size={25}
-                    className="text-hover hover:text-secondary transition-all duration-300"
-                  />
-                  {cartItemCount > 0 && (
-                    <span className="absolute top-0 right-0 flex items-center justify-center w-5 h-5 bg-red-600 text-white text-xs rounded-full">
-                      {cartItemCount}
-                    </span>
-                  )}
-                </Link>
-
-                <Link
-                  to="/wishlist"
-                  className="relative p-2 hover:bg-slate-400 rounded-full"
-                >
-                  <FaRegHeart
-                    size={25}
-                    className="text-hover hover:text-secondary transition-all duration-300"
-                  />
-                  {wishlistItemCount > 0 && (
-                    <span className="absolute top-0 right-0 flex items-center justify-center w-5 h-5 bg-red-600 text-white text-xs rounded-full">
-                      {wishlistItemCount}
-                    </span>
-                  )}
-                </Link>
-
-                {user ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <div className="cursor-pointer">
-                        <Avatar>
-                          <AvatarFallback className="bg-orange-500 text-white font-bold">
-                            {getInitials(user.fullName)}
-                          </AvatarFallback>
-                        </Avatar>
-                      </div>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56">
-                      <DropdownMenuLabel>
-                        <div className="flex flex-col">
-                          <span className="font-medium">{user.fullName}</span>
-                          <span className="text-xs text-gray-500">
-                            {user.email}
-                          </span>
-                        </div>
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        className="text-brand cursor-pointer hover:text-secondary transition-all duration-300"
-                        onSelect={() =>
-                          handleMenuItemClick("/customer/purchase-history")
-                        }
-                      >
-                        Order History
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-brand cursor-pointer hover:text-secondary transition-all duration-300"
-                        onSelect={() =>
-                          handleMenuItemClick("/customer/manage-profile")
-                        }
-                      >
-                        Manage Profile
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        className="text-red-600 border border-red-600 text-center align-middle hover:bg-tertiary flex justify-center hover:text-brand cursor-pointer focus:text-red-700 transition-all duration-300"
-                        onSelect={handleLogout}
-                      >
-                        Logout
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) : (
-                  <Link
-                    to="/login"
-                    className="p-2 hover:bg-slate-400 rounded-full"
-                  >
-                    <FiUser
+                    <LuShoppingCart
                       size={25}
                       className="text-hover hover:text-secondary transition-all duration-300"
                     />
-                  </Link>
-                )}
+                    {isLoggedIn && cartItemCount > 0 && (
+                      <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 bg-red-600 text-white text-xs rounded-full">
+                        {cartItemCount}
+                      </span>
+                    )}
+                  </button>
 
-                <button
-                  className="md:hidden"
-                  onClick={() => setIsOpen(!isOpen)}
-                >
-                  {isOpen ? (
-                    <IoCloseOutline size={25} className="text-white" />
-                  ) : (
-                    <svg
-                      className="w-6 h-6 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
+                  {/* Desktop-only icons */}
+                  <div className="hidden md:flex items-center space-x-4">
+                    <button
+                      onClick={() => setIsSearchOpen(true)}
+                      className="text-white p-2 hover:bg-slate-400 rounded-full"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 6h16M4 12h16M4 18h16"
+                      <IoSearchOutline size={25} />
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        isLoggedIn ? navigate("/wishlist") : navigate("/login")
+                      }
+                      className="relative p-2 hover:bg-slate-400 rounded-full"
+                    >
+                      <FaRegHeart
+                        size={25}
+                        className="text-hover hover:text-secondary transition-all duration-300"
                       />
-                    </svg>
-                  )}
-                </button>
-              </>
-            )}
+                      {isLoggedIn && wishlistItemCount > 0 && (
+                        <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 bg-red-600 text-white text-xs rounded-full">
+                          {wishlistItemCount}
+                        </span>
+                      )}
+                    </button>
+
+                    {user ? (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <div className="cursor-pointer">
+                            <Avatar>
+                              <AvatarFallback className="bg-orange-500 text-white font-bold">
+                                {getInitials(user.fullName)}
+                              </AvatarFallback>
+                            </Avatar>
+                          </div>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-56">
+                          <DropdownMenuLabel>
+                            <div className="flex flex-col">
+                              <span className="font-medium">
+                                {user.fullName}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {user.email}
+                              </span>
+                            </div>
+                          </DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-brand cursor-pointer hover:text-secondary transition-all duration-300"
+                            onSelect={() =>
+                              handleMenuItemClick("/customer/purchase-history")
+                            }
+                          >
+                            Order History
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-brand cursor-pointer hover:text-secondary transition-all duration-300"
+                            onSelect={() =>
+                              handleMenuItemClick("/customer/manage-profile")
+                            }
+                          >
+                            Manage Profile
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-red-600 border border-red-600 text-center hover:bg-tertiary flex justify-center cursor-pointer focus:text-red-700 transition-all duration-300"
+                            onSelect={handleLogout}
+                          >
+                            Logout
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : (
+                      <Link
+                        to="/login"
+                        className="p-2 hover:bg-slate-400 rounded-full"
+                      >
+                        <FiUser
+                          size={25}
+                          className="text-hover hover:text-secondary transition-all duration-300"
+                        />
+                      </Link>
+                    )}
+                  </div>
+
+                  {/* Hamburger Menu - Mobile only */}
+                  <button
+                    className="md:hidden p-2 hover:bg-slate-400 rounded-full"
+                    onClick={() => setIsOpen(!isOpen)}
+                  >
+                    {isOpen ? (
+                      <IoCloseOutline size={25} className="text-white" />
+                    ) : (
+                      <svg
+                        className="w-6 h-6 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 6h16M4 12h16M4 18h16"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                </>
+              ) : (
+                <AnimatePresence>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="absolute top-0 left-0 w-full h-full bg-brand flex items-center justify-center px-4"
+                  >
+                    <div className="relative w-full max-w-md">
+                      <input
+                        type="text"
+                        placeholder="Search products..."
+                        className="w-full py-2 pl-3 pr-10 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                      <button
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-500"
+                        onClick={() => setIsSearchOpen(false)}
+                      >
+                        <IoCloseOutline size={25} />
+                      </button>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Mobile Navigation Dropdown */}
+      {/* Mobile Navigation Menu */}
       <AnimatePresence>
-        {isOpen && !isSearchOpen && (
+        {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
             className="md:hidden bg-white shadow-md"
           >
             <nav className="flex flex-col p-4">
+              {/* Search in mobile menu */}
+              <button
+                onClick={() => {
+                  setIsSearchOpen(true);
+                  setIsOpen(false);
+                }}
+                className="text-gray-600 hover:text-blue-600 py-2 transition-colors duration-300 flex items-center"
+              >
+                <IoSearchOutline className="mr-2" />
+                Search
+              </button>
+
+              {/* Navigation Items */}
               {navigationItems.map((item) =>
                 item.title === "Products" ? (
-                  <button
-                    key={item.id}
-                    className="text-gray-600 hover:text-blue-600 py-2 transition-colors duration-300 text-left flex items-center justify-between w-full"
-                    onClick={() =>
-                      setIsProductDropdownOpen(!isProductDropdownOpen)
-                    }
-                  >
-                    {item.title}
-                    <FaChevronDown
-                      className={`ml-2 transition-transform duration-300 ${
-                        isProductDropdownOpen ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
+                  <div key={item.id}>
+                    <button
+                      className="text-gray-600 hover:text-blue-600 py-2 transition-colors duration-300 text-left flex items-center justify-between w-full"
+                      onClick={() =>
+                        setIsProductDropdownOpen(!isProductDropdownOpen)
+                      }
+                    >
+                      {item.title}
+                      <FaChevronDown
+                        className={`ml-2 transition-transform duration-300 ${
+                          isProductDropdownOpen ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+                    {isProductDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="bg-gray-50 rounded-md mt-2"
+                      >
+                        <ProductDropdown
+                          isOpen={isProductDropdownOpen}
+                          onClose={() => setIsProductDropdownOpen(false)}
+                        />
+                      </motion.div>
+                    )}
+                  </div>
                 ) : (
                   <Link
                     key={item.id}
@@ -334,18 +351,62 @@ const Header: React.FC = () => {
                   </Link>
                 )
               )}
-              {isProductDropdownOpen && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="bg-white shadow-inner"
+
+              {/* Wishlist in mobile menu */}
+              <Link
+                to={isLoggedIn ? "/wishlist" : "/login"}
+                className="text-gray-600 hover:text-blue-600 py-2 transition-colors duration-300 flex items-center"
+                onClick={() => setIsOpen(false)}
+              >
+                <FaRegHeart className="mr-2" />
+                Wishlist
+                {isLoggedIn && wishlistItemCount > 0 && (
+                  <span className="ml-2 bg-red-600 text-white text-xs px-2 py-1 rounded-full">
+                    {wishlistItemCount}
+                  </span>
+                )}
+              </Link>
+
+              {/* User Menu Items */}
+              {user ? (
+                <>
+                  <div className="py-2 text-gray-600">
+                    <div className="font-medium">{user.fullName}</div>
+                    <div className="text-sm text-gray-500">{user.email}</div>
+                  </div>
+                  <Link
+                    to="/customer/purchase-history"
+                    className="text-gray-600 hover:text-blue-600 py-2 transition-colors duration-300"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Order History
+                  </Link>
+                  <Link
+                    to="/customer/manage-profile"
+                    className="text-gray-600 hover:text-blue-600 py-2 transition-colors duration-300"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Manage Profile
+                  </Link>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsOpen(false);
+                    }}
+                    className="text-red-600 hover:text-red-700 py-2 transition-colors duration-300 text-left w-full"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <Link
+                  to="/login"
+                  className="text-gray-600 hover:text-blue-600 py-2 transition-colors duration-300 flex items-center"
+                  onClick={() => setIsOpen(false)}
                 >
-                  <ProductDropdown
-                    isOpen={isProductDropdownOpen}
-                    onClose={() => setIsProductDropdownOpen(false)}
-                  />
-                </motion.div>
+                  <FiUser className="mr-2" />
+                  Login
+                </Link>
               )}
             </nav>
           </motion.div>

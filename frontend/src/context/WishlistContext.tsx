@@ -1,10 +1,6 @@
-// WishlistContext.tsx
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { toast } from "react-toastify";
-
-interface WishlistItem {
-  productId: string;
-}
+import { WishlistItem } from "../types/wishlist";
 
 interface WishlistContextType {
   wishlist: WishlistItem[];
@@ -23,12 +19,10 @@ const WishlistContext = createContext<WishlistContextType | undefined>(
 );
 
 const transformApiData = (data: any): WishlistItem[] => {
-  // If data is not an array but has a wishlist property that is an array
   if (!Array.isArray(data) && data?.wishlist && Array.isArray(data.wishlist)) {
     data = data.wishlist;
   }
 
-  // If data is not an array at all, return empty array
   if (!Array.isArray(data)) {
     console.error("Expected array response from API, received:", data);
     return [];
@@ -44,8 +38,12 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
 
+  const isLoggedIn = !!localStorage.getItem("authToken");
+
   useEffect(() => {
-    fetchWishlist();
+    if (isLoggedIn) {
+      fetchWishlist();
+    }
   }, []);
 
   const fetchWishlist = async () => {
@@ -66,10 +64,13 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({
       const data = await response.json();
       console.log("Fetch wishlist response:", data); // Debug log
       setWishlist(transformApiData(data));
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage =
+        error?.response?.data?.error ||
+        "Failed to fetch wishlist. Please try again.";
       console.error("Error fetching wishlist:", error);
-      toast.error("Failed to fetch wishlist. Please try again.");
-      setWishlist([]);
+      toast.error(errorMessage);
+      setWishlist([]); // Reset wishlist on failure
     }
   };
 
@@ -94,16 +95,18 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({
       const data = await response.json();
       console.log("Add to wishlist response:", data); // Debug log
 
-      // If we get a single item response, wrap it in an array
       const newData = Array.isArray(data)
         ? data
         : data.item
         ? [data.item]
         : [data];
       setWishlist(transformApiData(newData));
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage =
+        error?.response?.data?.error ||
+        "Failed to add product to wishlist. Please try again.";
       console.error("Error adding to wishlist:", error);
-      toast.error("Failed to add product to wishlist. Please try again.");
+      toast.error(errorMessage);
     }
   };
 
@@ -128,9 +131,12 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({
       const data = await response.json();
       console.log("Remove from wishlist response:", data); // Debug log
       setWishlist(transformApiData(data));
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage =
+        error?.response?.data?.error ||
+        "Failed to remove product from wishlist. Please try again.";
       console.error("Error removing from wishlist:", error);
-      toast.error("Failed to remove product from wishlist. Please try again.");
+      toast.error(errorMessage);
     }
   };
 

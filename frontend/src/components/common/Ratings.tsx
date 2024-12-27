@@ -1,9 +1,5 @@
 import React from "react";
-
-interface RatingsProps {
-  rating: number; // Full rating value (including decimals)
-  ratingCount: string; // Number of ratings
-}
+import { RatingsProps } from "../../types/rating";
 
 const Ratings: React.FC<RatingsProps> = ({ rating, ratingCount }) => {
   // Function to render full, half, and empty stars based on the rating value

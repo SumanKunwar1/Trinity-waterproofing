@@ -1,5 +1,6 @@
 import { memo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLogout } from "../../utils/authUtils";
 import {
   FaTachometerAlt,
   FaHistory,
@@ -15,7 +16,7 @@ import { motion } from "framer-motion"; // Importing Framer Motion for animation
 export const SideBar = memo(() => {
   const userString = localStorage.getItem("user");
   const user: User | null = userString ? JSON.parse(userString) : null;
-
+  const handleLogout = useLogout();
   const navItems = [
     {
       label: "Dashboard",
@@ -68,20 +69,6 @@ export const SideBar = memo(() => {
     setActiveItem(label);
     navigate(path);
   };
-
-  const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("userRole");
-    localStorage.removeItem("user");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("userFullName");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("userPassword");
-    localStorage.removeItem("userNumber");
-    // Redirect to login page
-    navigate("/login");
-  };
-
   useEffect(() => {
     localStorage.setItem("activeItem", activeItem);
   }, [activeItem]);

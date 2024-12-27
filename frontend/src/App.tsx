@@ -28,6 +28,8 @@ import ShippingPage from "./pages/ShippingPolicy";
 import ReturnPolicyPage from "./pages/ReturnPolicy";
 import PrivacyPolicyPage from "./pages/PrivacyPolicy";
 import { AuthProvider } from "./context/AuthContext";
+import OrderSuccess from "./components/cart/OrderSuccess";
+import OrderFailure from "./components/cart/OrderFailure";
 function App() {
   const userRole = localStorage.getItem("userRole");
   return (
@@ -41,11 +43,15 @@ function App() {
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/products" element={<ProductListing />} />
+                <Route path="/products/:id" element={<ProductListing />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/wishlist" element={<Wishlist />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/order-success" element={<OrderSuccess />} />
+                <Route path="/order-failure" element={<OrderFailure />} />
+
                 <Route path="/forgot-password" element={<ForgetPassword />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />

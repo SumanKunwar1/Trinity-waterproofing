@@ -5,18 +5,11 @@ import { toast } from "react-toastify";
 import { FaHeart } from "react-icons/fa";
 import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
-
-// Define the Product interface for TypeScript type checking
-interface Product {
-  _id: string;
-  name: string;
-  description: string;
-  productImage: string;
-}
+import { IProduct } from "../types/product";
 
 const Wishlist: React.FC = () => {
   const { wishlist, removeFromWishlist } = useWishlist();
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<IProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch wishlist products using fetchWishlist

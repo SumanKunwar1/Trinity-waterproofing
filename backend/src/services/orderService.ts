@@ -148,6 +148,7 @@ export class OrderService {
         });
       }
       console.log("Product stock updated.");
+<<<<<<< HEAD
       const notificationData: INotification = {
         userId: new mongoose.Types.ObjectId(user._id),
         message: `A new order with ID ${newOrder._id} has been created.`,
@@ -166,6 +167,10 @@ export class OrderService {
         "info"
       );
 
+=======
+
+      // Validate cart items
+>>>>>>> c0b9f17fcad2e90cd4cc0016ea0b5638208c7c29
       const cart = await Cart.findOne({ userId: user._id });
       if (!cart) {
         console.log("Cart not found for user.");

@@ -21,26 +21,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../components/ui/dialog";
-
-interface Product {
-  _id: string;
-  name: string;
-  brand: { _id: string; name: string };
-  retailPrice: number;
-  wholeSalePrice: number;
-  inStock: number;
-  colors: { name: string; hex: string }[];
-  description: string;
-  features: string;
-}
+import { IProduct } from "../../types/product";
 
 const Products: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<IProduct[]>([]);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<IProduct | null>(null);
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
@@ -58,12 +47,14 @@ const Products: React.FC = () => {
         },
       });
       if (!response.ok) {
-        throw new Error("Failed to fetch products");
+        // Parse the error response to get the API's structured error
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to fetch products"); // Use API error message if available
       }
       const data = await response.json();
       setProducts(data);
-    } catch (error) {
-      toast.error("Failed to fetch products");
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 
@@ -82,19 +73,21 @@ const Products: React.FC = () => {
           },
         });
         if (!response.ok) {
-          throw new Error("Failed to delete product");
+          // Parse the error response to get the API's structured error
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to delete product"); // Use API error message if available
         }
         toast.success("Product deleted successfully");
         fetchProducts();
-      } catch (error) {
-        toast.error("Failed to delete product");
+      } catch (error: any) {
+        toast.error(error.message);
       }
     }
     setIsDeleteDialogOpen(false);
     setProductToDelete(null);
   };
 
-  const handleViewDetails = (product: Product, e?: React.MouseEvent) => {
+  const handleViewDetails = (product: IProduct, e?: React.MouseEvent) => {
     // Prevent event bubbling if event exists
     if (e) {
       e.stopPropagation();
@@ -108,23 +101,23 @@ const Products: React.FC = () => {
     {
       header: "Brand",
       accessor: "brand.name",
-      cell: (row: Product) => row.brand?.name || "No Brand",
+      cell: (row: IProduct) => row.brand?.name || "No Brand",
     },
     {
       header: "Retail Price",
       accessor: "retailPrice",
-      cell: (row: Product) => `$${row.retailPrice.toFixed(2)}`,
+      cell: (row: IProduct) => `$${row.retailPrice.toFixed(2)}`,
     },
     {
       header: "Wholesale Price",
       accessor: "wholeSalePrice",
-      cell: (row: Product) => `$${row.wholeSalePrice.toFixed(2)}`,
+      cell: (row: IProduct) => `$${row.wholeSalePrice.toFixed(2)}`,
     },
     { header: "Stock", accessor: "inStock" },
     {
       header: "Colors",
       accessor: "colors",
-      cell: (row: Product) => (
+      cell: (row: IProduct) => (
         <div className="flex gap-1">
           {row.colors?.length ? (
             row.colors.map((color, index) => (
@@ -144,7 +137,7 @@ const Products: React.FC = () => {
     {
       header: "Actions",
       accessor: "actions",
-      cell: (row: Product) => (
+      cell: (row: IProduct) => (
         <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
           <Button
             variant="outline"
@@ -197,7 +190,7 @@ const Products: React.FC = () => {
                 <Table
                   columns={columns}
                   data={products}
-                  onRowClick={(item: Product) => handleViewDetails(item)}
+                  onRowClick={(item: IProduct) => handleViewDetails(item)}
                   itemsPerPage={10}
                 />
               </CardContent>

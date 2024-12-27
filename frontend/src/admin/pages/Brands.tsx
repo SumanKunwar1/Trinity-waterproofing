@@ -65,12 +65,17 @@ const Brands: React.FC = () => {
         console.log("Brands:", data);
         setBrands(data);
       } else {
-        console.error("Failed to fetch brands");
-        toast.error("Failed to fetch brands");
+        // Parsing API error response
+        const errorData = await response.json();
+        const errorMessage = errorData.error || "Failed to fetch brands";
+        console.error(errorMessage);
+        toast.error(errorMessage);
       }
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.error || error.message || "Error fetching brands";
       console.error("Error fetching brands:", error);
-      toast.error("Error fetching brands");
+      toast.error(errorMessage);
     }
   };
 
@@ -106,15 +111,24 @@ const Brands: React.FC = () => {
             : "Brand created successfully"
         );
       } else {
-        console.error(`Failed to ${isEditing ? "update" : "create"} brand`);
-        toast.error(`Failed to ${isEditing ? "update" : "create"} brand`);
+        // Parsing API error response
+        const errorData = await response.json();
+        const errorMessage =
+          errorData.error ||
+          `Failed to ${isEditing ? "update" : "create"} brand`;
+        console.error(errorMessage);
+        toast.error(errorMessage);
       }
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.error ||
+        error.message ||
+        `Error ${isEditing ? "updating" : "creating"} brand`;
       console.error(
         `Error ${isEditing ? "updating" : "creating"} brand:`,
         error
       );
-      toast.error(`Error ${isEditing ? "updating" : "creating"} brand`);
+      toast.error(errorMessage);
     }
   };
 
@@ -155,12 +169,17 @@ const Brands: React.FC = () => {
         setSelectedBrand(null);
         toast.success("Brand deleted successfully");
       } else {
-        console.error("Failed to delete brand");
-        toast.error("Failed to delete brand");
+        // Parsing API error response
+        const errorData = await response.json();
+        const errorMessage = errorData.error || "Failed to delete brand";
+        console.error(errorMessage);
+        toast.error(errorMessage);
       }
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.error || error.message || "Error deleting brand";
       console.error("Error deleting brand:", error);
-      toast.error("Error deleting brand");
+      toast.error(errorMessage);
     }
   };
 
