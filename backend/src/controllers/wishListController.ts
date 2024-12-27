@@ -15,7 +15,7 @@ export class WishListController {
   ): Promise<void> {
     try {
       const { productId } = req.params;
-      const userId = req.params.id;
+      const userId = req.params.userId;
       const result = await this.wishListService.addToWishlist(
         userId,
         productId
@@ -33,7 +33,7 @@ export class WishListController {
   ): Promise<void> {
     try {
       const { productId } = req.params;
-      const userId = req.params.id;
+      const userId = req.params.userId;
       const result = await this.wishListService.removeFromWishlist(
         userId,
         productId
@@ -50,7 +50,7 @@ export class WishListController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const userId = req.params.id;
+      const userId = req.params.userId;
       const result = await this.wishListService.getWishlist(userId);
       res.locals.responseData = result;
       next();

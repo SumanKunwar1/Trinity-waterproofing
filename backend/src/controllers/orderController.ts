@@ -38,7 +38,7 @@ export class OrderController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const userId = req.params.id;
+      const userId = req.params.userId;
       const result = await this.orderService.getOrdersByUserId(userId);
       res.locals.responseData = result;
       next();
@@ -84,7 +84,7 @@ export class OrderController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const orderId = req.params.id;
+      const orderId = req.params.orderId;
       const result = await this.orderService.confirmOrder(orderId);
       res.locals.responseData = result;
       next();
@@ -99,7 +99,7 @@ export class OrderController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const orderId = req.params.id;
+      const orderId = req.params.orderId;
       const result = await this.orderService.cancelOrderByAdmin(orderId);
       res.locals.responseData = result;
       next();

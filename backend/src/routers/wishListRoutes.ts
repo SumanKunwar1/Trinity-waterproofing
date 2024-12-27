@@ -11,7 +11,7 @@ const router = Router();
 const wishListController = new WishListController();
 
 router.post(
-  "/:id/:productId",
+  "/:userId/:productId",
   isAuthenticated,
   isAuthorizedUser,
   wishListController.addToWishList.bind(wishListController),
@@ -19,7 +19,7 @@ router.post(
 );
 
 router.delete(
-  "/:id/:productId",
+  "/:userId/:productId",
   isAuthenticated,
   isAuthorizedUser,
   wishListController.removeFromWishList.bind(wishListController),
@@ -27,7 +27,7 @@ router.delete(
 );
 
 router.get(
-  "/:id/",
+  "/:userId/",
   isAuthenticated,
   isAuthorizedUser,
   wishListController.getWishlist.bind(wishListController),

@@ -37,7 +37,7 @@ router.get(
 );
 
 router.patch(
-  "/edit/:id",
+  "/edit/:userId",
   isAuthenticated,
   isAuthorizedUser,
   userController.editUser.bind(userController),
@@ -45,7 +45,7 @@ router.patch(
 );
 
 router.patch(
-  "/edit/password/:id",
+  "/edit/password/:userId",
   isAuthenticated,
   isAuthorizedUser,
   userController.editPassword.bind(userController),
@@ -53,7 +53,7 @@ router.patch(
 );
 
 router.patch(
-  "/addressBook/:id",
+  "/addressBook/:userId",
   isAuthenticated,
   isAuthorizedUser,
   validateAddressBook,
@@ -62,7 +62,7 @@ router.patch(
 );
 
 router.get(
-  "/addressBook/:id",
+  "/addressBook/:userId",
   isAuthenticated,
   isAuthorizedUser,
   userController.getAddress.bind(userController),
@@ -70,7 +70,7 @@ router.get(
 );
 
 router.patch(
-  "/addressBook/:id/:addressBookId",
+  "/addressBook/:userId/:addressBookId",
   isAuthenticated,
   isAuthorizedUser,
   validateAddressBook,
@@ -79,7 +79,7 @@ router.patch(
 );
 
 router.patch(
-  "/addressBook/default/:id/:addressBookId",
+  "/addressBook/default/:userId/:addressBookId",
   isAuthenticated,
   isAuthorizedUser,
   userController.editDefaultAddress.bind(userController),
@@ -87,7 +87,7 @@ router.patch(
 );
 
 router.delete(
-  "/addressBook/:id/:addressBookId",
+  "/addressBook/:userId/:addressBookId",
   isAuthenticated,
   isAuthorizedUser,
   userController.deleteAddress.bind(userController),
@@ -95,7 +95,7 @@ router.delete(
 );
 
 router.delete(
-  "/:id",
+  "/:userId",
   isAuthenticated,
   isAuthorizedUser,
   userController.deleteUser.bind(userController),
@@ -103,7 +103,7 @@ router.delete(
 );
 
 router.delete(
-  "/adminDelete/:id",
+  "/adminDelete/:userId",
   isAuthenticated,
   isAuthorized("admin"),
   userController.deleteUser.bind(userController),

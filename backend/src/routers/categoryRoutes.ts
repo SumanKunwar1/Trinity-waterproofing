@@ -28,7 +28,7 @@ router.get(
 );
 
 router.patch(
-  "/:id",
+  "/:categoryId",
   isAuthenticated,
   isAuthorized("admin"),
   validateEditCategory,
@@ -37,7 +37,7 @@ router.patch(
 );
 
 router.delete(
-  "/:id",
+  "/:categoryId",
   isAuthenticated,
   isAuthorized("admin"),
   categoryController.deleteCategory.bind(categoryController),

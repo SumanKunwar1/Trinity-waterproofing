@@ -33,7 +33,7 @@ router.get(
 
 // Get orders by user ID
 router.get(
-  "/user/:id",
+  "/user/:userId",
   isAuthenticated,
   isAuthorizedUser,
   orderController.getOrdersByUserId.bind(orderController),
@@ -50,7 +50,7 @@ router.get(
 
 // Confirm an order (admin only)
 router.patch(
-  "/admin/:id/confirm",
+  "/admin/:orderId/confirm",
   isAuthenticated,
   isAuthorized("admin"),
   orderController.confirmOrder.bind(orderController),
@@ -59,7 +59,7 @@ router.patch(
 
 // Cancel order (user only)
 router.delete(
-  "/:id/cancel/:orderId",
+  "/:userId/cancel/:orderId",
   isAuthenticated,
   isAuthorizedUser,
   orderController.cancelOrderByUser.bind(orderController),
@@ -68,7 +68,7 @@ router.delete(
 
 // Cancel order by admin
 router.delete(
-  "/admin/:id/cancel",
+  "/admin/:orderId/cancel",
   isAuthenticated,
   isAuthorized("admin"),
   orderController.cancelOrderByAdmin.bind(orderController),
@@ -77,7 +77,7 @@ router.delete(
 
 // Return request (user)
 router.patch(
-  "/:id/return-request/:orderId",
+  "/:userId/return-request/:orderId",
   isAuthenticated,
   isAuthorizedUser,
   orderController.returnRequest.bind(orderController),

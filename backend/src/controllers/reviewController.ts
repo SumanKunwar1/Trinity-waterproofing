@@ -46,7 +46,7 @@ export class ReviewController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const userId = req.params.id;
+      const userId = req.params.userId;
       const result = await this.reviewService.getReviewsByUser(userId);
       res.locals.responseData = result;
     } catch (error: any) {
@@ -60,7 +60,7 @@ export class ReviewController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const reviewId = req.params.id;
+      const reviewId = req.params.reviewId;
       const userEmail = req.email;
       const result = await this.reviewService.deleteReviewById(
         reviewId,
@@ -78,7 +78,7 @@ export class ReviewController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const reviewId = req.params.id;
+      const reviewId = req.params.reviewId;
       const updatedData: Partial<IReview> = req.body;
       const result = await this.reviewService.updateReviewById(
         reviewId,

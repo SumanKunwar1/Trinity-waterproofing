@@ -100,7 +100,7 @@ export class UserController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const userId = req.params.id;
+      const userId = req.params.userId;
       const updatedData: Partial<IUser> = req.body;
       const result = await this.userService.editUser(userId, updatedData);
       res.locals.responseData = result;
@@ -116,7 +116,7 @@ export class UserController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const userId = req.params.id;
+      const userId = req.params.userId;
       const { oldPassword, newPassword } = req.body;
       const result = await this.userService.editPassword(
         userId,
@@ -136,7 +136,7 @@ export class UserController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const userId = req.params.id;
+      const userId = req.params.userId;
       const result = await this.userService.deleteUser(userId);
       res.locals.responseData = result;
       next();
@@ -151,7 +151,7 @@ export class UserController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const userId = req.params.id;
+      const userId = req.params.userId;
       const addressData = req.body;
       const result = await this.userService.addAddress(userId, addressData);
       res.locals.responseData = result;
@@ -168,7 +168,7 @@ export class UserController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const userId = req.params.id;
+      const userId = req.params.userId;
       const addressBookId = req.params.addressBookId;
       const addressData = req.body;
       const result = await this.userService.editAddress(
@@ -189,7 +189,7 @@ export class UserController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const userId = req.params.id;
+      const userId = req.params.userId;
       const addressBookId = req.params.addressBookId;
       const result = await this.userService.editDefaultAddress(
         userId,
@@ -207,7 +207,7 @@ export class UserController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const userId = req.params.id;
+      const userId = req.params.userId;
       const result = await this.userService.getAddress(userId);
       res.locals.responseData = result;
       next();
@@ -221,7 +221,7 @@ export class UserController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const userId = req.params.id;
+      const userId = req.params.userId;
       const addressBookId = req.params.addressBookId;
       const result = await this.userService.deleteAddress(
         userId,

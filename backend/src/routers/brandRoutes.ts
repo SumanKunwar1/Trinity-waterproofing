@@ -37,7 +37,7 @@ router.get(
 // );
 
 router.patch(
-  "/:id",
+  "/:brandId",
   isAuthenticated,
   isAuthorized("admin"),
   imageUploadMiddleware,
@@ -48,7 +48,7 @@ router.patch(
 );
 
 router.delete(
-  "/:id",
+  "/:brandId",
   isAuthenticated,
   isAuthorized("admin"),
   brandController.deleteBrand.bind(brandController),

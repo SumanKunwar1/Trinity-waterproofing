@@ -8,8 +8,8 @@ const isAuthorizedUser = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { id } = req.params;
-    const user = await User.findById(id);
+    const { userId } = req.params;
+    const user = await User.findById(userId);
 
     if (!user) {
       return next(httpMessages.NOT_FOUND("User"));

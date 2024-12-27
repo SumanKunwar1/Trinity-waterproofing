@@ -27,7 +27,7 @@ router.get(
 );
 
 router.delete(
-  "/:id",
+  "/:enquiryId",
   isAuthenticated,
   isAuthorized("admin"),
   enquiryController.deleteEnquiry.bind(enquiryController),

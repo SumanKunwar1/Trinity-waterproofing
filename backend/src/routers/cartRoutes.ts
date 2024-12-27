@@ -13,7 +13,7 @@ const router = Router();
 const cartController = new CartController();
 
 router.post(
-  "/:id",
+  "/:userId",
   isAuthenticated,
   isAuthorizedUser,
   validateCart,
@@ -22,7 +22,7 @@ router.post(
 );
 
 router.patch(
-  "/:id/:cartItemId",
+  "/:userId/:cartItemId",
   isAuthenticated,
   isAuthorizedUser,
   cartController.updateQuantity.bind(cartController),
@@ -30,7 +30,7 @@ router.patch(
 );
 
 router.delete(
-  "/:id/:cartItemId",
+  "/:userId/:cartItemId",
   isAuthenticated,
   isAuthorizedUser,
   cartController.removeFromCart.bind(cartController),
@@ -38,7 +38,7 @@ router.delete(
 );
 
 router.get(
-  "/:id",
+  "/:userId",
   isAuthenticated,
   isAuthorizedUser,
   cartController.getCart.bind(cartController),
@@ -46,7 +46,7 @@ router.get(
 );
 
 router.delete(
-  "/:id",
+  "/:userId",
   isAuthenticated,
   isAuthorizedUser,
   cartController.clearCart.bind(cartController),

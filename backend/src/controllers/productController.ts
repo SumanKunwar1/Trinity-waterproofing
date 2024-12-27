@@ -33,7 +33,7 @@ export class ProductController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const productId: string = req.params.id;
+      const productId: string = req.params.productId;
       const productData: IProduct = req.body;
       const result = await this.productService.editProductImages(
         productId,
@@ -52,7 +52,7 @@ export class ProductController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const productId: string = req.params.id;
+      const productId: string = req.params.productId;
       const productData: IEditableProduct = req.body;
       const result = await this.productService.editProductDetails(
         productId,
@@ -86,7 +86,7 @@ export class ProductController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const productId = req.params.id;
+      const productId = req.params.productId;
 
       const result = await this.productService.getProductById(productId);
       res.locals.responseData = result;
@@ -102,7 +102,7 @@ export class ProductController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const userId = req.params.id;
+      const userId = req.params.userId;
       const result = await this.productService.getProductByUserId(userId);
       res.locals.responseData = result;
       next();
@@ -117,7 +117,7 @@ export class ProductController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const productId = req.params.id;
+      const productId = req.params.productId;
 
       const result = await this.productService.deleteProductById(productId);
       res.locals.responseData = result;

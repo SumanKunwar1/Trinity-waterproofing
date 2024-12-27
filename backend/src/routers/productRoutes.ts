@@ -31,7 +31,7 @@ router.post(
 );
 
 router.patch(
-  "/image/:id",
+  "/image/:productId",
   isAuthenticated,
   isAuthorized("admin"),
   uploadMiddleware,
@@ -40,12 +40,13 @@ router.patch(
   productController.editProductImages.bind(productController),
   handleResponse
 );
+
 router.patch(
-  "/:id",
+  "/:productId",
   isAuthenticated,
   isAuthorized("admin"),
   validateEditProduct,
-  productController.editProductImages.bind(productController),
+  productController.editProductDetails.bind(productController),
   handleResponse
 );
 
@@ -56,19 +57,19 @@ router.get(
 );
 
 router.get(
-  "/:id",
+  "/:productId",
   productController.getProductById.bind(productController),
   handleResponse
 );
 
 router.get(
-  "/user/:id",
+  "/user/:userId",
   productController.getProductByUserId.bind(productController),
   handleResponse
 );
 
 router.delete(
-  "/:id",
+  "/:productId",
   isAuthenticated,
   isAuthorized("admin"),
   productController.deleteProductById.bind(productController),
