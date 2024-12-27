@@ -19,10 +19,12 @@ export class OrderController {
     try {
       const userEmail = req.email;
       const userRole = req.role;
-      const orderData: IOrderItem[] = req.body;
+      const orderData: IOrderItem[] = req.body.products;
+      const addressId: string = req.body.addressId;
       const result = await this.orderService.createOrder(
         userEmail,
         orderData,
+        addressId,
         userRole
       );
       res.locals.responseData = result;

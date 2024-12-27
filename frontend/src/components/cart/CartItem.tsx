@@ -1,57 +1,48 @@
-import React, { useState } from "react";
+// src/components/CartItem.tsx
+
+import React, { useState, useCallback, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { toast } from "react-toastify";
-import Button from "../common/Button";
+import { toast } from "react-hot-toast";
+import { Button } from "../ui/button"; // Assuming this is a pre-defined Button component
 import { ICartItem } from "../../types/cart";
+import { useCart } from "../../context/CartContext"; // Use the context hook
 
 interface CartItemProps {
   item: ICartItem;
-  onRemove: (productId: string) => void;
-  onUpdateQuantity: (productId: string, quantity: number) => void;
 }
 
-const CartItem: React.FC<CartItemProps> = ({
-  item,
-  onRemove,
-  onUpdateQuantity,
-}) => {
+const CartItem: React.FC<CartItemProps> = ({ item }) => {
   const [quantity, setQuantity] = useState(item.quantity);
+  const { updateQuantity, removeFromCart } = useCart();
 
-  const handleIncrease = () => {
+  useEffect(() => {
+    setQuantity(item.quantity);
+  }, [item]);
+
+  const handleIncrease = useCallback(() => {
     if (quantity < item.inStock) {
       const newQuantity = quantity + 1;
       setQuantity(newQuantity);
-      onUpdateQuantity(item.productId, newQuantity);
-      toast.success(`Quantity increased to ${newQuantity}`);
+      updateQuantity(item.productId, newQuantity); // Update quantity in context
     } else {
       toast.error("Cannot exceed available stock.");
     }
-  };
+  }, [quantity, item.inStock, item.productId, updateQuantity]);
 
-  const handleDecrease = () => {
+  const handleDecrease = useCallback(() => {
     if (quantity > 1) {
       const newQuantity = quantity - 1;
       setQuantity(newQuantity);
-      onUpdateQuantity(item.productId, newQuantity);
-      toast.success(`Quantity decreased to ${newQuantity}`);
+      updateQuantity(item.productId, newQuantity); // Update quantity in context
     } else {
       toast.error("Quantity cannot be less than 1.");
     }
-  };
+  }, [quantity, item.productId, updateQuantity]);
 
-  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newQuantity = Math.max(
-      1,
-      Math.min(parseInt(e.target.value), item.inStock)
-    );
-    setQuantity(newQuantity);
-    onUpdateQuantity(item.productId, newQuantity);
-    toast.success(`Quantity updated to ${newQuantity}`);
-  };
-
-  const handleRemove = () => {
-    onRemove(item.productId);
-  };
+  const handleRemove = useCallback(() => {
+    removeFromCart(item.productId);
+    toast.success("Item removed from cart");
+  }, [item.productId, removeFromCart]);
 
   return (
     <div className="flex flex-col md:flex-row items-center justify-between mb-6 p-4 border-b border-gray-300">
@@ -62,28 +53,34 @@ const CartItem: React.FC<CartItemProps> = ({
         <img
           src={item.productImage}
           alt={item.name}
-          className="w-20 h-20 object-cover"
+          className="w-20 h-20 object-cover rounded-md"
         />
         <div>
           <h3 className="text-lg font-semibold">{item.name}</h3>
-          <p className="text-sm text-gray-600">{item.description}</p>
+          <p className="text-sm text-gray-600 line-clamp-2">
+            {item.description}
+          </p>
           {item.color && (
             <p className="text-sm text-gray-600 flex flex-row gap-2 items-center">
               Color:{" "}
               <span
                 style={{ backgroundColor: item.color }}
-                className="w-5 h-5 rounded-full flex items-center justify-center"
+                className="w-5 h-5 rounded-full flex items-center justify-center border border-gray-300"
               ></span>
             </p>
           )}
+          <p className="text-sm font-medium text-gray-900 mt-1">
+            Rs {item.price.toFixed(2)}
+          </p>
         </div>
       </Link>
 
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col items-end gap-2">
         <div className="flex items-center gap-2">
           <Button
-            variant="primary"
-            className="bg-gray-200 hover:bg-gray-300 rounded-lg py-2 px-4"
+            variant="outline"
+            size="icon"
+            className="h-8 w-8 bg-secondary text-white"
             onClick={handleDecrease}
           >
             -
@@ -92,15 +89,16 @@ const CartItem: React.FC<CartItemProps> = ({
           <input
             type="number"
             value={quantity}
-            onChange={handleQuantityChange}
-            className="w-16 text-center rounded-lg py-2 border border-gray-300"
+            onChange={(e) => setQuantity(Number(e.target.value))}
+            className="w-16 text-center rounded-md py-1 px-2 border border-gray-300"
             min="1"
             max={item.inStock}
           />
 
           <Button
-            variant="primary"
-            className="bg-gray-200 hover:bg-gray-300 rounded-lg py-2 px-4"
+            variant="outline"
+            size="icon"
+            className="h-8 w-8 bg-secondary text-white"
             onClick={handleIncrease}
           >
             +
@@ -108,8 +106,9 @@ const CartItem: React.FC<CartItemProps> = ({
         </div>
         <Button
           variant="outline"
+          size="sm"
           onClick={handleRemove}
-          className="mt-2 md:mt-0"
+          className="mt-2"
         >
           Remove
         </Button>

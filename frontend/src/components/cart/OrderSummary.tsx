@@ -8,53 +8,53 @@ interface OrderSummaryProps {
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({ cartItems }) => {
   const location = useLocation();
-  const directPurchaseItem = location.state?.checkoutData;
+  const checkoutData = location.state?.checkoutData;
 
-  // Determine which items to display
-  const itemsToDisplay = directPurchaseItem
-    ? [
-        {
-          productId: directPurchaseItem.product._id,
-          name: directPurchaseItem.product.name,
-          price: directPurchaseItem.price,
-          quantity: directPurchaseItem.quantity,
-          color: directPurchaseItem.selectedColor,
-        },
-      ]
-    : cartItems || [];
+  const itemsToDisplay = checkoutData || cartItems || [];
 
-  // Calculate the total price
   const total = itemsToDisplay.reduce((total, item) => {
-    return total + item.price * item.quantity;
+    const price = item.price || item.product?.price || 0;
+    const quantity = item.quantity || 1;
+    return total + price * quantity;
   }, 0);
 
   return (
     <div className="bg-gray-100 rounded-lg p-6">
       <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
       <div className="space-y-2">
-        {itemsToDisplay.map((item) => (
-          <div key={item.productId} className="border-b border-gray-300 pb-4">
-            <div className="flex justify-between">
-              <span className="font-semibold text-brand">{item.name}</span>
-              <span>Rs {(item.price * item.quantity).toFixed(2)}</span>
+        {itemsToDisplay.map((item, index) => {
+          const product = item.product || item;
+          const price = item.price || product.price || 0;
+          const quantity = item.quantity || 1;
+          const color = item.selectedColor || item.color || null;
+
+          return (
+            <div
+              key={product._id || index}
+              className="border-b border-gray-300 pb-4"
+            >
+              <div className="flex justify-between">
+                <span className="font-semibold text-brand">{product.name}</span>
+                <span>Rs {(price * quantity).toFixed(2)}</span>
+              </div>
+              {color && (
+                <p className="text-sm text-gray-600 mt-1 flex flex-row gap-2 items-center">
+                  Color:{" "}
+                  <span className="font-semibold">
+                    <span
+                      style={{ backgroundColor: color }}
+                      className="w-5 h-5 rounded-full flex items-center justify-center"
+                    ></span>
+                  </span>
+                </p>
+              )}
+              <div className="flex justify-between">
+                <span>Quantity:</span>
+                <span>{quantity}</span>
+              </div>
             </div>
-            {item.color && (
-              <p className="text-sm text-gray-600 mt-1 flex flex-row gap-2 items-center">
-                Color:{" "}
-                <span className="font-semibold">
-                  <span
-                    style={{ backgroundColor: item.color }}
-                    className="w-5 h-5 rounded-full flex items-center justify-center"
-                  ></span>
-                </span>
-              </p>
-            )}
-            <div className="flex justify-between">
-              <span>Quantity:</span>
-              <span>{item.quantity}</span>
-            </div>
-          </div>
-        ))}
+          );
+        })}
         <div className="border-gray-300 pt-2 mt-2">
           <div className="flex justify-between font-semibold">
             <span>Total:</span>

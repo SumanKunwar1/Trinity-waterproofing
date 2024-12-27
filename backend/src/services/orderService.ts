@@ -12,45 +12,74 @@ export class OrderService {
     this.cartService = cartService;
   }
   public async createOrder(
-    userId: string,
+    userEmail: string,
     orderData: IOrderItem[],
+    addressId: string,
     userRole: string
   ) {
     try {
-      const user = await User.findById(userId);
+      console.log("Received order creation request.");
+      console.log("User Email:", userEmail);
+      console.log("Order Data:", JSON.stringify(orderData, null, 2));
+      console.log("Address ID:", addressId);
+      console.log("User Role:", userRole);
+
+      // Find the user
+      const user = await User.findOne({ email: userEmail });
       if (!user) {
+        console.log("User not found.");
         throw httpMessages.NOT_FOUND("User");
       }
+      console.log("User found:", user);
 
       let subtotal = 0;
       const validatedProducts = [];
 
+      // Iterate over the order items
       for (const orderItem of orderData) {
+        console.log("Processing order item:", orderItem);
+
         const { productId, color, quantity } = orderItem;
 
+        // Find the product
         const product = await Product.findById(productId);
         if (!product) {
+          console.log(`Product not found for ID: ${productId}`);
           throw httpMessages.NOT_FOUND(`Product with ID ${productId}`);
         }
+        console.log("Product found:", product);
 
+        // Determine price based on user role
         const price =
           userRole.toLowerCase() === "b2b"
             ? product.wholeSalePrice
             : product.retailPrice;
+        console.log(
+          `Price for product '${product.name}' determined as: ${price}`
+        );
 
+        // Validate colors if applicable
         if (product.colors && product.colors.length > 0) {
+          console.log(
+            "Validating color for product with colors:",
+            product.colors
+          );
+
           if (!color) {
+            console.log("Color is required but not provided.");
             throw httpMessages.BAD_REQUEST(
               `Color is required for product ${
                 product.name
               } with available colors: ${product.colors.join(", ")}`
             );
           }
+
           const colorExists = product.colors.some(
             (c) => c.name === color || c.hex === color
           );
 
           if (!colorExists) {
+            console.log(`Invalid color: ${color}`);
             throw httpMessages.BAD_REQUEST(
               `Invalid color '${color}' for product ${
                 product.name
@@ -61,46 +90,71 @@ export class OrderService {
           }
         }
 
+        // Check stock availability
         if (product.inStock < quantity) {
+          console.log(
+            `Insufficient stock for product ${product.name}. Available: ${product.inStock}, Requested: ${quantity}`
+          );
           throw httpMessages.BAD_REQUEST(
             `Insufficient stock for product ${product.name}. Available: ${product.inStock}, Requested: ${quantity}`
           );
         }
 
+        // Add validated product
         validatedProducts.push({
           productId,
           color: color || null,
           quantity,
           price,
         });
+        console.log("Validated product added:", {
+          productId,
+          color,
+          quantity,
+          price,
+        });
 
         subtotal += price * quantity;
+        console.log("Updated subtotal:", subtotal);
       }
 
+      // Create new order
+      console.log("All products validated. Creating new order...");
       const newOrder = new Order({
         products: validatedProducts.map((item) => ({
           productId: item.productId,
           color: item.color,
           quantity: item.quantity,
+          price: item.price, // Include price to confirm it's carried over
         })),
-        userId,
+        userId: user._id,
+        addressId,
         subtotal,
         status: OrderStatus.ORDER_REQUESTED,
       });
+      console.log("New Order Object:", newOrder);
 
       await newOrder.save();
+      console.log("Order saved to database.");
 
+      // Update stock for each product
       for (const { productId, quantity } of validatedProducts) {
+        console.log(
+          `Updating stock for product ID: ${productId}, decrement by: ${quantity}`
+        );
         await Product.findByIdAndUpdate(productId, {
           $inc: { inStock: -quantity },
         });
       }
+      console.log("Product stock updated.");
 
-      // Validate if the order items match the cart items
-      const cart = await Cart.findOne({ userId });
+      // Validate cart items
+      const cart = await Cart.findOne({ userId: user._id });
       if (!cart) {
+        console.log("Cart not found for user.");
         throw httpMessages.NOT_FOUND("Cart not found");
       }
+      console.log("User cart found:", cart);
 
       const cartItemsMatch = validatedProducts.every((orderItem) =>
         cart.items.some(
@@ -111,21 +165,26 @@ export class OrderService {
         )
       );
 
+      console.log("Cart items match order items:", cartItemsMatch);
+
       if (cartItemsMatch) {
-        await this.cartService.clearCart(userId);
+        console.log("Clearing user cart...");
+        await this.cartService.clearCart(user._id.toString());
       }
 
+      console.log("Order creation complete.");
       return newOrder;
     } catch (error) {
+      console.error("Error during order creation:", error);
       throw error;
     }
   }
 
   public async getOrdersByUserId(userId: string) {
     try {
-      const orders = await Order.find({ userId }).populate(
-        "products.productId"
-      );
+      const orders = await Order.find({ userId })
+        .populate("products.productId")
+        .populate("addressId");
 
       if (!orders || orders.length === 0) {
         return [];
@@ -139,9 +198,9 @@ export class OrderService {
 
   public async getOrderById(orderId: string) {
     try {
-      const order = await Order.findById(orderId).populate(
-        "products.productId"
-      );
+      const order = await Order.findById(orderId)
+        .populate("products.productId")
+        .populate("addressId");
 
       if (!order) {
         return null;

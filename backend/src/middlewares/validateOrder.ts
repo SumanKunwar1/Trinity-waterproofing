@@ -20,8 +20,8 @@ const validateOrder = (
       "any.required": "Quantity is required",
     }),
     price: Joi.number().required().messages({
-      "number.base": "Quantity must be a number",
-      "any.required": "Quantity is required",
+      "number.base": "Price must be a number",
+      "any.required": "Price is required",
     }),
   });
 
@@ -31,8 +31,11 @@ const validateOrder = (
       "array.min": "At least one item is required in the order",
       "any.required": "Items are required",
     }),
+    addressId: Joi.string().required().messages({
+      "string.base": "productId must be a string",
+      "any.required": "productId is required",
+    }),
   });
-
   const { error } = schema.validate(req.body);
   if (error) {
     const errors = error.details.map((err) => ({

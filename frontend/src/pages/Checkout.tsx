@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import OrderSummary from "../components/cart/OrderSummary";
 import { useCart } from "../hooks/useCart";
@@ -9,40 +9,44 @@ import Header from "../components/layout/Header";
 import AddressCard from "../components/common/AddressCard";
 import { Address } from "../types/address";
 import { ICartItem } from "../types/cart";
+import { createOrder } from "../api/orderApi";
+import { OrderItem } from "../types/order";
 
 const Checkout: React.FC = () => {
   const location = useLocation();
-  const [buyNowItem, setBuyNowItem] = useState<ICartItem | null>(null);
+  const navigate = useNavigate();
   const { cart } = useCart();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(
     null
   );
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const checkoutData = location.state?.checkoutData || cart;
 
   useEffect(() => {
-    if (location.state && location.state.product) {
-      setBuyNowItem(location.state.product);
-    }
     fetchAddresses();
-  }, [location.state]);
+  }, []);
 
   const fetchAddresses = async () => {
     setIsLoading(true);
     try {
-      const userId = JSON.parse(localStorage.getItem("userId") || "");
-      if (!userId) {
+      const userIdString = localStorage.getItem("userId");
+      if (!userIdString) {
         throw new Error("User ID not found in localStorage");
       }
+      const userId = JSON.parse(userIdString);
+
       const response = await fetch(`/api/users/addressBook/${userId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
       });
+
       if (!response.ok) throw new Error("Failed to fetch addresses");
 
       const data = await response.json();
-      console.log("Fetched data:", data);
 
       if (data && Array.isArray(data.addressBook)) {
         setAddresses(data.addressBook);
@@ -67,7 +71,12 @@ const Checkout: React.FC = () => {
 
   const handleSetDefault = async (addressId: string) => {
     try {
-      const userId = JSON.parse(localStorage.getItem("userId") || "");
+      const userIdString = localStorage.getItem("userId");
+      if (!userIdString) {
+        throw new Error("User ID not found in localStorage");
+      }
+      const userId = JSON.parse(userIdString);
+
       const response = await fetch(
         `/api/users/addressBook/default/${userId}/${addressId}`,
         {
@@ -77,6 +86,7 @@ const Checkout: React.FC = () => {
           },
         }
       );
+
       if (!response.ok) throw new Error("Failed to set default address");
       await fetchAddresses();
       toast.success("Default address updated");
@@ -90,7 +100,52 @@ const Checkout: React.FC = () => {
     setSelectedAddressId(addressId);
   };
 
-  const itemsToDisplay = buyNowItem ? [buyNowItem] : cart;
+  const handlePlaceOrder = async () => {
+    if (!selectedAddressId) {
+      toast.error("Please select an address");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const orderData: OrderItem[] = checkoutData.map((item: ICartItem) => {
+        const productId = item.product?._id || item.productId;
+        if (!productId) {
+          throw new Error(
+            `Invalid product ID for item: ${JSON.stringify(item)}`
+          );
+        }
+        return {
+          productId,
+          color: item.selectedColor || item.color || null,
+          quantity: item.quantity,
+          price: item.price || (item.product && item.product.price) || 0,
+        };
+      });
+
+      if (orderData.length === 0) {
+        throw new Error("No valid items to order");
+      }
+
+      const response = await createOrder(orderData, selectedAddressId);
+
+      if (response.success && response.orderId) {
+        navigate("/order-success", { state: { orderId: response.orderId } });
+      } else {
+        navigate("/order-failure", {
+          state: { error: response.error || "Failed to create order" },
+        });
+      }
+    } catch (error: any) {
+      console.error("Error placing order:", error);
+      toast.error(error.message || "Failed to place order");
+      navigate("/order-failure", {
+        state: { error: error.message || "Failed to place order" },
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -98,40 +153,45 @@ const Checkout: React.FC = () => {
       <main className="flex-grow">
         <div className="container mx-auto px-4 py-8">
           <h1 className="text-3xl font-bold mb-8">Checkout</h1>
-          <div className="flex flex-col md:flex-row">
-            <div className="w-full md:w-2/3 md:pr-8">
+          <div className="flex flex-col md:flex-row gap-8">
+            <div className="w-full md:w-2/3">
               <h2 className="text-2xl font-semibold mb-4">Select Address</h2>
               {isLoading ? (
                 <p>Loading addresses...</p>
               ) : addresses.length > 0 ? (
-                addresses.map(
-                  (address) => (
-                    console.log("Address:", address),
-                    (
-                      <AddressCard
-                        key={address._id}
-                        address={address}
-                        onSetDefault={handleSetDefault}
-                        isSelected={selectedAddressId === address._id}
-                        onSelect={handleSelectAddress}
-                      />
-                    )
-                  )
-                )
+                <div className="space-y-4">
+                  {addresses.map((address) => (
+                    <AddressCard
+                      key={address._id}
+                      address={address}
+                      onSetDefault={handleSetDefault}
+                      isSelected={selectedAddressId === address._id}
+                      onSelect={handleSelectAddress}
+                    />
+                  ))}
+                </div>
               ) : (
-                <p>No addresses found. Please add an address.</p>
+                <div className="text-center py-8">
+                  <p className="text-gray-600 mb-4">No addresses found.</p>
+                  <Link to="/customer/manage-profile">
+                    <Button variant="outline">Add New Address</Button>
+                  </Link>
+                </div>
               )}
             </div>
-            <div className="w-full md:w-1/3 mt-8 md:mt-0">
-              <OrderSummary cartItems={itemsToDisplay} />
-              <Button
-                type="submit"
-                className="w-full mt-4"
-                variant="secondary"
-                disabled={!selectedAddressId}
-              >
-                Place Order
-              </Button>
+            <div className="w-full md:w-1/3">
+              <div className="sticky top-4">
+                <OrderSummary cartItems={checkoutData} />
+                <Button
+                  type="button"
+                  className="w-full mt-4"
+                  variant="secondary"
+                  disabled={!selectedAddressId || isSubmitting}
+                  onClick={handlePlaceOrder}
+                >
+                  {isSubmitting ? "Placing Order..." : "Place Order"}
+                </Button>
+              </div>
             </div>
           </div>
         </div>

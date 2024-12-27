@@ -86,15 +86,17 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
       return;
     }
     if (quantity <= product.inStock) {
-      const checkoutData = {
-        product,
-        selectedColor,
-        quantity,
-        price: displayedPrice,
-      };
+      const checkoutData = [
+        {
+          product,
+          selectedColor,
+          quantity,
+          price: displayedPrice,
+        },
+      ];
 
       navigate("/checkout", {
-        state: { checkoutData },
+        state: { checkoutData: [...checkoutData] },
       });
     } else {
       toast.error("Not enough stock available");

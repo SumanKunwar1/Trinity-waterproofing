@@ -1,3 +1,5 @@
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import CartItem from "../components/cart/CartItem";
 import OrderSummary from "../components/cart/OrderSummary";
@@ -7,6 +9,33 @@ import Header from "../components/layout/Header";
 
 const Cart: React.FC = () => {
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    console.log("Cart component mounted or updated");
+    console.log("Current cart state:", cart);
+  }, [cart]); // Dependency array ensures this runs when `cart` changes.
+
+  const handleProceedToCheckout = () => {
+    console.log("Proceeding to checkout", cart);
+    cart.map((item) =>
+      console.log(
+        item,
+        item.productId,
+        item.quantity,
+        item.price,
+        item.color || null
+      )
+    );
+    const checkoutData = cart.map((item) => ({
+      productId: item.productId,
+      quantity: item.quantity,
+      price: item.price,
+      selectedColor: item.color || null,
+    }));
+
+    navigate("/checkout", { state: { checkoutData } });
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -39,7 +68,7 @@ const Cart: React.FC = () => {
               <div className="w-full md:w-1/3 mt-8 md:mt-0">
                 <OrderSummary cartItems={cart} />
                 <Button
-                  to="/checkout"
+                  onClick={handleProceedToCheckout}
                   className="w-full mt-4 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
                 >
                   Proceed to Checkout
