@@ -46,7 +46,7 @@ export class BrandController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const brandId = req.params.id;
+      const brandId = req.params.brandId;
       const result = await this.brandService.getBrandById(brandId);
       res.locals.responseData = result;
       next();

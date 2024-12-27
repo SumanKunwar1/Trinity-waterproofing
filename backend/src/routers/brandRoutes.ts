@@ -31,7 +31,7 @@ router.get(
 );
 
 // router.get(
-//   "/:id",
+//   "/:brandId",
 //   brandController.getBrandById.bind(brandController),
 //   handleResponse
 // );
