@@ -1,6 +1,7 @@
-import { httpMessages } from "../middlewares";
-import { Notification, User } from "../models";
-import { INotification } from "../interfaces";
+import { getSocketIO } from "../config/socket";
+import { httpMessages } from "../middlewares"; // Error handling middleware
+import { Notification, User } from "../models"; // Notification and User models
+import { INotification } from "../interfaces"; // Notification interface
 import mongoose from "mongoose";
 
 export class NotificationService {
@@ -12,9 +13,17 @@ export class NotificationService {
       });
 
       await notification.save();
+
+      // Emit real-time notification to the user
+      const io = getSocketIO();
+      io.to(notificationData.userId.toString()).emit(
+        "notification",
+        notification
+      );
+
       return notification;
     } catch (error) {
-      console.log(error);
+      console.error(error);
       throw httpMessages.INTERNAL_SERVER_ERROR;
     }
   }
@@ -39,13 +48,23 @@ export class NotificationService {
         read: false,
       }));
 
-      await Notification.insertMany(notifications); // Bulk insert notifications
+      await Notification.insertMany(notifications);
+
+      // Emit notifications to all admins
+      const io = getSocketIO();
+      console.log("Emitting notification to admins:");
+
+      admins.forEach((admin) => {
+        io.to(admin._id.toString()).emit("notification", { message, type });
+      });
+
       console.log("Admin notifications created successfully.");
     } catch (error) {
       console.error("Error creating admin notifications:", error);
       throw httpMessages.INTERNAL_SERVER_ERROR;
     }
   }
+
   public static async getNotificationsByUserId(userId: string) {
     try {
       const notifications = await Notification.find({ userId })

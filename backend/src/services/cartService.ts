@@ -12,6 +12,29 @@ export class CartService {
       if (!product) {
         throw httpMessages.NOT_FOUND("Product not found");
       }
+      // Validate if the product has color variants
+      if (product.colors && product.colors.length > 0) {
+        // Product has color variants, ensure a color is selected
+        if (!color) {
+          throw httpMessages.BAD_REQUEST(
+            "Please select a color before adding to the cart."
+          );
+        }
+
+        // Ensure the selected color exists in the product's variants
+        const colorExists = product.colors.some(
+          (c) => c.hex === color || c.name === color
+        );
+        if (!colorExists) {
+          throw httpMessages.BAD_REQUEST(
+            `Invalid color selected for product '${
+              product.name
+            }'. Available colors: ${product.colors
+              .map((c) => c.name)
+              .join(", ")}`
+          );
+        }
+      }
 
       let cart = await Cart.findOne({ userId });
 
@@ -101,7 +124,7 @@ export class CartService {
       const cart = await Cart.findOne({ userId }).exec();
 
       if (!cart) {
-        return null; // No cart found
+        return []; // No cart found
       }
 
       // Get an array of productIds from the cart items
