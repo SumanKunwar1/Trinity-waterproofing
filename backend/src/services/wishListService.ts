@@ -63,7 +63,7 @@ export class WishListService {
       const wishlist = await WishList.findOne({ user_id: userId });
 
       if (!wishlist) {
-        return null;
+        return [];
       }
 
       const productIds = wishlist.product_id;

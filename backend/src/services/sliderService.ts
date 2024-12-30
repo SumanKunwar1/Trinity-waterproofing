@@ -7,7 +7,22 @@ export class SliderService {
   public async getSliders() {
     try {
       const sliders = await Slider.find();
-      return sliders;
+      const sliderResponse = sliders.map((slider) => {
+        let media;
+
+        if (slider.media.type === "image") {
+          media = `/api/image/${slider.media.url}`;
+        } else if (slider.media.type === "video") {
+          media = `/api/image/${slider.media.url}`;
+        }
+
+        return {
+          ...slider.toObject(),
+          media: media,
+        };
+      });
+
+      return sliderResponse;
     } catch (error) {
       throw error;
     }
@@ -16,7 +31,21 @@ export class SliderService {
   public async displaySlider() {
     try {
       const sliders = await Slider.find({ isvisible: true });
-      return sliders;
+      const sliderResponse = sliders.map((slider) => {
+        let media;
+
+        if (slider.media.type === "image") {
+          media = `/api/image/${slider.media.url}`;
+        } else if (slider.media.type === "video") {
+          media = `/api/image/${slider.media.url}`;
+        }
+
+        return {
+          ...slider.toObject(),
+          media: media,
+        };
+      });
+      return sliderResponse;
     } catch (error) {
       throw error;
     }
@@ -24,9 +53,21 @@ export class SliderService {
 
   public async createSlider(sliderData: ISlider) {
     try {
-      const slider = new Slider(sliderData);
+      const { image, video, title, subtitle, isvisible } = sliderData;
+      let media;
+      if (image) {
+        media = {
+          type: "image",
+          url: image,
+        };
+      } else {
+        media = {
+          type: "video",
+          url: video,
+        };
+      }
+      const slider = new Slider({ title, subtitle, isvisible, media });
       await slider.save();
-
       return slider;
     } catch (error) {
       throw error;
@@ -35,50 +76,63 @@ export class SliderService {
 
   public async editSlider(sliderData: Partial<ISlider>, sliderId: string) {
     try {
-      const { title, subtitle, image, isvisible } = sliderData;
+      const { title, subtitle, image, video, isvisible } = sliderData;
       const slider = await Slider.findById(sliderId);
+
       if (!slider) {
         throw httpMessages.NOT_FOUND("Slider");
       }
-      if (image && image !== "") {
-        const filesToDelete: string[] = [];
-        if (slider.image && slider.image !== image) {
-          filesToDelete.push(slider.image);
-        }
-        if (filesToDelete.length > 0) {
-          await deleteImages(filesToDelete);
-        }
 
-        slider.image = image;
+      let media;
+
+      if (image) {
+        if (slider.media) {
+          await deleteImages([slider.media.url]);
+        }
+        media = { type: "image", url: image };
+      } else if (video) {
+        if (slider.media) {
+          await deleteImages([slider.media.url]);
+        }
+        media = { type: "video", url: video };
+      } else {
+        media = slider.media;
       }
+
+      if (media) {
+        slider.media = media;
+      }
+
       if (title) {
         slider.title = title;
       }
       if (subtitle) {
         slider.subtitle = subtitle;
       }
-
       if (typeof isvisible !== "undefined") {
         slider.isvisible = isvisible;
       }
-
       await slider.save();
-
       return slider;
     } catch (error) {
       throw error;
     }
   }
 
-  public async deleteSlider(enquiryId: string) {
+  public async deleteSlider(sliderId: string) {
     try {
-      const slider = await Slider.findById(enquiryId);
-
+      const slider = await Slider.findById(sliderId);
       if (!slider) {
-        throw httpMessages.NOT_FOUND("slider");
+        throw httpMessages.NOT_FOUND("Slider");
       }
 
-      await Slider.deleteOne({ _id: enquiryId });
+      const filesToDelete = [slider.media.url];
+
+      if (filesToDelete.length > 0) {
+        await deleteImages(filesToDelete); // Delete associated media
+      }
+
+      await Slider.deleteOne({ _id: sliderId });
       return {
         message: "Slider deleted successfully",
       };

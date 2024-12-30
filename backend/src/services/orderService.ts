@@ -1,9 +1,10 @@
 import { Order, Product, User, Cart } from "../models";
-import { IOrderItem } from "../interfaces";
+import { IOrderItem, INotification } from "../interfaces";
 import { httpMessages } from "../middlewares";
 import { OrderStatus } from "../config/orderStatusEnum";
-import { CartService } from "./cartService";
+import { CartService, NotificationService } from "./index";
 import moment from "moment";
+import mongoose from "mongoose";
 
 export class OrderService {
   private cartService: CartService;
@@ -18,13 +19,6 @@ export class OrderService {
     userRole: string
   ) {
     try {
-      console.log("Received order creation request.");
-      console.log("User Email:", userEmail);
-      console.log("Order Data:", JSON.stringify(orderData, null, 2));
-      console.log("Address ID:", addressId);
-      console.log("User Role:", userRole);
-
-      // Find the user
       const user = await User.findOne({ email: userEmail });
       if (!user) {
         console.log("User not found.");
@@ -35,13 +29,11 @@ export class OrderService {
       let subtotal = 0;
       const validatedProducts = [];
 
-      // Iterate over the order items
       for (const orderItem of orderData) {
         console.log("Processing order item:", orderItem);
 
         const { productId, color, quantity } = orderItem;
 
-        // Find the product
         const product = await Product.findById(productId);
         if (!product) {
           console.log(`Product not found for ID: ${productId}`);
@@ -49,7 +41,6 @@ export class OrderService {
         }
         console.log("Product found:", product);
 
-        // Determine price based on user role
         const price =
           userRole.toLowerCase() === "b2b"
             ? product.wholeSalePrice
@@ -58,7 +49,6 @@ export class OrderService {
           `Price for product '${product.name}' determined as: ${price}`
         );
 
-        // Validate colors if applicable
         if (product.colors && product.colors.length > 0) {
           console.log(
             "Validating color for product with colors:",
@@ -90,7 +80,6 @@ export class OrderService {
           }
         }
 
-        // Check stock availability
         if (product.inStock < quantity) {
           console.log(
             `Insufficient stock for product ${product.name}. Available: ${product.inStock}, Requested: ${quantity}`
@@ -100,7 +89,6 @@ export class OrderService {
           );
         }
 
-        // Add validated product
         validatedProducts.push({
           productId,
           color: color || null,
@@ -118,14 +106,13 @@ export class OrderService {
         console.log("Updated subtotal:", subtotal);
       }
 
-      // Create new order
       console.log("All products validated. Creating new order...");
       const newOrder = new Order({
         products: validatedProducts.map((item) => ({
           productId: item.productId,
           color: item.color,
           quantity: item.quantity,
-          price: item.price, // Include price to confirm it's carried over
+          price: item.price,
         })),
         userId: user._id,
         addressId,
@@ -137,7 +124,6 @@ export class OrderService {
       await newOrder.save();
       console.log("Order saved to database.");
 
-      // Update stock for each product
       for (const { productId, quantity } of validatedProducts) {
         console.log(
           `Updating stock for product ID: ${productId}, decrement by: ${quantity}`
@@ -148,28 +134,52 @@ export class OrderService {
       }
       console.log("Product stock updated.");
 
-      // Validate cart items
-      const cart = await Cart.findOne({ userId: user._id });
-      if (!cart) {
-        console.log("Cart not found for user.");
-        throw httpMessages.NOT_FOUND("Cart not found");
-      }
-      console.log("User cart found:", cart);
-
-      const cartItemsMatch = validatedProducts.every((orderItem) =>
-        cart.items.some(
-          (cartItem) =>
-            cartItem.productId.toString() === orderItem.productId.toString() &&
-            cartItem.color === orderItem.color &&
-            cartItem.quantity === orderItem.quantity
-        )
+      // **User Notification**
+      const formattedDate = moment(newOrder.created_at).format(
+        "MMMM Do YYYY, h:mm A"
       );
 
-      console.log("Cart items match order items:", cartItemsMatch);
+      const userNotificationData: INotification = {
+        userId: new mongoose.Types.ObjectId(user._id),
+        message: `Your order placed on ${formattedDate} containing has been successfully placed. Total: $${subtotal}.`,
+        type: "success",
+      };
+      await NotificationService.createNotification(userNotificationData);
 
-      if (cartItemsMatch) {
-        console.log("Clearing user cart...");
-        await this.cartService.clearCart(user._id.toString());
+      const adminNotificationData = {
+        message: `New order created by ${user.fullName} (${user.email}) on ${formattedDate}. Subtotal: $${subtotal}.`,
+        type: "info",
+      };
+      await NotificationService.createAdminNotification(
+        `New order created by ${user.fullName} (${user.email}) on ${formattedDate}. Subtotal: $${subtotal}.`,
+        "info"
+      );
+
+      const cart = await Cart.findOne({ userId: user._id });
+      if (cart) {
+        console.log("User cart found:", cart);
+
+        // Remove only items that match the order
+        for (const orderItem of validatedProducts) {
+          const { productId, color, quantity } = orderItem;
+          console.log(
+            `Removing cart item for product ID: ${productId}, color: ${color}, quantity: ${quantity}`
+          );
+
+          await Cart.updateOne(
+            { userId: user._id },
+            {
+              $pull: {
+                items: {
+                  productId: productId,
+                  color: color || null,
+                  quantity: quantity,
+                },
+              },
+            }
+          );
+        }
+        console.log("Matching items removed from cart.");
       }
 
       console.log("Order creation complete.");
@@ -267,7 +277,12 @@ export class OrderService {
         OrderStatus.ORDER_CONFIRMED
       );
 
-      // await NotificationService.sendOrderConfirmation(updatedOrder);
+      const userNotificationData: INotification = {
+        userId: new mongoose.Types.ObjectId(existingOrder.userId),
+        message: `Your order placed on ${existingOrder.created_at} has been successfully placed.`,
+        type: "success",
+      };
+      await NotificationService.createNotification(userNotificationData);
 
       return updatedOrder;
     } catch (error) {
@@ -299,9 +314,12 @@ export class OrderService {
           $inc: { inStock: productItem.quantity },
         });
       }
-
-      // Notify the customer about cancellation
-      // await NotificationService.sendOrderCancellation(updatedOrder);
+      const userNotificationData: INotification = {
+        userId: new mongoose.Types.ObjectId(existingOrder.userId),
+        message: `Your order placed on ${existingOrder.created_at} has been cancelled. Please Contact Us to Know the details.`,
+        type: "error",
+      };
+      await NotificationService.createNotification(userNotificationData);
 
       return updatedOrder;
     } catch (error) {
@@ -327,9 +345,16 @@ export class OrderService {
         orderId,
         OrderStatus.RETURN_REQUESTED
       );
-
-      // Notify the customer about the return request
-      // await NotificationService.sendReturnRequestNotification(updatedOrder);
+      const userNotificationData: INotification = {
+        userId: new mongoose.Types.ObjectId(existingOrder.userId),
+        message: `Your order placed on ${existingOrder.created_at} has been set to return.Confirmation require 24-48 hours.`,
+        type: "info",
+      };
+      await NotificationService.createAdminNotification(
+        `A new order with ID ${existingOrder._id} has been requested to return. Please review it.`,
+        "info"
+      );
+      await NotificationService.createNotification(userNotificationData);
 
       return updatedOrder;
     } catch (error) {
@@ -362,9 +387,12 @@ export class OrderService {
           $inc: { inStock: productItem.quantity },
         });
       }
-
-      // Notify the customer about return approval
-      // await NotificationService.sendReturnApproval(updatedOrder);
+      const userNotificationData: INotification = {
+        userId: new mongoose.Types.ObjectId(existingOrder.userId),
+        message: `Your order placed on ${existingOrder.created_at} has been approved for Return. PLease contact Us for more details.`,
+        type: "info",
+      };
+      await NotificationService.createNotification(userNotificationData);
 
       return updatedOrder;
     } catch (error) {

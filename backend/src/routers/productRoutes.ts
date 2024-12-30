@@ -64,6 +64,8 @@ router.get(
 
 router.get(
   "/user/:userId",
+  isAuthenticated,
+  isAuthorized("admin"),
   productController.getProductByUserId.bind(productController),
   handleResponse
 );

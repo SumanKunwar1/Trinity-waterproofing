@@ -11,6 +11,37 @@ export const uploadFolder = path.join(__dirname, "../../../", UPLOADS);
 if (!fs.existsSync(uploadFolder)) {
   fs.mkdirSync(uploadFolder, { recursive: true });
 }
+const allowedImageTypes = ["image/jpeg", "image/png", "image/jpg"];
+const allowedVideoTypes = ["video/mp4", "video/avi", "video/mov"];
+
+// Add fileFilter to enforce file type restrictions
+const fileFilter = (req: any, file: any, cb: any) => {
+  if (file.fieldname === "productImage" || file.fieldname === "image") {
+    // Restrict to JPEG, PNG, JPG only
+    if (allowedImageTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(
+        new Error(
+          `Invalid file type for ${file.fieldname}. Allowed types are JPEG, PNG, JPG.`
+        )
+      );
+    }
+  } else if (file.fieldname === "video") {
+    // Restrict to MP4, AVI, MOV only
+    if (allowedVideoTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(
+        new Error(
+          `Invalid file type for ${file.fieldname}. Allowed types are MP4, AVI, MOV.`
+        )
+      );
+    }
+  } else {
+    cb(new Error(`Unexpected field name ${file.fieldname}.`));
+  }
+};
 
 const storage: multer.StorageEngine = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -34,7 +65,7 @@ const storage: multer.StorageEngine = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({ storage: storage, fileFilter: fileFilter });
 
 //this middleware exclusively for product file uploads
 export const uploadMiddleware = upload.fields([
@@ -57,6 +88,10 @@ export const appendFileDataToBody = (req: any, res: any, next: Function) => {
     req.body.image = imageFiles.map((file: any) => file.filename);
   } else {
     req.body.image = [];
+  }
+  if (req.files["video"] && req.files["video"].length > 0) {
+    const video = req.files["video"][0];
+    req.body.video = video.filename;
   }
 
   console.log("Updated Request Body:", req.body);

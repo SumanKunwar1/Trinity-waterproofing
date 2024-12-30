@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { SliderService } from "../services";
 import { ISlider } from "../interfaces";
+import { deleteImages } from "../config/deleteImages";
 
 export class SliderController {
   private sliderService: SliderService;
@@ -48,6 +49,12 @@ export class SliderController {
       res.locals.responseData = slider;
       next();
     } catch (error: any) {
+      if (req.body.image) {
+        deleteImages([req.body.image]);
+      }
+      if (req.body.video) {
+        deleteImages([req.body.video]);
+      }
       next(error);
     }
   }
@@ -67,6 +74,12 @@ export class SliderController {
       res.locals.responseData = updatedSlider;
       next();
     } catch (error: any) {
+      if (req.body.image) {
+        deleteImages([req.body.image]);
+      }
+      if (req.body.video) {
+        deleteImages([req.body.video]);
+      }
       next(error);
     }
   }

@@ -240,7 +240,7 @@ export class ProductService {
   public async getProductByUserId(userId: string) {
     try {
       const wishlist = await WishList.findOne({ user_id: userId });
-      const cart = await Cart.findOne({ userId });
+      // const cart = await Cart.findOne({ userId });
 
       const products = await Product.find()
         .populate({

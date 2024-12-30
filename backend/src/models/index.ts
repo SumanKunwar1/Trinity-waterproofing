@@ -9,3 +9,4 @@ export { WishList } from "./whishList";
 export { Cart } from "./cart";
 export { Enquiry } from "./enquiry";
 export { Slider } from "./slider";
+export { Notification, INotification } from "./notification";

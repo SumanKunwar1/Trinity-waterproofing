@@ -11,6 +11,7 @@ import orderRoutes from "./orderRoutes";
 import enquiryRoutes from "./enquiryRoutes";
 import sliderRoutes from "./sliderRoutes";
 import reviewRoutes from "./reviewRoutes";
+import notificationRoutes from "./notificationRoutes";
 
 const router = Router();
 
@@ -26,5 +27,6 @@ router.use("/order", orderRoutes);
 router.use("/enquiry", enquiryRoutes);
 router.use("/slider", sliderRoutes);
 router.use("/review", reviewRoutes);
+router.use("/notification", notificationRoutes);
 
 export default router;

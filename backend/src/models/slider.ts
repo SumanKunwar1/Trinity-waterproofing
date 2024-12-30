@@ -4,7 +4,7 @@ interface ISlider extends Document {
   _id: Types.ObjectId;
   title?: string;
   subtitle?: string;
-  image: string;
+  media: { type: string; url: string };
   isvisible?: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -14,7 +14,14 @@ const sliderSchema = new Schema(
   {
     title: { type: String },
     subtitle: { type: String },
-    image: { type: String, required: true },
+    media: {
+      type: {
+        type: String,
+        enum: ["image", "video"],
+        required: true,
+      },
+      url: { type: String, required: true },
+    },
     isvisible: { type: Boolean, required: true },
   },
   { timestamps: true }
