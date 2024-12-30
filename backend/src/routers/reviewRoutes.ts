@@ -9,6 +9,7 @@ import {
   handleResponse,
   handleError,
 } from "../middlewares";
+import { uploadMiddleware } from "../config/upload";
 
 const router = Router();
 const reviewController = new ReviewController();
@@ -16,6 +17,7 @@ const reviewController = new ReviewController();
 router.post(
   "/",
   isAuthenticated,
+  uploadMiddleware,
   validateReview,
   reviewController.createReview.bind(reviewController),
   handleResponse

@@ -102,7 +102,14 @@ export class OrderController {
   ): Promise<void> {
     try {
       const orderId = req.params.orderId;
-      const result = await this.orderService.cancelOrderByAdmin(orderId);
+      const reason = req.body.reason;
+      if (!reason) {
+        httpMessages.BAD_REQUEST("Reason is required");
+      }
+      const result = await this.orderService.cancelOrderByAdmin(
+        orderId,
+        reason
+      );
       res.locals.responseData = result;
       next();
     } catch (error: any) {
@@ -117,7 +124,11 @@ export class OrderController {
   ): Promise<void> {
     try {
       const orderId = req.params.orderId;
-      const result = await this.orderService.returnRequest(orderId);
+      const reason = req.body.reason;
+      if (!reason) {
+        httpMessages.BAD_REQUEST("Reason is required");
+      }
+      const result = await this.orderService.returnRequest(orderId, reason);
       res.locals.responseData = result;
       next();
     } catch (error: any) {
@@ -146,7 +157,11 @@ export class OrderController {
   ): Promise<void> {
     try {
       const orderId = req.params.orderId;
-      const result = await this.orderService.disApproveReturn(orderId);
+      const reason = req.body.reason;
+      if (!reason) {
+        httpMessages.BAD_REQUEST("Reason is required");
+      }
+      const result = await this.orderService.disApproveReturn(orderId, reason);
       res.locals.responseData = result;
       next();
     } catch (error: any) {

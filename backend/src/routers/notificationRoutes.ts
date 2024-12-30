@@ -21,6 +21,7 @@ router.get(
 router.patch(
   "/:notificationId/read/:userId",
   isAuthenticated,
+  isAuthorizedUser,
   notificationController.markNotificationAsRead.bind(notificationController),
   handleResponse
 );
