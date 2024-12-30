@@ -186,7 +186,7 @@ const Header: React.FC = () => {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56">
                           <DropdownMenuLabel>
-                            <div className="flex flex-col">
+                            <div className="flex flex-col ">
                               <span className="font-medium">
                                 {user.fullName}
                               </span>
@@ -195,9 +195,17 @@ const Header: React.FC = () => {
                               </span>
                             </div>
                           </DropdownMenuLabel>
-                          <DropdownMenuSeparator />
+                          <DropdownMenuSeparator className="border-b border-gray-200 mx-1" />
                           <DropdownMenuItem
-                            className="text-brand cursor-pointer hover:text-secondary transition-all duration-300"
+                            className="text-brand cursor-pointer py-2 border-b border-gray-200 hover:text-secondary transition-all duration-300"
+                            onSelect={() =>
+                              handleMenuItemClick("/customer/notifications")
+                            }
+                          >
+                            Notifications
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-brand cursor-pointer py-2 border-b border-gray-200 hover:text-secondary transition-all duration-300"
                             onSelect={() =>
                               handleMenuItemClick("/customer/purchase-history")
                             }
@@ -205,7 +213,7 @@ const Header: React.FC = () => {
                             Order History
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            className="text-brand cursor-pointer hover:text-secondary transition-all duration-300"
+                            className="text-brand cursor-pointer py-2 border-b border-gray-200 hover:text-secondary transition-all duration-300"
                             onSelect={() =>
                               handleMenuItemClick("/customer/manage-profile")
                             }
@@ -214,7 +222,7 @@ const Header: React.FC = () => {
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
-                            className="text-red-600 border border-red-600 text-center hover:bg-tertiary flex justify-center cursor-pointer focus:text-red-700 transition-all duration-300"
+                            className="text-red-600 border rounded-2xl border-red-600 text-center hover:bg-tertiary flex justify-center cursor-pointer focus:text-red-700 transition-all duration-300"
                             onSelect={handleLogout}
                           >
                             Logout

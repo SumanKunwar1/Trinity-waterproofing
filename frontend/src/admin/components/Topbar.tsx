@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Bell, Settings, LogOut, User, KeyRound, Check, X } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Settings, LogOut, User, KeyRound } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +15,6 @@ import {
   DialogTitle,
 } from "../components/ui/dialog";
 import { Button } from "../components/ui/button";
-import { Badge } from "../components/ui/badge";
 import { useToast } from "../hooks/use-toast";
 import { Toaster } from "../components/ui/toaster";
 import { useNavigate } from "react-router-dom";
@@ -23,70 +22,40 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { Avatar, AvatarFallback } from "../components/ui/avatar";
 import { useLogout } from "../../utils/authUtils";
-// Notification types
-interface Notification {
-  id: number;
-  type: "order" | "inquiry" | "message";
-  message: string;
-  link: string;
-  read: boolean;
-}
+import NotificationComponent from "../../components/common/Notification";
 
 const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
   const handleLogout = useLogout();
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: 1,
-      type: "order",
-      message: "New Order #1234",
-      link: "/admin/orders",
-      read: false,
-    },
-    {
-      id: 2,
-      type: "inquiry",
-      message: "New Customer Inquiry",
-      link: "/admin/inquiries",
-      read: false,
-    },
-  ]);
-
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isChangePasswordDialogOpen, setIsChangePasswordDialogOpen] =
     useState(false);
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const userName = JSON.parse(localStorage.getItem("userFullName") || "");
-  const userEmail = JSON.parse(localStorage.getItem("userEmail") || "");
-  const userNumber = JSON.parse(localStorage.getItem("userNumber") || "");
+  const userName = JSON.parse(localStorage.getItem("userFullName") || '""');
+  const userEmail = JSON.parse(localStorage.getItem("userEmail") || '""');
+  const userNumber = JSON.parse(localStorage.getItem("userNumber") || '""');
 
-  // Generate initials
-  const getInitials = (name?: string) => {
-    if (!name || name.trim() === "") {
-      return "N/A"; // Default initials if name is missing or empty
-    }
-    return name
-      .split(" ")
-      .map((word) => word[0].toUpperCase())
-      .join("")
-      .substr(0, 2);
+  const getInitials = (name: string) => {
+    return (
+      name
+        .split(" ")
+        .map((word) => word[0].toUpperCase())
+        .join("")
+        .substr(0, 2) || "N/A"
+    );
   };
-  const initials = getInitials(userName || "N/A");
-  // Change Password Validation Schema
+
   const changePasswordSchema = Yup.object().shape({
     oldPassword: Yup.string().required("Current password is required"),
     newPassword: Yup.string()
       .min(8, "Password must be at least 8 characters")
-
       .required("New password is required"),
     confirmPassword: Yup.string()
       .oneOf([Yup.ref("newPassword")], "Passwords must match")
       .required("Confirm password is required"),
   });
 
-  // Profile Update Validation Schema
   const profileUpdateSchema = Yup.object().shape({
     fullName: Yup.string().required("Full Name is required"),
     email: Yup.string().email("Invalid email").required("Email is required"),
@@ -95,48 +64,12 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
       .required("Phone Number is required"),
   });
 
-  // Notification Management Functions
-  const markNotificationAsRead = (id: number) => {
-    setNotifications(
-      notifications.map((notification) =>
-        notification.id === id ? { ...notification, read: true } : notification
-      )
-    );
-  };
-
-  const deleteNotification = (id: number) => {
-    setNotifications(
-      notifications.filter((notification) => notification.id !== id)
-    );
-  };
-
-  const markAllAsRead = () => {
-    setNotifications(
-      notifications.map((notification) => ({ ...notification, read: true }))
-    );
-  };
-
-  const clearAllNotifications = () => {
-    setNotifications([]);
-  };
-
-  const unreadNotificationsCount = notifications.filter((n) => !n.read).length;
-
-  const handleNotificationClick = (link: string, id: number) => {
-    markNotificationAsRead(id);
-    navigate(link);
-    setIsNotificationOpen(false);
-  };
-
-  // Handle logout
-
-  // Handle change password submission
   const handleChangePassword = async (
     values: any,
     { setSubmitting, resetForm }: any
   ) => {
     try {
-      const userId = JSON.parse(localStorage.getItem("userId") || "");
+      const userId = JSON.parse(localStorage.getItem("userId") || '""');
       const response = await fetch(`/api/users/edit/password/${userId}`, {
         method: "PATCH",
         headers: {
@@ -158,7 +91,6 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
         description: "Your password has been successfully updated.",
       });
       setIsChangePasswordDialogOpen(false);
-      localStorage.setItem("userPassword", JSON.stringify(values.newPassword));
       resetForm();
     } catch (error) {
       toast({
@@ -176,7 +108,7 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
     { setSubmitting, resetForm }: any
   ) => {
     try {
-      const userId = JSON.parse(localStorage.getItem("userId") || "");
+      const userId = JSON.parse(localStorage.getItem("userId") || '""');
 
       const response = await fetch(`/api/users/edit/${userId}`, {
         method: "PATCH",
@@ -187,7 +119,7 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
         body: JSON.stringify({
           fullName: values.fullName,
           email: values.email,
-          number: values.number,
+          number: values.phone,
         }),
       });
 
@@ -200,10 +132,9 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
         description: "Your profile has been successfully updated.",
       });
       setIsProfileDialogOpen(false);
-      localStorage.setItem("user", JSON.stringify(values));
       localStorage.setItem("userFullName", JSON.stringify(values.fullName));
       localStorage.setItem("userEmail", JSON.stringify(values.email));
-      localStorage.setItem("userNumber", JSON.stringify(values.number));
+      localStorage.setItem("userNumber", JSON.stringify(values.phone));
       resetForm();
     } catch (error) {
       toast({
@@ -212,13 +143,12 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
         variant: "destructive",
       });
     } finally {
-      setSubmitting(false); // Ensure submitting state is always reset
+      setSubmitting(false);
     }
   };
 
   return (
     <header className="bg-white shadow-md p-4 flex justify-between items-center">
-      {/* Mobile Sidebar Toggle */}
       <div>
         <button
           className="text-gray-600 focus:outline-none md:hidden"
@@ -226,137 +156,40 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
         >
           ☰
         </button>
-
-        {/* Page Title */}
         <h1 className="text-2xl font-semibold">Admin Panel</h1>
       </div>
 
-      {/* Right Side Actions */}
       <div className="flex items-center space-x-4 justify-end ml-auto">
-        {/* Notifications */}
-        <div className="relative text-center align-middle items-center">
-          <div
-            className="relative cursor-pointer text-center align-middle items-center"
-            onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-          >
-            <Bell className="text-gray-600 text-center align-middle items-center" />
-            {unreadNotificationsCount > 0 && (
-              <Badge
-                variant="destructive"
-                className="absolute -top-2 -right-2 px-1.5 py-0.5 text-xs bg-red-600 hover:bg-red-600 rounded-full text-white"
-              >
-                {unreadNotificationsCount}
-              </Badge>
-            )}
-          </div>
+        <NotificationComponent />
 
-          {isNotificationOpen && notifications.length > 0 && (
-            <div className="absolute top-full right-0 mt-2 w-80 bg-white shadow-lg rounded-md border z-50">
-              {/* Notification Header */}
-              <div className="flex flex-col justify-between p-2 border-b">
-                <span className="font-semibold text-center mb-2">
-                  Notifications
-                </span>
-                <div className="flex space-x-2">
-                  <Button variant="ghost" size="sm" onClick={markAllAsRead}>
-                    Mark All Read
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearAllNotifications}
-                  >
-                    Clear All
-                  </Button>
-                </div>
-              </div>
-
-              {/* Notification List */}
-              {notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className={`flex items-center p-2 hover:bg-gray-100 ${
-                    notification.read ? "bg-gray-50 text-gray-500" : "bg-white"
-                  }`}
-                >
-                  <div
-                    className="flex-grow cursor-pointer"
-                    onClick={() =>
-                      handleNotificationClick(
-                        notification.link,
-                        notification.id
-                      )
-                    }
-                  >
-                    {notification.message}
-                  </div>
-
-                  {/* Notification Actions */}
-                  <div className="flex items-center space-x-1 ml-2">
-                    {!notification.read && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => markNotificationAsRead(notification.id)}
-                      >
-                        <Check className="h-4 w-4" />
-                      </Button>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => deleteNotification(notification.id)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* User Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center focus:outline-none">
-            <div className="cursor-pointer">
-              <Avatar>
-                <AvatarFallback className="bg-orange-500 text-white font-bold">
-                  {getInitials(userName)}
-                </AvatarFallback>
-              </Avatar>
-            </div>
+            <Avatar>
+              <AvatarFallback className="bg-orange-500 text-white font-bold">
+                {getInitials(userName)}
+              </AvatarFallback>
+            </Avatar>
             <span className="ml-2">{userName}</span>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onSelect={() => setIsProfileDialogOpen(true)}
-            >
+            <DropdownMenuItem onSelect={() => setIsProfileDialogOpen(true)}>
               <User className="mr-2 h-4 w-4" />
               Profile
             </DropdownMenuItem>
             <DropdownMenuItem
-              className="cursor-pointer"
               onSelect={() => setIsChangePasswordDialogOpen(true)}
             >
               <KeyRound className="mr-2 h-4 w-4" />
               Change Password
             </DropdownMenuItem>
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onSelect={() => navigate("/admin/settings")}
-            >
+            <DropdownMenuItem onSelect={() => navigate("/admin/settings")}>
               <Settings className="mr-2 h-4 w-4" />
               Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="cursor-pointer text-red-600"
-              onSelect={handleLogout}
-            >
+            <DropdownMenuItem className="text-red-600" onSelect={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
               Logout
             </DropdownMenuItem>
@@ -364,7 +197,6 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
         </DropdownMenu>
       </div>
 
-      {/* Change Password Dialog */}
       <Dialog
         open={isChangePasswordDialogOpen}
         onOpenChange={setIsChangePasswordDialogOpen}
@@ -442,7 +274,6 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
         </DialogContent>
       </Dialog>
 
-      {/* Profile Update Dialog */}
       <Dialog open={isProfileDialogOpen} onOpenChange={setIsProfileDialogOpen}>
         <DialogContent>
           <DialogHeader>

@@ -8,6 +8,7 @@ import React, {
 import { jwtDecode } from "jwt-decode";
 import { useLogout } from "../utils/authUtils";
 import { toast } from "react-toastify";
+
 // Utility function to decode token and check expiration
 const decodeToken = (token: string) => {
   try {
@@ -22,12 +23,11 @@ interface AuthContextType {
   token: string | null;
   login: (token: string) => void;
   logout: () => void;
-  refreshToken: () => void;
+  refreshToken: () => Promise<void>;
 }
 
-// Define the props for the AuthProvider
 interface AuthProviderProps {
-  children: ReactNode; // Allows the component to accept `children`
+  children: ReactNode;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -45,6 +45,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [lastActiveTime, setLastActiveTime] = useState<number>(Date.now());
   const handleLogout = useLogout();
+
+  const ACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+  const TOKEN_REFRESH_INTERVAL = 14 * 60 * 1000; // 14 minutes
+
   const checkTokenExpiry = (token: string | null) => {
     if (token) {
       const decoded: any = decodeToken(token);
@@ -59,12 +63,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setToken(token);
     setIsAuthenticated(true);
     localStorage.setItem("authToken", token);
+    setLastActiveTime(Date.now());
   };
 
   const logout = () => {
     setToken(null);
     setIsAuthenticated(false);
-    handleLogout;
+    localStorage.removeItem("authToken");
+    handleLogout();
   };
 
   const refreshToken = async () => {
@@ -78,18 +84,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
 
       if (!response.ok) {
-        // Parse the error response to get the API's structured error
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to refresh token"); // Use API error message if available
+        throw new Error(errorData.error || "Failed to refresh token");
       }
 
       const data = await response.json();
       const newAccessToken = data.token;
       localStorage.setItem("authToken", newAccessToken);
       setToken(newAccessToken);
+      setLastActiveTime(Date.now());
     } catch (error: any) {
       console.error("Error refreshing access token:", error);
       toast.error(error.message);
+      logout();
     }
   };
 
@@ -98,27 +105,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (storedToken && checkTokenExpiry(storedToken)) {
       setToken(storedToken);
       setIsAuthenticated(true);
+      setLastActiveTime(Date.now());
+    } else if (storedToken) {
+      // If token exists but is expired, try to refresh it
+      refreshToken();
     }
   }, []);
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      if (
-        token &&
-        checkTokenExpiry(token) &&
-        Date.now() - lastActiveTime > 15 * 60 * 1000
-      ) {
+    const checkActivity = () => {
+      const currentTime = Date.now();
+      if (currentTime - lastActiveTime > ACTIVITY_TIMEOUT) {
         logout();
       } else if (
         token &&
-        checkTokenExpiry(token) &&
-        Date.now() - lastActiveTime < 10 * 60 * 1000
+        currentTime - lastActiveTime > TOKEN_REFRESH_INTERVAL
       ) {
         refreshToken();
       }
-    }, 5 * 60 * 1000);
+    };
 
-    return () => clearInterval(intervalId);
+    const activityInterval = setInterval(checkActivity, 60000); // Check every minute
+
+    return () => clearInterval(activityInterval);
   }, [lastActiveTime, token]);
 
   useEffect(() => {
@@ -126,22 +135,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setLastActiveTime(Date.now());
     };
 
-    window.addEventListener("mousemove", handleActivity);
-    window.addEventListener("keydown", handleActivity);
-    window.addEventListener("mousedown", handleActivity);
-    window.addEventListener("touchstart", handleActivity);
-    window.addEventListener("scroll", handleActivity);
-    window.addEventListener("focus", handleActivity);
-    window.addEventListener("resize", handleActivity);
+    const events = [
+      "mousemove",
+      "keydown",
+      "mousedown",
+      "touchstart",
+      "scroll",
+      "focus",
+      "resize",
+    ];
+
+    events.forEach((event) => {
+      window.addEventListener(event, handleActivity);
+    });
 
     return () => {
-      window.removeEventListener("mousemove", handleActivity);
-      window.removeEventListener("keydown", handleActivity);
-      window.removeEventListener("mousedown", handleActivity);
-      window.removeEventListener("touchstart", handleActivity);
-      window.removeEventListener("scroll", handleActivity);
-      window.removeEventListener("focus", handleActivity);
-      window.removeEventListener("resize", handleActivity);
+      events.forEach((event) => {
+        window.removeEventListener(event, handleActivity);
+      });
     };
   }, []);
 

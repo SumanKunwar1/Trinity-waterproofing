@@ -4,7 +4,7 @@ import io from "socket.io-client";
 const NotificationPage = () => {
   const [notifications, setNotifications] = useState([]);
   const [connected, setConnected] = useState(false);
-  const adminId = "6770ea39ba2dc6c23d4d40f5"; // Admin ID (This can be dynamically fetched from user context)
+  const adminId = "6763ac88fd31208df34170b4"; // Admin ID (This can be dynamically fetched from user context)
 
   // Connect to the WebSocket server
   useEffect(() => {
