@@ -329,7 +329,7 @@ export class OrderService {
     }
   }
 
-  public async cancelOrderByAdmin(orderId: string) {
+  public async cancelOrderByAdmin(orderId: string, reason: string) {
     try {
       const existingOrder = await Order.findById(orderId);
 
@@ -348,6 +348,9 @@ export class OrderService {
         OrderStatus.ORDER_CANCELLED
       );
 
+      updatedOrder.reason = reason;
+      await updatedOrder.save();
+
       for (const productItem of existingOrder.products) {
         await Product.findByIdAndUpdate(productItem.productId, {
           $inc: { inStock: productItem.quantity },
@@ -355,7 +358,7 @@ export class OrderService {
       }
       const userNotificationData: INotification = {
         userId: new mongoose.Types.ObjectId(existingOrder.userId),
-        message: `Your order placed on ${existingOrder.created_at} has been cancelled. Please Contact Us to Know the details.`,
+        message: `Your order placed on ${existingOrder.created_at} has been cancelled due to ${reason} Please Contact Us to Know the details.`,
         type: "error",
       };
       await NotificationService.createNotification(userNotificationData);
@@ -366,7 +369,7 @@ export class OrderService {
     }
   }
 
-  public async returnRequest(orderId: string) {
+  public async returnRequest(orderId: string, reason: string) {
     try {
       const existingOrder = await Order.findById(orderId);
 
@@ -384,13 +387,17 @@ export class OrderService {
         orderId,
         OrderStatus.RETURN_REQUESTED
       );
+
+      updatedOrder.reason = reason;
+      await updatedOrder.save();
+
       const userNotificationData: INotification = {
         userId: new mongoose.Types.ObjectId(existingOrder.userId),
         message: `Your order placed on ${existingOrder.created_at} has been set to return.Confirmation require 24-48 hours.`,
         type: "info",
       };
       await NotificationService.createAdminNotification(
-        `A new order with ID ${existingOrder._id} has been requested to return. Please review it.`,
+        `A new order with ID ${existingOrder._id} has been requested to return.Reason:${reason} Please review it.`,
         "info"
       );
       await NotificationService.createNotification(userNotificationData);
@@ -439,7 +446,7 @@ export class OrderService {
     }
   }
 
-  public async disApproveReturn(orderId: string) {
+  public async disApproveReturn(orderId: string, reason: string) {
     try {
       const existingOrder = await Order.findById(orderId);
 
@@ -458,11 +465,13 @@ export class OrderService {
         orderId,
         OrderStatus.RETURN_DISAPPROVED
       );
+      updatedOrder.reason = reason;
+      await updatedOrder.save();
 
       // Notify user about the disapproval
       const userNotificationData: INotification = {
         userId: new mongoose.Types.ObjectId(existingOrder.userId),
-        message: `Your return request for the order placed on ${existingOrder.created_at} has been disapproved. Please contact support for more details.`,
+        message: `Your return request for the order placed on ${existingOrder.created_at} has been disapproved.Reason:${reason} Please contact support for more details.`,
         type: "error",
       };
       await NotificationService.createNotification(userNotificationData);

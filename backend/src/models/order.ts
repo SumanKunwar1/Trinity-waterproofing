@@ -10,6 +10,7 @@ export interface IOrder extends Document {
   tax: number;
   total: number;
   status: OrderStatus;
+  reason: string;
   created_at?: Date;
   updated_at?: Date;
 }
@@ -35,6 +36,7 @@ const orderSchema: Schema = new Schema(
       enum: Object.values(OrderStatus),
       default: OrderStatus.ORDER_REQUESTED,
     },
+    reason: { type: String, default: null },
   },
   { timestamps: true }
 );
