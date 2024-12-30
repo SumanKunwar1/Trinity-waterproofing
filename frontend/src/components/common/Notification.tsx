@@ -67,12 +67,16 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({
 
   const markAsRead = async (notificationId: string) => {
     try {
-      const response = await fetch(`/api/notification/${notificationId}/read`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
+      const userId = JSON.parse(localStorage.getItem("userId") || "");
+      const response = await fetch(
+        `/api/notification/${notificationId}/read/${userId}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
       if (!response.ok) throw new Error("Failed to mark notification as read");
       setNotifications((prev) =>
         prev.map((n) => (n._id === notificationId ? { ...n, read: true } : n))
@@ -83,13 +87,17 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({
   };
 
   const deleteNotification = async (notificationId: string) => {
+    const userId = JSON.parse(localStorage.getItem("userId") || "");
     try {
-      const response = await fetch(`/api/notification/${notificationId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
+      const response = await fetch(
+        `/api/notification/${notificationId}/${userId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
       if (!response.ok) throw new Error("Failed to delete notification");
       setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
     } catch (error) {
@@ -99,7 +107,7 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({
 
   const markAllAsRead = async () => {
     try {
-      const userId = localStorage.getItem("userId");
+      const userId = JSON.parse(localStorage.getItem("userId") || "");
       const response = await fetch(`/api/notification/${userId}/read-all`, {
         method: "PATCH",
         headers: {
@@ -116,13 +124,16 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({
 
   const clearAllNotifications = async () => {
     try {
-      const userId = localStorage.getItem("userId");
-      const response = await fetch(`/api/notification/${userId}/clear-all`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
+      const userId = JSON.parse(localStorage.getItem("userId") || "");
+      const response = await fetch(
+        `/api/notification/${userId}/user/clear-all`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
       if (!response.ok) throw new Error("Failed to clear all notifications");
       setNotifications([]);
     } catch (error) {

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { toast } from "react-toastify";
+import { toast } from "react-hot-toast";
 import {
   FaArrowRight,
   FaShoppingBag,
@@ -108,7 +108,7 @@ export const Dashboard: React.FC = () => {
       >
         <div className="flex items-center space-x-4">
           <div className="bg-white rounded-full p-3 w-16 h-16 flex items-center justify-center">
-            <span className="text-blue-600 text-2xl font-bold">$</span>
+            <span className="text-blue-600 text-2xl font-bold">Rs</span>
           </div>
           <div>
             <h2 className="text-xl font-semibold">Total Expenditure</h2>

@@ -56,12 +56,16 @@ const CustomerNotifications: React.FC = () => {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      const response = await fetch(`/api/notification/${notificationId}/read`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
+      const userId = JSON.parse(localStorage.getItem("userId") || "");
+      const response = await fetch(
+        `/api/notification/${notificationId}/read/${userId}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
       if (!response.ok) throw new Error("Failed to mark notification as read");
       setNotifications((prev) =>
         prev.map((n) => (n._id === notificationId ? { ...n, read: true } : n))
@@ -73,19 +77,21 @@ const CustomerNotifications: React.FC = () => {
   };
 
   const deleteNotification = async (notificationId: string) => {
+    const userId = JSON.parse(localStorage.getItem("userId") || "");
     try {
-      const response = await fetch(`/api/notification/${notificationId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
+      const response = await fetch(
+        `/api/notification/${notificationId}/${userId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
       if (!response.ok) throw new Error("Failed to delete notification");
       setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
-      toast.success("Notification deleted");
     } catch (error) {
       console.error("Error deleting notification:", error);
-      toast.error("Failed to delete notification");
     }
   };
 

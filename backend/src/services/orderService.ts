@@ -207,21 +207,46 @@ export class OrderService {
 
       const ordersWithAddresses = await Promise.all(
         orders.map(async (order) => {
-          const address = user.addressBook.find(
-            (addr) => addr._id.toString() === order.AddressId.toString()
-          );
+          console.log("Processing order:", order);
+          console.log("User address book:", user.addressBook);
+
+          if (!user.addressBook || user.addressBook.length === 0) {
+            console.warn("User has no addresses in the address book.");
+            return order; // Return the order as-is
+          }
+
+          if (!order.AddressId) {
+            console.warn("Order has no AddressId:", order);
+            return order; // Return the order as-is
+          }
+
+          const address = user.addressBook.find((addr) => {
+            if (!addr._id) {
+              console.warn("Address has no _id:", addr);
+              return false;
+            }
+            return addr._id.toString() === order.AddressId.toString();
+          });
+
           const orderWithAddress = order.toObject() as IOrder & {
             address?: any;
           };
+
           if (address) {
+            console.log("Address matched for order:", address);
             orderWithAddress.address = address;
+          } else {
+            console.warn(
+              "No matching address found for order AddressId:",
+              order.AddressId
+            );
           }
 
           return orderWithAddress;
         })
       );
 
-      // Step 4: Return the orders with their addresses
+      console.log("orderwithaddress", ordersWithAddresses);
       return ordersWithAddresses;
     } catch (error) {
       throw error;

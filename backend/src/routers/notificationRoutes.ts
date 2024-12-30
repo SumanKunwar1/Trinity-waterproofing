@@ -19,7 +19,7 @@ router.get(
 );
 
 router.patch(
-  "/:notificationId/read/userId",
+  "/:notificationId/read/:userId",
   isAuthenticated,
   notificationController.markNotificationAsRead.bind(notificationController),
   handleResponse
@@ -44,7 +44,7 @@ router.patch(
 );
 
 router.delete(
-  "/:userId/clear-all",
+  "/:userId/user/clear-all",
   isAuthenticated,
   isAuthorizedUser,
   notificationController.clearAllNotifications.bind(notificationController),

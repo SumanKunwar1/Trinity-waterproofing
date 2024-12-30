@@ -99,15 +99,12 @@ export const SideBar = memo(() => {
     // Fetch unread notifications count
     const fetchUnreadNotifications = async () => {
       try {
-        const userId = localStorage.getItem("userId");
-        const response = await fetch(
-          `/api/notifications/${userId}/unread-count`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-            },
-          }
-        );
+        const userId = JSON.parse(localStorage.getItem("userId") || "");
+        const response = await fetch(`/api/notification/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
         if (!response.ok)
           throw new Error("Failed to fetch unread notifications count");
         const data = await response.json();

@@ -19,6 +19,7 @@ import {
   DialogTrigger,
 } from "../../components/ui/dialog";
 import { useUserData } from "../../hooks/useUserData";
+import { ReviewDialog } from "./ReviewDialog";
 
 const statusIcons = {
   completed: <FaCheckCircle className="text-green-500" />,
@@ -33,13 +34,48 @@ export const PurchaseHistory: React.FC = () => {
   const [selectedPurchase, setSelectedPurchase] = useState<
     (typeof orders)[0] | null
   >(null);
+  const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
+  const [selectedProductForReview, setSelectedProductForReview] =
+    useState<any>(null);
 
   const filteredHistory = orders.filter(
     (order) =>
       order.products.some((product) =>
-        product.name.toLowerCase().includes(filter.toLowerCase())
-      ) || order.status.toLowerCase().includes(filter.toLowerCase())
+        product?.name?.toLowerCase().includes(filter.toLowerCase())
+      ) || order.status?.toLowerCase().includes(filter.toLowerCase())
   );
+
+  const handleReviewSubmit = async (
+    rating: number,
+    content: string,
+    image?: File
+  ) => {
+    if (!selectedProductForReview) return;
+
+    try {
+      const formData = new FormData();
+      formData.append("productId", selectedProductForReview._id);
+      formData.append("rating", rating.toString());
+      formData.append("content", content);
+      if (image) {
+        formData.append("image", image);
+      }
+
+      const response = await fetch("/api/review", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+        body: formData,
+      });
+      if (!response.ok) throw new Error("Failed to submit review");
+      setIsReviewDialogOpen(false);
+      // You might want to update the local state or refetch the orders here
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      // Handle error (e.g., show an error message to the user)
+    }
+  };
 
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error loading purchase history</div>;
@@ -103,9 +139,7 @@ export const PurchaseHistory: React.FC = () => {
                       </div>
                       <div>
                         <p className="font-semibold text-lg">
-                          {order.products
-                            .map((product) => product.name)
-                            .join(", ")}
+                          Order #{order._id}
                         </p>
                         <p className="text-sm text-gray-500">
                           {new Date(order.created_at).toLocaleDateString()}
@@ -114,7 +148,7 @@ export const PurchaseHistory: React.FC = () => {
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-lg">
-                        ${order.subtotal.toFixed(2)}
+                        Rs {order.subtotal.toFixed(2)}
                       </p>
                       <Dialog>
                         <DialogTrigger asChild>
@@ -133,25 +167,37 @@ export const PurchaseHistory: React.FC = () => {
                           </DialogHeader>
                           <div className="mt-4">
                             <p>
-                              <strong>Status:</strong>{" "}
-                              {selectedPurchase?.status}
+                              <strong>Status:</strong> {order.status}
                             </p>
                             <p>
                               <strong>Date:</strong>{" "}
-                              {new Date(
-                                selectedPurchase?.created_at || ""
-                              ).toLocaleDateString()}
+                              {new Date(order.created_at).toLocaleDateString()}
                             </p>
                             <p>
-                              <strong>Amount:</strong> $
-                              {selectedPurchase?.subtotal.toFixed(2)}
+                              <strong>Amount:</strong> Rs
+                              {order.subtotal.toFixed(2)}
                             </p>
                             <p>
                               <strong>Items:</strong>
                             </p>
                             <ul className="list-disc pl-5">
-                              {selectedPurchase?.products.map((product) => (
-                                <li key={product._id}>{product.name}</li>
+                              {order.products.map((product) => (
+                                <li
+                                  key={product._id}
+                                  className="flex justify-between items-center"
+                                >
+                                  <span>{product.name}</span>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setSelectedProductForReview(product);
+                                      setIsReviewDialogOpen(true);
+                                    }}
+                                  >
+                                    Review
+                                  </Button>
+                                </li>
                               ))}
                             </ul>
                           </div>
@@ -181,6 +227,15 @@ export const PurchaseHistory: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
+        <DialogContent>
+          <ReviewDialog
+            onSubmit={handleReviewSubmit}
+            productName={selectedProductForReview?.name}
+          />
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };
