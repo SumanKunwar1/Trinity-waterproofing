@@ -1,4 +1,4 @@
-import { Order, Product, User, Cart } from "../models";
+import { Order, Product, User, Cart, IOrder } from "../models";
 import { IOrderItem, INotification } from "../interfaces";
 import { httpMessages } from "../middlewares";
 import { OrderStatus } from "../config/orderStatusEnum";
@@ -141,7 +141,7 @@ export class OrderService {
 
       const userNotificationData: INotification = {
         userId: new mongoose.Types.ObjectId(user._id),
-        message: `Your order placed on ${formattedDate} containing has been successfully placed. Total: $${subtotal}.`,
+        message: `Your order placed on ${formattedDate} has been successfully placed. Total: $${subtotal}.`,
         type: "success",
       };
       await NotificationService.createNotification(userNotificationData);
@@ -192,15 +192,37 @@ export class OrderService {
 
   public async getOrdersByUserId(userId: string) {
     try {
-      const orders = await Order.find({ userId })
-        .populate("products.productId")
-        .populate("addressId");
+      const orders = await Order.find({ userId }).populate(
+        "products.productId"
+      );
 
       if (!orders || orders.length === 0) {
         return [];
       }
 
-      return orders;
+      const user = await User.findById(userId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      const ordersWithAddresses = await Promise.all(
+        orders.map(async (order) => {
+          const address = user.addressBook.find(
+            (addr) => addr._id.toString() === order.AddressId.toString()
+          );
+          const orderWithAddress = order.toObject() as IOrder & {
+            address?: any;
+          };
+          if (address) {
+            orderWithAddress.address = address;
+          }
+
+          return orderWithAddress;
+        })
+      );
+
+      // Step 4: Return the orders with their addresses
+      return ordersWithAddresses;
     } catch (error) {
       throw error;
     }
@@ -208,15 +230,32 @@ export class OrderService {
 
   public async getOrderById(orderId: string) {
     try {
-      const order = await Order.findById(orderId)
-        .populate("products.productId")
-        .populate("addressId");
+      const order = await Order.findById(orderId).populate(
+        "products.productId"
+      );
 
       if (!order) {
         return null;
       }
 
-      return order;
+      const user = await User.findById(order.userId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      const address = user.addressBook.find(
+        (addr) => addr._id.toString() === order.AddressId.toString()
+      );
+
+      const orderWithAddress = order.toObject() as IOrder & {
+        address?: any;
+      };
+
+      if (address) {
+        orderWithAddress.address = address;
+      }
+
+      return orderWithAddress;
     } catch (error) {
       throw error;
     }
@@ -393,6 +432,46 @@ export class OrderService {
         type: "info",
       };
       await NotificationService.createNotification(userNotificationData);
+
+      return updatedOrder;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async disApproveReturn(orderId: string) {
+    try {
+      const existingOrder = await Order.findById(orderId);
+
+      if (!existingOrder) {
+        throw httpMessages.NOT_FOUND("Order");
+      }
+
+      if (existingOrder.status !== OrderStatus.RETURN_REQUESTED) {
+        throw httpMessages.BAD_REQUEST(
+          "Only orders with return requested can be disapproved."
+        );
+      }
+
+      // Change order status to RETURN_DISAPPROVED
+      const updatedOrder = await this.updateOrderStatusInternal(
+        orderId,
+        OrderStatus.RETURN_DISAPPROVED
+      );
+
+      // Notify user about the disapproval
+      const userNotificationData: INotification = {
+        userId: new mongoose.Types.ObjectId(existingOrder.userId),
+        message: `Your return request for the order placed on ${existingOrder.created_at} has been disapproved. Please contact support for more details.`,
+        type: "error",
+      };
+      await NotificationService.createNotification(userNotificationData);
+
+      // Optionally, create admin notification
+      await NotificationService.createAdminNotification(
+        `Return request for order ID ${existingOrder._id} has been disapproved.`,
+        "info"
+      );
 
       return updatedOrder;
     } catch (error) {

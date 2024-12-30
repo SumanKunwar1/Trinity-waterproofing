@@ -53,6 +53,14 @@ router.delete(
   handleResponse
 );
 
+router.delete(
+  "/:userId/:reviewId",
+  isAuthenticated,
+  isAuthorizedUser,
+  reviewController.deleteReviewById.bind(reviewController),
+  handleResponse
+);
+
 router.use(handleError);
 
 export default router;

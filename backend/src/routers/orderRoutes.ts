@@ -93,6 +93,14 @@ router.patch(
   handleResponse
 );
 
+router.patch(
+  "/admin/:orderId/disapprove-return",
+  isAuthenticated,
+  isAuthorized("admin"),
+  orderController.disApproveReturn.bind(orderController),
+  handleResponse
+);
+
 // Delete order (admin only)
 router.delete(
   "/admin/:orderId",

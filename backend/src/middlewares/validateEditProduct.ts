@@ -54,7 +54,7 @@ const validateEditProduct = (
   res: Response,
   next: NextFunction
 ): void => {
-  const { error } = schema.validate(req.body);
+  const { error } = schema.validate(req.body, { abortEarly: false });
 
   if (error) {
     const errors = error.details.map((err) => ({

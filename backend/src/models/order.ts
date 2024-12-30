@@ -27,7 +27,6 @@ const orderSchema: Schema = new Schema(
     userId: { type: Types.ObjectId, ref: "User", required: true },
     addressId: {
       type: Types.ObjectId,
-      ref: "User.addressBook",
       required: true,
     },
     subtotal: { type: Number, required: true },

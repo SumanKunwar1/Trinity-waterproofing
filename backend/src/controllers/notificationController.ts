@@ -32,8 +32,71 @@ export class NotificationController {
       const notifications = await NotificationService.getNotificationsByUserId(
         userId
       );
-
       res.locals.responseData = notifications;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  public async markNotificationAsRead(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { notificationId } = req.params;
+      const updatedNotification =
+        await NotificationService.markNotificationAsRead(notificationId);
+      res.locals.responseData = updatedNotification;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  public async deleteNotification(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { notificationId } = req.params;
+      const deletedNotification = await NotificationService.deleteNotification(
+        notificationId
+      );
+      res.locals.responseData = deletedNotification;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  public async markAllNotificationsAsRead(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { userId } = req.params;
+      const updatedNotifications =
+        await NotificationService.markAllNotificationsAsRead(userId);
+      res.locals.responseData = updatedNotifications;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  public async clearAllNotifications(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { userId } = req.params;
+      await NotificationService.clearAllNotifications(userId);
+      res.locals.responseData = { message: "All notifications cleared" };
       next();
     } catch (error: any) {
       next(error);

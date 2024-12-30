@@ -1,6 +1,7 @@
 import Joi from "joi";
 import { Request, Response, NextFunction } from "express";
 import { httpMessages } from "../middlewares";
+import { deleteImages } from "../config/deleteImages";
 
 const validateReview = (
   req: Request,
@@ -18,18 +19,33 @@ const validateReview = (
       "number.min": "Rating must be at least 1",
       "number.max": "Rating must be at most 5",
     }),
+    image: Joi.array()
+      .items(
+        Joi.string().uri().messages({
+          "string.base": "Each image must be a string",
+          "string.uri": "Each image must be a valid URI",
+        })
+      )
+      .max(5)
+      .messages({
+        "array.base": "Images must be an array",
+        "array.max": "You can upload a maximum of 5 images",
+      }),
     productId: Joi.string().required().messages({
       "string.base": "product ID must be a string",
       "any.required": "product ID is required",
     }),
   });
 
-  const { error } = schema.validate(req.body);
+  const { error } = schema.validate(req.body, { abortEarly: false });
   if (error) {
     const errors = error.details.map((err) => ({
       field: err.context?.key,
       message: err.message,
     }));
+    if (req.body.image) {
+      deleteImages(req.body.image);
+    }
 
     return next(
       httpMessages.BAD_REQUEST(

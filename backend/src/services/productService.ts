@@ -167,15 +167,28 @@ export class ProductService {
         return [];
       }
 
-      const productResponse = products.map((product) => ({
-        ...product.toObject(),
-        productImage: product.productImage
-          ? `/api/image/${product.productImage}`
-          : null, // Modify productImage field
-        image: product.image
-          ? product.image.map((img: string) => `/api/image/${img}`)
-          : [], // Modify image field
-      }));
+      const productResponse = products.map((product) => {
+        // Modify product images
+        const modifiedProduct = {
+          ...product.toObject(),
+          productImage: product.productImage
+            ? `/api/image/${product.productImage}`
+            : null, // Modify productImage field
+          image: product.image
+            ? product.image.map((img: string) => `/api/image/${img}`)
+            : [],
+          review: product.review.map((review: any) => {
+            return {
+              ...review.toObject(),
+              image: review.image
+                ? review.image.map((img: string) => `/api/image/${img}`)
+                : [],
+            };
+          }),
+        };
+
+        return modifiedProduct;
+      });
 
       return productResponse;
     } catch (error) {
@@ -202,6 +215,15 @@ export class ProductService {
         image: product.image
           ? product.image.map((img: string) => `/api/image/${img}`)
           : [],
+        // Modify review images if they exist
+        review: product.review.map((review: any) => {
+          return {
+            ...review.toObject(),
+            image: review.image
+              ? review.image.map((img: string) => `/api/image/${img}`)
+              : [], // Modify image URLs in the review field
+          };
+        }),
       };
 
       return productResponse;
@@ -240,7 +262,6 @@ export class ProductService {
   public async getProductByUserId(userId: string) {
     try {
       const wishlist = await WishList.findOne({ user_id: userId });
-      // const cart = await Cart.findOne({ userId });
 
       const products = await Product.find()
         .populate({
@@ -285,6 +306,15 @@ export class ProductService {
             : [],
           isAddedToWishlist,
           // isAddedToCart,
+          // Modify review images if they exist
+          review: product.review.map((review: any) => {
+            return {
+              ...review.toObject(),
+              image: review.image
+                ? review.image.map((img: string) => `/api/image/${img}`)
+                : [], // Modify image URLs in the review field
+            };
+          }),
         };
       });
 

@@ -4,6 +4,7 @@ interface IReview extends Document {
   _id: Types.ObjectId;
   fullName: string;
   number: string;
+  image?: string[];
   content: string;
   rating: number;
   user?: string;
@@ -21,6 +22,12 @@ const reviewSchema: Schema = new Schema(
       type: String,
       required: true,
     },
+    image: [
+      {
+        type: String,
+        required: false,
+      },
+    ],
     content: {
       type: String,
       required: true,

@@ -8,6 +8,7 @@ import {
   handleError,
   validateProductImage,
   validateEditProduct,
+  isAuthorizedUser,
 } from "../middlewares";
 import {
   uploadMiddleware,
@@ -65,7 +66,7 @@ router.get(
 router.get(
   "/user/:userId",
   isAuthenticated,
-  isAuthorized("admin"),
+  isAuthorizedUser,
   productController.getProductByUserId.bind(productController),
   handleResponse
 );

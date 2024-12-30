@@ -3,6 +3,7 @@ import { Types } from "mongoose";
 import { IReview } from "../interfaces";
 import { httpMessages } from "../middlewares";
 import { OrderStatus } from "../config/orderStatusEnum";
+import { deleteImages } from "../config/deleteImages";
 
 export class ReviewService {
   public async createReview(reviewData: IReview, userEmail: string) {
@@ -43,10 +44,11 @@ export class ReviewService {
         throw httpMessages.FORBIDDEN("You have already reviewed this product");
       }
 
-      const { content, rating } = reviewData;
+      const { content, rating, image } = reviewData;
       const newReview = new Review({
         content,
         rating,
+        image,
         fullName: user.fullName,
         number: user.number,
         user: user._id,
@@ -65,19 +67,22 @@ export class ReviewService {
 
   public async getReviews() {
     try {
-      const products = await Product.find({
-        review: { $exists: true, $not: { $size: 0 } },
-      })
-        .populate({
-          path: "review",
-        })
-        .select("name review");
+      const reviews = await Review.find().populate({
+        path: "productId",
+        select: "name",
+      });
 
-      if (!products || products.length === 0) {
+      if (!reviews || reviews.length === 0) {
         return [];
       }
 
-      return products;
+      reviews.forEach((review) => {
+        if (review.image && review.image.length > 0) {
+          review.image = review.image.map((rev) => `/api/image/${rev}`);
+        }
+      });
+
+      return reviews;
     } catch (error) {
       throw error;
     }
@@ -85,11 +90,21 @@ export class ReviewService {
 
   public async getReviewsByUser(userId: string) {
     try {
-      const reviews = await Review.find({ user: userId });
+      const reviews = await Review.find({ user: userId }).populate({
+        path: "productId",
+        select: "name",
+      });
 
       if (!reviews || reviews.length === 0) {
         return [];
       }
+
+      // Modify the image URLs for each review
+      reviews.forEach((review) => {
+        if (review.image && review.image.length > 0) {
+          review.image = review.image.map((rev) => `/api/image/${rev}`);
+        }
+      });
 
       return reviews;
     } catch (error) {
@@ -141,9 +156,15 @@ export class ReviewService {
         throw httpMessages.NOT_FOUND("review");
       }
 
-      const { content, rating } = updatedData;
+      const { content, rating, image } = updatedData;
       if (content) review.content = content;
       if (rating) review.rating = rating;
+      if (image) {
+        if (review.image) {
+          deleteImages(image);
+        }
+        review.image = image;
+      }
 
       return review;
     } catch (error) {

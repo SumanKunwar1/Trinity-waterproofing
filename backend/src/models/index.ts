@@ -4,7 +4,7 @@ export { Product, IProduct, IColor } from "./products";
 export { Category } from "./category";
 export { SubCategory, ISubCategory } from "./subCategory";
 export { Brand } from "./brand";
-export { Order } from "./order";
+export { Order, IOrder } from "./order";
 export { WishList } from "./whishList";
 export { Cart } from "./cart";
 export { Enquiry } from "./enquiry";

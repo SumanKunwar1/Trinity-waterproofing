@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { ReviewService } from "../services";
 import { IReview } from "../interfaces";
+import { deleteImages } from "../config/deleteImages";
 
 export class ReviewController {
   private reviewService: ReviewService;
@@ -23,6 +24,9 @@ export class ReviewController {
       );
       res.locals.responseData = result;
     } catch (error: any) {
+      if (req.body.image) {
+        deleteImages(req.body.image);
+      }
       next(error);
     }
   }
@@ -86,6 +90,9 @@ export class ReviewController {
       );
       res.locals.responseData = result;
     } catch (error: any) {
+      if (req.body.image) {
+        deleteImages(req.body.image);
+      }
       next(error);
     }
   }

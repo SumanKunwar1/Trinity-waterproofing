@@ -7,4 +7,5 @@ export enum OrderStatus {
   ORDER_CANCELLED = "order-cancelled",
   RETURN_REQUESTED = "return-requested",
   RETURN_APPROVED = "return-approved",
+  RETURN_DISAPPROVED = "return-disapproved", // <-- Add this status
 }
