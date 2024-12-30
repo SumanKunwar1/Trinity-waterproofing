@@ -17,7 +17,7 @@ const validateEditBrand = (
     }),
   });
 
-  console.log("validateEditBrand", req.body);
+  console.log("validateEditBrand", req.body, { abortEarly: false });
   const { error } = schema.validate(req.body);
   if (error) {
     const errors = error.details.map((err) => ({

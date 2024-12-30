@@ -139,6 +139,20 @@ export class OrderController {
       next(error);
     }
   }
+  public async disApproveReturn(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const orderId = req.params.orderId;
+      const result = await this.orderService.disApproveReturn(orderId);
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
 
   public async cancelOrderByUser(
     req: Request,

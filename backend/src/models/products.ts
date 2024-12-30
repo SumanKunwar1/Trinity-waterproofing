@@ -40,7 +40,7 @@ const productSchema: Schema = new Schema(
         name: { type: String, required: true },
         hex: { type: String, required: true },
       },
-    ], // Updated to reflect colors as an array of objects with 'name' and 'hex' fields
+    ],
     inStock: { type: Number, required: true },
     subCategory: { type: Types.ObjectId, ref: "SubCategory", required: true },
   },

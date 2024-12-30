@@ -14,11 +14,6 @@ export const initializeSocket = (server: http.Server): void => {
   io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
 
-    // Send a default message to everyone upon successful connection
-    io.emit("notification", {
-      message: "Successfully connected to the WebSocket server!",
-    });
-
     // Handle user authentication (e.g., joining room with user ID)
     socket.on("authenticate", (userId: string) => {
       console.log(`User authenticated: ${userId}`);

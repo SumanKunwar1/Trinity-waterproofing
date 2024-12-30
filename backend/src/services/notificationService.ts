@@ -75,4 +75,69 @@ export class NotificationService {
       throw httpMessages.INTERNAL_SERVER_ERROR;
     }
   }
+
+  public static async markNotificationAsRead(notificationId: string) {
+    try {
+      const notification = await Notification.findByIdAndUpdate(
+        notificationId,
+        { read: true },
+        { new: true }
+      ).exec();
+
+      if (!notification) {
+        throw httpMessages.NOT_FOUND("Notification not found");
+      }
+
+      return notification;
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      throw httpMessages.INTERNAL_SERVER_ERROR;
+    }
+  }
+
+  public static async deleteNotification(notificationId: string) {
+    try {
+      const notification = await Notification.findByIdAndDelete(
+        notificationId
+      ).exec();
+
+      if (!notification) {
+        throw httpMessages.NOT_FOUND("Notification not found");
+      }
+
+      return notification;
+    } catch (error) {
+      console.error("Error deleting notification:", error);
+      throw httpMessages.INTERNAL_SERVER_ERROR;
+    }
+  }
+
+  public static async markAllNotificationsAsRead(userId: string) {
+    try {
+      const result = await Notification.updateMany(
+        { userId, read: false },
+        { read: true }
+      ).exec();
+
+      return result;
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+      throw httpMessages.INTERNAL_SERVER_ERROR;
+    }
+  }
+
+  public static async clearAllNotifications(userId: string) {
+    try {
+      const result = await Notification.deleteMany({ userId }).exec();
+
+      if (!result.deletedCount) {
+        throw httpMessages.NOT_FOUND("No notifications found to clear");
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Error clearing all notifications:", error);
+      throw httpMessages.INTERNAL_SERVER_ERROR;
+    }
+  }
 }
