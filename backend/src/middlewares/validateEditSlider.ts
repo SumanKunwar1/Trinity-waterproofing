@@ -16,13 +16,28 @@ const validateEditSlider = (
       "string.base": "Description must be a string",
     }),
     image: Joi.string().optional().allow("").messages({
-      "string.base": "Description must be a string",
+      "string.base": "Image must be a string",
+    }),
+    video: Joi.string().optional().allow("").messages({
+      "string.base": "Video must be a string",
     }),
     isVisible: Joi.bool().optional().messages({
       "bool.base": "isVisible must be a boolean",
     }),
-  });
+  })
+    .custom((value, helpers) => {
+      // If both image and video are provided, return an error
+      if (value.image && value.video) {
+        return helpers.error("object.xor");
+      }
+      return value;
+    })
+    .messages({
+      "object.xor": "You cannot provide both 'image' and 'video'.",
+    });
+
   console.log(req.body);
+
   const { error } = schema.validate(req.body);
   if (error) {
     const errors = error.details.map((err) => ({
@@ -30,6 +45,7 @@ const validateEditSlider = (
       message: err.message,
     }));
 
+    // If image is provided and invalid, delete the image
     if (req.body.image && req.body.image !== "") {
       deleteImages([req.body.image]);
     }

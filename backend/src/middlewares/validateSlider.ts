@@ -15,15 +15,23 @@ const validateSlider = (
     description: Joi.string().optional().messages({
       "string.base": "Description must be a string",
     }),
-    image: Joi.string().required().messages({
-      "string.base": "Description must be a string",
+    // Ensure either image or video is provided
+    image: Joi.string().optional().messages({
+      "string.base": "Image must be a string",
+    }),
+    video: Joi.string().optional().messages({
+      "string.base": "Video must be a string",
     }),
     isVisible: Joi.bool().required().messages({
       "bool.base": "isVisible must be a boolean",
       "any.required": "isVisible is required",
     }),
-  });
-  console.log(req.body);
+  })
+    .xor("image", "video")
+    .messages({
+      "object.missing": "Either 'image' or 'video' is required",
+    });
+
   const { error } = schema.validate(req.body);
   if (error) {
     const errors = error.details.map((err) => ({

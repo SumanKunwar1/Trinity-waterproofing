@@ -1,7 +1,8 @@
 import { Router, Request, Response, NextFunction } from "express";
 import path from "path";
 import fs from "fs";
-import { uploadFolder } from "../config/upload"; // Path to your upload folder
+import mime from "mime-types";
+import { uploadFolder } from "../config/upload";
 
 const imageRouter = Router();
 
@@ -10,14 +11,25 @@ imageRouter.get(
   (req: Request, res: Response, next: NextFunction) => {
     const { filename } = req.params;
 
-    const imagePath = path.join(uploadFolder, filename);
-    console.log(imagePath);
+    const filePath = path.join(uploadFolder, filename);
+    console.log(filePath);
 
-    fs.stat(imagePath, (err, stats) => {
+    fs.stat(filePath, (err, stats) => {
       if (err || !stats.isFile()) {
-        return res.status(404).json({ error: "Image not found" });
+        return res.status(404).json({ error: "File not found" });
       }
-      res.sendFile(imagePath);
+
+      // Determine the MIME type based on file extension
+      const mimeType = mime.lookup(filename);
+
+      if (!mimeType) {
+        return res.status(415).json({ error: "Unsupported file type" }); // 415: Unsupported Media Type
+      }
+
+      res.setHeader("Content-Type", mimeType); // Set the MIME type for the response
+
+      // Send the file
+      res.sendFile(filePath);
     });
   }
 );
