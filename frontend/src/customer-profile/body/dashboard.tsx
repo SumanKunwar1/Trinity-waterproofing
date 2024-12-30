@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
@@ -8,6 +8,7 @@ import {
   FaRegHeart,
   FaCube,
   FaPlus,
+  FaStar,
 } from "react-icons/fa";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
@@ -18,34 +19,28 @@ import {
 } from "../../components/ui/dialog";
 import { AddressForm } from "./address-form";
 import { Address } from "../../types/address";
+import { useUserData } from "../../hooks/useUserData";
+import { ReviewDialog } from "./ReviewDialog";
 
-export const Dashboard = () => {
-  const [defaultAddress, setDefaultAddress] = useState<Address | null>(null);
+export const Dashboard: React.FC = () => {
+  const { cart, wishlist, orders, addresses, isLoading, isError } =
+    useUserData();
   const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false);
+  const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(
+    null
+  );
 
-  useEffect(() => {
-    fetchDefaultAddress();
-  }, []);
+  const defaultAddress = addresses.find((addr: Address) => addr.default);
 
-  const fetchDefaultAddress = async () => {
-    try {
-      const userId = JSON.parse(localStorage.getItem("userId") || "");
-      const response = await fetch(`/api/users/addressBook/${userId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
-      if (!response.ok) throw new Error("Failed to fetch addresses");
-      const data = await response.json();
-      const defaultAddr = data.addressBook.find(
-        (addr: Address) => addr.default
-      );
-      setDefaultAddress(defaultAddr || null);
-    } catch (error) {
-      console.error("Error fetching default address:", error);
-      toast.error("Failed to load default address");
-    }
-  };
+  const totalExpenditure = orders.reduce(
+    (total, order) => total + order.subtotal,
+    0
+  );
+  const totalOrdered = orders.reduce(
+    (total, order) => total + order.products.length,
+    0
+  );
 
   const handleAddressSubmit = async (
     address: Omit<Address, "_id" | "default">
@@ -61,7 +56,6 @@ export const Dashboard = () => {
         body: JSON.stringify({ ...address, default: true }),
       });
       if (!response.ok) throw new Error("Failed to add address");
-      await fetchDefaultAddress();
       setIsAddressDialogOpen(false);
       toast.success("Address added successfully");
     } catch (error) {
@@ -69,6 +63,34 @@ export const Dashboard = () => {
       toast.error("Failed to add address");
     }
   };
+
+  const handleReviewSubmit = async (rating: number, content: string) => {
+    if (!selectedProductId) return;
+
+    try {
+      const response = await fetch("/api/review", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+        body: JSON.stringify({
+          productId: selectedProductId,
+          rating,
+          content,
+        }),
+      });
+      if (!response.ok) throw new Error("Failed to submit review");
+      setIsReviewDialogOpen(false);
+      toast.success("Review submitted successfully");
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      toast.error("Failed to submit review");
+    }
+  };
+
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error loading data</div>;
 
   return (
     <motion.div
@@ -90,7 +112,9 @@ export const Dashboard = () => {
           </div>
           <div>
             <h2 className="text-xl font-semibold">Total Expenditure</h2>
-            <p className="text-3xl font-bold mt-1">Rs 0.00</p>
+            <p className="text-3xl font-bold mt-1">
+              Rs {totalExpenditure.toFixed(2)}
+            </p>
           </div>
         </div>
 
@@ -111,19 +135,19 @@ export const Dashboard = () => {
         <div className="md:col-span-1 space-y-6">
           <StatCard
             icon={<FaShoppingBag size={25} />}
-            value={0}
+            value={cart.length}
             label="Products in cart"
             color="bg-green-500"
           />
           <StatCard
             icon={<FaRegHeart size={25} />}
-            value={0}
-            label="Products in watchlist"
+            value={wishlist.length}
+            label="Products in wishlist"
             color="bg-pink-500"
           />
           <StatCard
             icon={<FaCube size={25} />}
-            value={0}
+            value={totalOrdered}
             label="Total products ordered"
             color="bg-purple-500"
           />
@@ -168,6 +192,82 @@ export const Dashboard = () => {
             )}
           </CardContent>
         </Card>
+      </div>
+
+      {/* Recent Orders Section */}
+      <Card className="bg-white shadow-lg">
+        <CardContent className="p-6">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+            Recent Orders
+          </h2>
+          {orders.slice(0, 5).map((order) => (
+            <div
+              key={order._id}
+              className="border-b border-gray-200 py-4 last:border-b-0"
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-semibold">Order #{order._id}</p>
+                  <p className="text-sm text-gray-600">
+                    {new Date(order.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold">Rs {order.subtotal.toFixed(2)}</p>
+                  <p className="text-sm text-gray-600">{order.status}</p>
+                </div>
+              </div>
+              <div className="mt-2">
+                {order.products.map((product) => (
+                  <div
+                    key={product._id}
+                    className="flex justify-between items-center mt-2"
+                  >
+                    <p className="text-sm">{product.name}</p>
+                    <Dialog
+                      open={
+                        isReviewDialogOpen && selectedProductId === product._id
+                      }
+                      onOpenChange={(open) => {
+                        setIsReviewDialogOpen(open);
+                        if (!open) setSelectedProductId(null);
+                      }}
+                    >
+                      <DialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="ml-2"
+                          onClick={() => setSelectedProductId(product._id)}
+                        >
+                          <FaStar className="mr-2" /> Review
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <ReviewDialog onSubmit={handleReviewSubmit} />
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+          <Link to="/customer/purchase-history">
+            <Button className="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white transition duration-200">
+              View All Orders
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
+
+      {/* Links to PurchaseHistory and Reviews */}
+      <div className="flex justify-between">
+        <Link to="/customer/purchase-history">
+          <Button variant="outline">View Purchase History</Button>
+        </Link>
+        <Link to="/customer/reviews">
+          <Button variant="outline">Manage Reviews</Button>
+        </Link>
       </div>
     </motion.div>
   );

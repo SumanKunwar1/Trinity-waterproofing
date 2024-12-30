@@ -74,7 +74,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
       }
 
       addToCart(product._id, quantity, price, selectedColor);
-      toast.success("Product added to cart successfully!");
+      toast.success(`${product.name} added to cart successfully!`);
     } else {
       toast.error("Not enough stock available");
     }

@@ -1,6 +1,4 @@
-"use client";
-
-import { useState } from "react";
+import React, { useState } from "react";
 import { Label } from "../../components/ui/label";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
@@ -20,38 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../../components/ui/dialog";
-
-// Dummy data for purchase history
-const purchaseHistoryData = [
-  {
-    id: 1,
-    status: "completed",
-    date: "2023-05-15",
-    amount: 129.99,
-    items: ["Wireless Headphones", "Phone Case"],
-  },
-  {
-    id: 2,
-    status: "pending",
-    date: "2023-05-20",
-    amount: 79.5,
-    items: ["Smart Watch"],
-  },
-  {
-    id: 3,
-    status: "cancelled",
-    date: "2023-05-10",
-    amount: 199.99,
-    items: ["Laptop Stand", "Ergonomic Keyboard"],
-  },
-  {
-    id: 4,
-    status: "cart",
-    date: "2023-05-25",
-    amount: 54.99,
-    items: ["Bluetooth Speaker"],
-  },
-];
+import { useUserData } from "../../hooks/useUserData";
 
 const statusIcons = {
   completed: <FaCheckCircle className="text-green-500" />,
@@ -60,17 +27,22 @@ const statusIcons = {
   cart: <FaShoppingCart className="text-blue-500" />,
 };
 
-export const PurchaseHistory = () => {
+export const PurchaseHistory: React.FC = () => {
+  const { orders, isLoading, isError } = useUserData();
   const [filter, setFilter] = useState("");
   const [selectedPurchase, setSelectedPurchase] = useState<
-    (typeof purchaseHistoryData)[0] | null
+    (typeof orders)[0] | null
   >(null);
 
-  const filteredHistory = purchaseHistoryData.filter(
-    (item) =>
-      item.items.some((i) => i.toLowerCase().includes(filter.toLowerCase())) ||
-      item.status.includes(filter.toLowerCase())
+  const filteredHistory = orders.filter(
+    (order) =>
+      order.products.some((product) =>
+        product.name.toLowerCase().includes(filter.toLowerCase())
+      ) || order.status.toLowerCase().includes(filter.toLowerCase())
   );
+
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error loading purchase history</div>;
 
   return (
     <motion.div
@@ -118,31 +90,31 @@ export const PurchaseHistory = () => {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
-            {filteredHistory.map((purchase) => (
+            {filteredHistory.map((order) => (
               <Card
-                key={purchase.id}
+                key={order._id}
                 className="bg-white shadow-md hover:shadow-lg transition-shadow duration-300"
               >
                 <CardContent className="p-4">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-3">
                       <div className="text-2xl">
-                        {
-                          statusIcons[
-                            purchase.status as keyof typeof statusIcons
-                          ]
-                        }
+                        {statusIcons[order.status as keyof typeof statusIcons]}
                       </div>
                       <div>
                         <p className="font-semibold text-lg">
-                          {purchase.items.join(", ")}
+                          {order.products
+                            .map((product) => product.name)
+                            .join(", ")}
                         </p>
-                        <p className="text-sm text-gray-500">{purchase.date}</p>
+                        <p className="text-sm text-gray-500">
+                          {new Date(order.created_at).toLocaleDateString()}
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-lg">
-                        ${purchase.amount.toFixed(2)}
+                        ${order.subtotal.toFixed(2)}
                       </p>
                       <Dialog>
                         <DialogTrigger asChild>
@@ -150,7 +122,7 @@ export const PurchaseHistory = () => {
                             variant="outline"
                             size="sm"
                             className="mt-2"
-                            onClick={() => setSelectedPurchase(purchase)}
+                            onClick={() => setSelectedPurchase(order)}
                           >
                             View Details
                           </Button>
@@ -165,18 +137,21 @@ export const PurchaseHistory = () => {
                               {selectedPurchase?.status}
                             </p>
                             <p>
-                              <strong>Date:</strong> {selectedPurchase?.date}
+                              <strong>Date:</strong>{" "}
+                              {new Date(
+                                selectedPurchase?.created_at || ""
+                              ).toLocaleDateString()}
                             </p>
                             <p>
                               <strong>Amount:</strong> $
-                              {selectedPurchase?.amount.toFixed(2)}
+                              {selectedPurchase?.subtotal.toFixed(2)}
                             </p>
                             <p>
                               <strong>Items:</strong>
                             </p>
                             <ul className="list-disc pl-5">
-                              {selectedPurchase?.items.map((item, index) => (
-                                <li key={index}>{item}</li>
+                              {selectedPurchase?.products.map((product) => (
+                                <li key={product._id}>{product.name}</li>
                               ))}
                             </ul>
                           </div>

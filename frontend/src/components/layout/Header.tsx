@@ -101,7 +101,7 @@ const Header: React.FC = () => {
                     onOpenChange={setIsHovered}
                   >
                     <HoverCardTrigger>
-                      <button className="text-white font-semibold hover:text-secondary transition-colors duration-300 flex items-center">
+                      <button className="text-white font-semibold hover:text-secondary flex items-center">
                         {item.title}
                         <FaChevronDown className="ml-1" />
                       </button>
@@ -117,7 +117,7 @@ const Header: React.FC = () => {
                   <Link
                     key={item.id}
                     to={item.path}
-                    className="text-white font-semibold hover:text-secondary transition-colors duration-300"
+                    className="text-white font-semibold hover:text-secondary transition-colors"
                   >
                     {item.title}
                   </Link>

@@ -30,6 +30,7 @@ import PrivacyPolicyPage from "./pages/PrivacyPolicy";
 import { AuthProvider } from "./context/AuthContext";
 import OrderSuccess from "./components/cart/OrderSuccess";
 import OrderFailure from "./components/cart/OrderFailure";
+import { RatingsAndReviews } from "./pages/customer-profile/rating-review/page";
 function App() {
   const userRole = localStorage.getItem("userRole");
   return (
@@ -91,6 +92,14 @@ function App() {
                   element={
                     <PrivateRoute>
                       <AddressBookPage />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/customer/reviews-ratings"
+                  element={
+                    <PrivateRoute>
+                      <RatingsAndReviews />
                     </PrivateRoute>
                   }
                 />
