@@ -11,3 +11,4 @@ export { Enquiry } from "./enquiry";
 export { Slider } from "./slider";
 export { Notification, INotification } from "./notification";
 export { CompanyDetails } from "./companyDetails";
+export { Team } from "./team";

@@ -1,3 +1,5 @@
+export { TeamController } from "./teamController";
+
 export { CompanyDetailController } from "./companyDetailController";
 
 export { SliderController } from "./sliderController";

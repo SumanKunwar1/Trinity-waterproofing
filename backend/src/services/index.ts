@@ -1,3 +1,5 @@
+export { TeamService } from "./teamService";
+
 export { CompanyDetailService } from "./CompanyDetailService";
 
 export { NotificationService } from "./notificationService";
