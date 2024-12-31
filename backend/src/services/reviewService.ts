@@ -1,4 +1,4 @@
-import { Review, Product, User, Order } from "../models";
+import { Review, Product, User, Order, IOrder } from "../models";
 import { Types } from "mongoose";
 import { IReview } from "../interfaces";
 import { httpMessages } from "../middlewares";
@@ -6,36 +6,57 @@ import { OrderStatus } from "../config/orderStatusEnum";
 import { deleteImages } from "../config/deleteImages";
 
 export class ReviewService {
-  public async createReview(reviewData: IReview, userEmail: string) {
+  public async createReview(
+    reviewData: IReview,
+    orderId: string,
+    userEmail: string
+  ) {
     try {
+      // Step 1: Find the product by ID
       const product = await Product.findById(reviewData.productId);
       if (!product) {
         throw httpMessages.NOT_FOUND("Product not found");
       }
+
+      // Step 2: Find the user by email
       const user = await User.findOne({ email: userEmail });
       if (!user) {
         throw httpMessages.NOT_FOUND("User not found");
       }
+
+      // Step 3: Check if the user is an admin
       if (user.role === "admin") {
-        throw httpMessages.FORBIDDEN("You are forbidded to post reviews");
+        throw httpMessages.FORBIDDEN("You are forbidden to post reviews");
       }
 
-      const order = await Order.findOne({
-        user: user._id,
-        "products.productId": reviewData.productId,
-      });
-
+      // Step 4: Find the order by orderId
+      const order = await Order.findById(orderId);
       if (!order) {
+        throw httpMessages.NOT_FOUND("Order not found");
+      }
+
+      // Log the order for debugging
+      console.log("order we got", order);
+
+      // Step 5: Ensure the product is in the order
+      const productInOrder = order.products.some(
+        (orderProduct) =>
+          orderProduct.productId.toString() === reviewData.productId.toString()
+      );
+      if (!productInOrder) {
         throw httpMessages.FORBIDDEN(
           "You can only review products you have purchased"
         );
       }
 
-      if (order.status !== OrderStatus.SERVICE_COMPLETED) {
+      // Step 6: Check if the order status is "delivered"
+      if (order.status !== OrderStatus.ORDER_DELIVERED) {
         throw httpMessages.FORBIDDEN(
           "You can only review products from completed orders"
         );
       }
+
+      // Step 7: Check if the user has already reviewed the product
       const existingReview = await Review.findOne({
         user: user._id,
         product: product._id,
@@ -44,23 +65,26 @@ export class ReviewService {
         throw httpMessages.FORBIDDEN("You have already reviewed this product");
       }
 
-      const { content, rating, image } = reviewData;
+      // Step 8: Create the new review
       const newReview = new Review({
-        content,
-        rating,
-        image,
+        content: reviewData.content,
+        rating: reviewData.rating,
+        image: reviewData.image || [], // Ensure empty array if no image
         fullName: user.fullName,
         number: user.number,
         user: user._id,
+        product: product._id, // Link the review to the product
       });
 
       await newReview.save();
 
-      product.review.push(newReview._id as Types.ObjectId);
+      // Step 9: Link the review to the product
+      product.review.push(newReview._id);
       await product.save();
 
       return newReview;
     } catch (error) {
+      console.error("Error while creating review:", error);
       throw error;
     }
   }

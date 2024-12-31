@@ -1,59 +1,51 @@
-"use client";
-
-import React, { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { fetchReviewsAsync, deleteReviewAsync } from "../store/reviewsSlice";
+import { AppDispatch, RootState } from "../store/store";
 import { motion } from "framer-motion";
-import { toast } from "react-toastify";
-import { FaEye, FaTrash } from "react-icons/fa";
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "../components/ui/card";
+  ColumnDef,
+  useReactTable,
+  flexRender,
+  getCoreRowModel,
+} from "@tanstack/react-table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "../components/ui/dropdown-menu";
 import { Button } from "../components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogTitle,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "../components/ui/dialog";
-import Table from "../components/ui/table";
+import { toast } from "react-toastify";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
-import { AppDispatch, RootState } from "../store/store";
-import { fetchReviews, deleteReview, Review } from "../store/reviewsSlice";
+import { Review } from "../../types/review";
 
-const Reviews: React.FC = () => {
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const [selectedReview, setSelectedReview] = useState<Review | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-
+export default function Reviews() {
   const dispatch = useDispatch<AppDispatch>();
-  const { reviews, status, error } = useSelector(
-    (state: RootState) => state.reviews
-  );
+  const reviews = useSelector((state: RootState) => state.reviews.reviews);
+  const [selectedReview, setSelectedReview] = useState<Review | null>(null);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchReviews());
+    dispatch(fetchReviewsAsync());
   }, [dispatch]);
-
-  const toggleSidebar = () => {
-    setSidebarOpen((prev) => !prev);
-  };
-
-  const handleViewReview = (review: Review) => {
-    setSelectedReview(review);
-    setIsDialogOpen(true);
-  };
-  console.log("Seclected review:", selectedReview);
 
   const handleDeleteReview = async () => {
     if (selectedReview) {
       try {
-        await dispatch(deleteReview(selectedReview.id)).unwrap();
+        await dispatch(deleteReviewAsync(selectedReview.id)).unwrap();
         toast.success("Review deleted successfully");
         setIsDeleteDialogOpen(false);
       } catch (error) {
@@ -62,123 +54,187 @@ const Reviews: React.FC = () => {
     }
   };
 
-  const columns = [
-    { header: "Product", accessor: "productName" },
-    { header: "Customer", accessor: "customerName" },
-    { header: "Rating", accessor: "rating" },
-    { header: "Date", accessor: "createdAt" },
+  const columns: ColumnDef<Review>[] = [
     {
-      header: "Actions",
-      accessor: "actions",
-      cell: (row: Review) => (
-        <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleViewReview(row)}
-          >
-            <FaEye className="mr-2" /> View
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setSelectedReview(row);
-              setIsDeleteDialogOpen(true);
-            }}
-          >
-            <FaTrash className="mr-2" /> Delete
-          </Button>
-        </div>
-      ),
+      accessorKey: "name",
+      header: "Product",
+    },
+    {
+      accessorKey: "content",
+      header: "Review Content",
+    },
+    {
+      accessorKey: "rating",
+      header: "Rating",
+    },
+    {
+      accessorKey: "date",
+      header: "Date",
+      cell: ({ row }) => new Date(row.getValue("date")).toLocaleDateString(),
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => {
+        const review = row.original;
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="size-6"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10.5 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={() => {
+                  setSelectedReview(review);
+                  setIsViewDialogOpen(true);
+                }}
+              >
+                View
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  setSelectedReview(review);
+                  setIsDeleteDialogOpen(true);
+                }}
+              >
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
     },
   ];
+
+  const table = useReactTable({
+    data: reviews,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
+  const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
   return (
     <div className="flex bg-gray-100">
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Topbar toggleSidebar={toggleSidebar} />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+        <div className="container mx-auto p-6">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl font-bold">Reviews</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {status === "loading" ? (
-                  <p>Loading reviews...</p>
-                ) : status === "failed" ? (
-                  <p>Error loading reviews: {error}</p>
-                ) : (
-                  <Table
-                    columns={columns}
-                    data={reviews}
-                    onRowClick={(row) => handleViewReview(row)}
-                  />
+            <div className="rounded-md border">
+              <table>
+                <thead>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <th key={header.id} className="px-4 py-2">
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </th>
+                      ))}
+                    </tr>
+                  ))}
+                </thead>
+                <tbody>
+                  {table.getRowModel().rows?.length ? (
+                    table.getRowModel().rows.map((row) => (
+                      <tr key={row.id}>
+                        {row.getVisibleCells().map((cell) => (
+                          <td key={cell.id} className="px-4 py-2">
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={columns.length} className="h-24 text-center">
+                        No results.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Review Details</DialogTitle>
+                </DialogHeader>
+                {selectedReview && (
+                  <div className="space-y-2">
+                    <p>
+                      <strong>Product:</strong> {selectedReview.name}
+                    </p>
+                    <p>
+                      <strong>Rating:</strong> {selectedReview.rating}/5
+                    </p>
+                    <p>
+                      <strong>Date:</strong>{" "}
+                      {new Date(selectedReview.date).toLocaleString()}
+                    </p>
+                    <p>
+                      <strong>Content:</strong> {selectedReview.content}
+                    </p>
+                  </div>
                 )}
-              </CardContent>
-            </Card>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog
+              open={isDeleteDialogOpen}
+              onOpenChange={setIsDeleteDialogOpen}
+            >
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Delete Review</DialogTitle>
+                  <DialogDescription>
+                    Are you sure you want to delete this review? This action
+                    cannot be undone.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsDeleteDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button variant="destructive" onClick={handleDeleteReview}>
+                    Delete
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </motion.div>
-
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogTitle>Review Details</DialogTitle>
-              <DialogDescription>View review details.</DialogDescription>
-              {selectedReview && (
-                <div className="space-y-4">
-                  <p>
-                    <strong>Product:</strong> {selectedReview.productName}
-                  </p>
-                  <p>
-                    <strong>Customer:</strong> {selectedReview.customerName}
-                  </p>
-                  <p>
-                    <strong>Rating:</strong> {selectedReview.rating}/5
-                  </p>
-                  <p>
-                    <strong>Date:</strong>{" "}
-                    {new Date(selectedReview.createdAt).toLocaleString()}
-                  </p>
-                  <p>
-                    <strong>Content:</strong> {selectedReview.content}
-                  </p>
-                </div>
-              )}
-            </DialogContent>
-          </Dialog>
-
-          <Dialog
-            open={isDeleteDialogOpen}
-            onOpenChange={setIsDeleteDialogOpen}
-          >
-            <DialogContent>
-              <DialogTitle>Delete Review</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to delete this review? This action cannot
-                be undone.
-              </DialogDescription>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setIsDeleteDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button variant="destructive" onClick={handleDeleteReview}>
-                  Delete
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </main>
+        </div>
       </div>
     </div>
   );
-};
-
-export default Reviews;
+}

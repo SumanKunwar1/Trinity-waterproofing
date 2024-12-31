@@ -402,7 +402,7 @@ export class OrderService {
         throw httpMessages.NOT_FOUND("Order");
       }
 
-      if (existingOrder.status !== OrderStatus.SERVICE_COMPLETED) {
+      if (existingOrder.status !== OrderStatus.ORDER_DELIVERED) {
         throw httpMessages.BAD_REQUEST(
           "Only completed orders are eligible for return requests."
         );
@@ -425,6 +425,82 @@ export class OrderService {
         `A new order with ID ${existingOrder._id} has been requested to return.Reason:${reason} Please review it.`,
         "info"
       );
+      await NotificationService.createNotification(userNotificationData);
+
+      return updatedOrder;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async markOrderShipped(orderId: string) {
+    try {
+      const existingOrder = await Order.findById(orderId);
+
+      if (!existingOrder) {
+        throw httpMessages.NOT_FOUND("Order");
+      }
+
+      if (existingOrder.status !== OrderStatus.ORDER_CONFIRMED) {
+        throw httpMessages.BAD_REQUEST(
+          "Only orders with confirmation can be shipped."
+        );
+      }
+
+      const updatedOrder = await this.updateOrderStatusInternal(
+        orderId,
+        OrderStatus.ORDER_SHIPPED
+      );
+
+      // Handle return stock restoration or other tasks
+      for (const productItem of existingOrder.products) {
+        await Product.findByIdAndUpdate(productItem.productId, {
+          $inc: { inStock: productItem.quantity },
+        });
+      }
+      const userNotificationData: INotification = {
+        userId: new mongoose.Types.ObjectId(existingOrder.userId),
+        message: `Your order placed on ${existingOrder.created_at} has been shipped. PLease contact Us for more details.`,
+        type: "info",
+      };
+      await NotificationService.createNotification(userNotificationData);
+
+      return updatedOrder;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async markOrderDelivered(orderId: string) {
+    try {
+      const existingOrder = await Order.findById(orderId);
+
+      if (!existingOrder) {
+        throw httpMessages.NOT_FOUND("Order");
+      }
+
+      if (existingOrder.status !== OrderStatus.ORDER_SHIPPED) {
+        throw httpMessages.BAD_REQUEST(
+          "Only orders with shipped status can be delivered."
+        );
+      }
+
+      const updatedOrder = await this.updateOrderStatusInternal(
+        orderId,
+        OrderStatus.ORDER_DELIVERED
+      );
+
+      // Handle return stock restoration or other tasks
+      for (const productItem of existingOrder.products) {
+        await Product.findByIdAndUpdate(productItem.productId, {
+          $inc: { inStock: productItem.quantity },
+        });
+      }
+      const userNotificationData: INotification = {
+        userId: new mongoose.Types.ObjectId(existingOrder.userId),
+        message: `Your order placed on ${existingOrder.created_at} has been Delivered. Please confirm.`,
+        type: "info",
+      };
       await NotificationService.createNotification(userNotificationData);
 
       return updatedOrder;
@@ -554,7 +630,23 @@ export class OrderService {
       if (!order) {
         throw httpMessages.NOT_FOUND("Order");
       }
-      if (order.status !== OrderStatus.SERVICE_COMPLETED) {
+
+      const deletableStatuses = [
+        OrderStatus.ORDER_CANCELLED,
+        OrderStatus.RETURN_DISAPPROVED,
+        OrderStatus.RETURN_APPROVED,
+        OrderStatus.ORDER_DELIVERED,
+      ];
+
+      if (!deletableStatuses.includes(order.status)) {
+        throw httpMessages.FORBIDDEN(
+          `Cannot delete order in status '${order.status}'`
+        );
+      }
+      if (
+        order.status !== OrderStatus.ORDER_DELIVERED &&
+        order.status !== OrderStatus.ORDER_SHIPPED
+      ) {
         for (const productItem of order.products) {
           await Product.findByIdAndUpdate(productItem.productId, {
             $inc: { inStock: productItem.quantity },
@@ -574,7 +666,7 @@ export class OrderService {
   public async getAllOrders() {
     try {
       const orders = await Order.find()
-        .populate("userId", "name role number") // Only populate name, role, and number from the User document
+        .populate("userId", "fullName role number") // Only populate name, role, and number from the User document
         .populate({
           path: "products.productId",
           select: "name retailPrice wholeSalePrice", // Only select specific fields from Product (e.g., name, retailPrice, wholeSalePrice)

@@ -1,78 +1,35 @@
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { fetchReviews, deleteReview } from "../utils/api";
+import { Review } from "../../types/review";
 
-export interface Review {
-  id: string;
-  productName: string;
-  customerName: string;
-  rating: number;
-  content: string;
-  createdAt: string;
-}
-
-interface ReviewsState {
-  reviews: Review[];
-  status: "idle" | "loading" | "succeeded" | "failed";
-  error: string | null;
-}
-
-const initialState: ReviewsState = {
-  reviews: [],
-  status: "idle",
-  error: null,
-};
-
-export const fetchReviews = createAsyncThunk(
+export const fetchReviewsAsync = createAsyncThunk(
   "reviews/fetchReviews",
   async () => {
-    const response = await fetch("/api/review", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-      },
-    });
-    if (!response.ok) {
-      throw new Error("Failed to fetch reviews");
-    }
-    return response.json();
+    const response = await fetchReviews();
+    return response.data;
   }
 );
 
-export const deleteReview = createAsyncThunk(
+export const deleteReviewAsync = createAsyncThunk(
   "reviews/deleteReview",
   async (reviewId: string) => {
-    const response = await fetch(`/api/review/${reviewId}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-      },
-    });
-    if (!response.ok) {
-      throw new Error("Failed to delete review");
-    }
+    await deleteReview(reviewId);
     return reviewId;
   }
 );
 
 const reviewsSlice = createSlice({
   name: "reviews",
-  initialState,
+  initialState: {
+    reviews: [] as Review[],
+  },
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchReviews.pending, (state) => {
-        state.status = "loading";
+      .addCase(fetchReviewsAsync.fulfilled, (state, action) => {
+        state.reviews = action.payload;
       })
-      .addCase(
-        fetchReviews.fulfilled,
-        (state, action: PayloadAction<Review[]>) => {
-          state.status = "succeeded";
-          state.reviews = action.payload;
-        }
-      )
-      .addCase(fetchReviews.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.error.message || "Failed to fetch reviews";
-      })
-      .addCase(deleteReview.fulfilled, (state, action) => {
+      .addCase(deleteReviewAsync.fulfilled, (state, action) => {
         state.reviews = state.reviews.filter(
           (review) => review.id !== action.payload
         );

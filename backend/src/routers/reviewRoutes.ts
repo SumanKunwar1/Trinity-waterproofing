@@ -15,7 +15,7 @@ const router = Router();
 const reviewController = new ReviewController();
 
 router.post(
-  "/",
+  "/:orderId",
   isAuthenticated,
   uploadMiddleware,
   appendFileDataToBody,

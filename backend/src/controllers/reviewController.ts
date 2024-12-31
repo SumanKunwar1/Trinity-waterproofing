@@ -17,9 +17,11 @@ export class ReviewController {
   ): Promise<void> {
     try {
       const reviewData: IReview = req.body;
+      const { orderId } = req.params;
       const userEmail = req.email;
       const result = await this.reviewService.createReview(
         reviewData,
+        orderId,
         userEmail
       );
       res.locals.responseData = result;

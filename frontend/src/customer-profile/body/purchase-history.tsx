@@ -50,18 +50,19 @@ export const PurchaseHistory: React.FC = () => {
     content: string,
     image?: File
   ) => {
-    if (!selectedProductForReview) return;
+    if (!selectedProductForReview || !selectedPurchase) return;
 
     try {
       const formData = new FormData();
-      formData.append("productId", selectedProductForReview._id);
+      formData.append("productId", selectedProductForReview.productId._id);
       formData.append("rating", rating.toString());
       formData.append("content", content);
       if (image) {
         formData.append("image", image);
       }
 
-      const response = await fetch("/api/review", {
+      // Using selectedPurchase._id as the orderId
+      const response = await fetch(`/api/review/${selectedPurchase._id}`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
@@ -183,10 +184,10 @@ export const PurchaseHistory: React.FC = () => {
                             <ul className="list-disc pl-5">
                               {order.products.map((product) => (
                                 <li
-                                  key={product._id}
+                                  key={product.productId._id}
                                   className="flex justify-between items-center"
                                 >
-                                  <span>{product.name}</span>
+                                  <span>{product.productId.name}</span>
                                   <Button
                                     size="sm"
                                     variant="outline"

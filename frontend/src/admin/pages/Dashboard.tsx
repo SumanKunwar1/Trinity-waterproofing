@@ -31,8 +31,8 @@ import Topbar from "../components/Topbar";
 import LatestOrderTable from "../components/LatestOrderTable";
 import LatestReviewCard from "../components/LatestReviewCard";
 import { AppDispatch, RootState } from "../store/store";
-import { fetchOrders } from "../store/ordersSlice";
-import { fetchReviews } from "../store/reviewsSlice";
+import { fetchOrdersAsync } from "../store/ordersSlice";
+import { fetchReviewsAsync } from "../store/reviewsSlice";
 
 ChartJS.register(
   CategoryScale,
@@ -50,19 +50,19 @@ const Dashboard: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = React.useState(false);
   const dispatch = useDispatch<AppDispatch>();
   const {
-    latestOrder,
+    orders,
     status: orderStatus,
     error: orderError,
   } = useSelector((state: RootState) => state.orders);
   const {
-    latestReview,
+    reviews,
     status: reviewStatus,
     error: reviewError,
   } = useSelector((state: RootState) => state.reviews);
 
   useEffect(() => {
-    dispatch(fetchOrders());
-    dispatch(fetchReviews());
+    dispatch(fetchOrdersAsync());
+    dispatch(fetchReviewsAsync());
   }, [dispatch]);
 
   const toggleSidebar = () => {
@@ -221,10 +221,10 @@ const Dashboard: React.FC = () => {
                     <p>Loading latest order...</p>
                   ) : orderStatus === "failed" ? (
                     <p>Error loading latest order: {orderError}</p>
-                  ) : !latestOrder ? (
+                  ) : orders.length === 0 ? (
                     <p>No recent orders.</p>
                   ) : (
-                    <LatestOrderTable order={latestOrder} />
+                    <LatestOrderTable order={orders[0]} />
                   )}
                 </CardContent>
               </Card>
@@ -245,10 +245,10 @@ const Dashboard: React.FC = () => {
                     <p>Loading latest review...</p>
                   ) : reviewStatus === "failed" ? (
                     <p>Error loading latest review: {reviewError}</p>
-                  ) : !latestReview ? (
+                  ) : reviews.length === 0 ? (
                     <p>No recent reviews.</p>
                   ) : (
-                    <LatestReviewCard review={latestReview} />
+                    <LatestReviewCard review={reviews[0]} />
                   )}
                 </CardContent>
               </Card>
