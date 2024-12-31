@@ -21,16 +21,22 @@ import { AddressForm } from "./address-form";
 import { Address } from "../../types/address";
 import { useUserData } from "../../hooks/useUserData";
 import { ReviewDialog } from "./ReviewDialog";
+import { useWishlist } from "../../context/WishlistContext";
 
 export const Dashboard: React.FC = () => {
-  const { cart, wishlist, orders, addresses, isLoading, isError } =
-    useUserData();
+  const { cart, orders, addresses, isLoading, isError } = useUserData();
+  const {
+    wishlist,
+    isLoading: wishlistLoading,
+    error: wishlistError,
+  } = useWishlist();
   const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false);
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(
     null
   );
 
+  console.log("Wishlist in dashboard", wishlist);
   const defaultAddress = addresses.find((addr: Address) => addr.default);
 
   const totalExpenditure = orders.reduce(
@@ -89,8 +95,8 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error loading data</div>;
+  if (isLoading || wishlistLoading) return <div>Loading...</div>;
+  if (isError || wishlistError) return <div>Error loading data</div>;
 
   return (
     <motion.div
@@ -209,7 +215,7 @@ export const Dashboard: React.FC = () => {
                 <div>
                   <p className="font-semibold">Order #{order._id}</p>
                   <p className="text-sm text-gray-600">
-                    {new Date(order.created_at).toLocaleDateString()}
+                    {new Date(order.createdAt).toLocaleDateString()}
                   </p>
                 </div>
                 <div className="text-right">
@@ -263,10 +269,20 @@ export const Dashboard: React.FC = () => {
       {/* Links to PurchaseHistory and Reviews */}
       <div className="flex justify-between">
         <Link to="/customer/purchase-history">
-          <Button variant="outline">View Purchase History</Button>
+          <Button
+            variant="outline"
+            className="border border-secondary hover:bg-hover hover:text-brand"
+          >
+            View Purchase History
+          </Button>
         </Link>
-        <Link to="/customer/reviews">
-          <Button variant="outline">Manage Reviews</Button>
+        <Link to="/customer/reviews-ratings">
+          <Button
+            variant="outline"
+            className="border border-secondary hover:bg-hover hover:text-brand"
+          >
+            Manage Reviews
+          </Button>
         </Link>
       </div>
     </motion.div>

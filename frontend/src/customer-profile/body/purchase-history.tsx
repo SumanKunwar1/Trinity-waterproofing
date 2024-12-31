@@ -142,7 +142,7 @@ export const PurchaseHistory: React.FC = () => {
                           Order #{order._id}
                         </p>
                         <p className="text-sm text-gray-500">
-                          {new Date(order.created_at).toLocaleDateString()}
+                          {new Date(order.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
@@ -171,7 +171,7 @@ export const PurchaseHistory: React.FC = () => {
                             </p>
                             <p>
                               <strong>Date:</strong>{" "}
-                              {new Date(order.created_at).toLocaleDateString()}
+                              {new Date(order.createdAt).toLocaleDateString()}
                             </p>
                             <p>
                               <strong>Amount:</strong> Rs

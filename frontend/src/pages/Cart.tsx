@@ -6,6 +6,7 @@ import OrderSummary from "../components/cart/OrderSummary";
 import { Button } from "../components/ui/button";
 import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
+import Loader from "../components/common/Loader";
 
 const Cart: React.FC = () => {
   const { cart, isLoading, clearCart } = useCart();
@@ -26,11 +27,7 @@ const Cart: React.FC = () => {
     return (
       <div className="flex flex-col min-h-screen">
         <Header />
-        <main className="flex-grow">
-          <div className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold mb-8">Loading cart...</h1>
-          </div>
-        </main>
+        <Loader />
         <Footer />
       </div>
     );

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
-import { FaEye } from "react-icons/fa";
+import { FaEye, FaCheck, FaTimes } from "react-icons/fa";
 import {
   Card,
   CardHeader,
@@ -14,6 +15,7 @@ import {
   DialogContent,
   DialogDescription,
   DialogTitle,
+  DialogFooter,
 } from "../components/ui/dialog";
 import {
   Select,
@@ -25,91 +27,105 @@ import {
 import Table from "../components/ui/table";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
-
-interface OrderItem {
-  id: number;
-  productName: string;
-  quantity: number;
-  price: number;
-}
-
-interface Order {
-  id: number;
-  customerName: string;
-  orderDate: string;
-  status: "Pending" | "Processing" | "Shipped" | "Delivered";
-  total: number;
-  items: OrderItem[];
-}
+import { AppDispatch, RootState } from "../store/store";
+import {
+  fetchOrders,
+  updateOrderStatus,
+  cancelOrder,
+  Order,
+} from "../store/ordersSlice";
 
 const Orders: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+
+  const dispatch = useDispatch<AppDispatch>();
+  const { orders, status, error } = useSelector(
+    (state: RootState) => state.orders
+  );
+
+  useEffect(() => {
+    dispatch(fetchOrders())
+      .then((result) => {
+        console.log("Orders fetched successfully:", result);
+      })
+      .catch((error) => {
+        console.error("Failed to fetch orders:", error);
+      });
+  }, [dispatch]);
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
-  const [orders, setOrders] = useState<Order[]>([
-    {
-      id: 1,
-      customerName: "John Doe",
-      orderDate: "2023-06-01",
-      status: "Pending",
-      total: 99.99,
-      items: [
-        { id: 1, productName: "Waterproof Paint A", quantity: 2, price: 19.99 },
-        { id: 2, productName: "Sealant X", quantity: 1, price: 29.99 },
-      ],
-    },
-    {
-      id: 2,
-      customerName: "Jane Smith",
-      orderDate: "2023-06-02",
-      status: "Processing",
-      total: 149.99,
-      items: [
-        {
-          id: 3,
-          productName: "Waterproof Membrane",
-          quantity: 1,
-          price: 79.99,
-        },
-        { id: 4, productName: "Waterproof Coating", quantity: 2, price: 34.99 },
-      ],
-    },
-  ]);
-
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleViewOrder = (order: Order) => {
     setSelectedOrder(order);
     setIsDialogOpen(true);
   };
 
-  const handleStatusChange = (orderId: number, newStatus: Order["status"]) => {
-    setOrders(
-      orders.map((order) =>
-        order.id === orderId ? { ...order, status: newStatus } : order
-      )
-    );
-    toast.success(`Order ${orderId} status updated to ${newStatus}`);
+  const handleStatusChange = async (
+    orderId: string,
+    newStatus: Order["status"]
+  ) => {
+    try {
+      await dispatch(updateOrderStatus({ orderId, newStatus })).unwrap();
+      toast.success(`Order ${orderId} status updated to ${newStatus}`);
+    } catch (error) {
+      toast.error("Failed to update order status");
+    }
+  };
+  const handleCancelOrder = async () => {
+    if (selectedOrder) {
+      try {
+        await dispatch(
+          cancelOrder({ orderId: selectedOrder.id, reason: cancelReason })
+        ).unwrap();
+        toast.success(`Order ${selectedOrder.id} has been cancelled`);
+        setIsCancelDialogOpen(false);
+      } catch (error) {
+        toast.error("Failed to cancel order");
+      }
+    }
   };
 
   const columns = [
-    { header: "Order ID", accessor: "id", filterable: true },
-    { header: "Customer Name", accessor: "customerName", filterable: true },
-    { header: "Order Date", accessor: "orderDate", filterable: false },
-    { header: "Status", accessor: "status", filterable: false },
+    { header: "Order ID", accessor: "id" },
+    { header: "Customer Name", accessor: "customerName" },
+    { header: "Order Date", accessor: "orderDate" },
+    {
+      header: "Status",
+      accessor: "status",
+      cell: (row: Order) => (
+        <Select
+          value={row.status}
+          onValueChange={(value: Order["status"]) =>
+            handleStatusChange(row.id, value)
+          }
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Pending">Pending</SelectItem>
+            <SelectItem value="Processing">Processing</SelectItem>
+            <SelectItem value="Shipped">Shipped</SelectItem>
+            <SelectItem value="Delivered">Delivered</SelectItem>
+            <SelectItem value="Cancelled">Cancelled</SelectItem>
+          </SelectContent>
+        </Select>
+      ),
+    },
     {
       header: "Total",
       accessor: "total",
-      filterable: false,
-      cell: (row: Order) => `$${row.total.toFixed(2)}`,
+      cell: (row: Order) => `$${row.total}`,
     },
     {
       header: "Actions",
       accessor: "actions",
-      filterable: false,
       cell: (row: Order) => (
         <Button
           variant="outline"
@@ -122,128 +138,101 @@ const Orders: React.FC = () => {
     },
   ];
 
-  const data = orders.map((order) => ({
-    ...order,
-    actions: (
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => handleViewOrder(order)}
-      >
-        <FaEye className="mr-2" /> View
-      </Button>
-    ),
-  }));
-
-  // Simulating real-time updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setOrders((prevOrders) =>
-        prevOrders.map((order) => {
-          if (order.status === "Delivered") return order;
-          const statuses: Order["status"][] = [
-            "Pending",
-            "Processing",
-            "Shipped",
-            "Delivered",
-          ];
-          const currentIndex = statuses.indexOf(order.status);
-          if (Math.random() > 0.7 && currentIndex < statuses.length - 1) {
-            const newStatus = statuses[currentIndex + 1];
-            toast.info(`Order ${order.id} status updated to ${newStatus}`);
-            return { ...order, status: newStatus };
-          }
-          return order;
-        })
-      );
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
-
   return (
-    <div>
-      <div className="flex bg-gray-100">
-        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Topbar toggleSidebar={toggleSidebar} />
-          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
-            <div className="space-y-6">
-              <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-2xl font-bold">Orders</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Table
-                      columns={columns}
-                      data={data}
-                      onRowClick={(row) => handleViewOrder(row)}
-                      itemsPerPage={5}
-                    />
-                  </CardContent>
-                </Card>
-              </motion.div>
+    <div className="flex bg-gray-100">
+      <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Topbar toggleSidebar={toggleSidebar} />
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl font-bold">Orders</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {status === "loading" ? (
+                  <p>Loading orders...</p>
+                ) : status === "failed" ? (
+                  <p>Error loading orders: {error}</p>
+                ) : (
+                  <Table
+                    columns={columns}
+                    data={orders}
+                    onRowClick={(row) => handleViewOrder(row)}
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
 
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="sm:max-w-[600px]">
-                  <DialogTitle>Order Details</DialogTitle>
-                  <DialogDescription>
-                    View and manage order details.
-                  </DialogDescription>
-                  {selectedOrder && (
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="font-semibold">
-                          Order ID: {selectedOrder.id}
-                        </h3>
-                        <p>Customer: {selectedOrder.customerName}</p>
-                        <p>Date: {selectedOrder.orderDate}</p>
-                        <p>Total: ${selectedOrder.total.toFixed(2)}</p>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold mb-2">Items:</h4>
-                        <ul className="list-disc pl-5">
-                          {selectedOrder.items.map((item) => (
-                            <li key={item.id}>
-                              {item.productName} - Quantity: {item.quantity},
-                              Price: ${item.price.toFixed(2)}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span className="font-semibold">Status:</span>
-                        <Select
-                          value={selectedOrder.status}
-                          onValueChange={(value: Order["status"]) =>
-                            handleStatusChange(selectedOrder.id, value)
-                          }
-                        >
-                          <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Select status" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Pending">Pending</SelectItem>
-                            <SelectItem value="Processing">
-                              Processing
-                            </SelectItem>
-                            <SelectItem value="Shipped">Shipped</SelectItem>
-                            <SelectItem value="Delivered">Delivered</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  )}
-                </DialogContent>
-              </Dialog>
-            </div>
-          </main>
-        </div>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogTitle>Order Details</DialogTitle>
+              <DialogDescription>
+                View and manage order details.
+              </DialogDescription>
+              {selectedOrder && (
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold">
+                      Order ID: {selectedOrder.id}
+                    </h3>
+                    <p>Customer: {selectedOrder.customerName}</p>
+                    <p>Date: {selectedOrder.orderDate}</p>
+                    <p>Total: ${selectedOrder.total}</p>
+                    <p>Status: {selectedOrder.status}</p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-2">Items:</h4>
+                    <ul className="list-disc pl-5">
+                      {selectedOrder.items.map((item) => (
+                        <li key={item.id}>
+                          {item.productName} - Quantity: {item.quantity}, Price:
+                          ${item.price}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+
+          <Dialog
+            open={isCancelDialogOpen}
+            onOpenChange={setIsCancelDialogOpen}
+          >
+            <DialogContent>
+              <DialogTitle>Cancel Order</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to cancel this order? Please provide a
+                reason.
+              </DialogDescription>
+              <textarea
+                className="w-full p-2 border rounded"
+                rows={3}
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                placeholder="Enter cancellation reason"
+              />
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsCancelDialogOpen(false)}
+                >
+                  <FaTimes className="mr-2" /> Cancel
+                </Button>
+                <Button onClick={handleCancelOrder} disabled={!cancelReason}>
+                  <FaCheck className="mr-2" /> Confirm Cancellation
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </main>
       </div>
     </div>
   );

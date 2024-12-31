@@ -32,6 +32,7 @@ import OrderSuccess from "./components/cart/OrderSuccess";
 import OrderFailure from "./components/cart/OrderFailure";
 import { RatingsAndReviews } from "./pages/customer-profile/rating-review/page";
 import { Notification } from "./pages/customer-profile/notification/page";
+
 function App() {
   const userRole = localStorage.getItem("userRole");
   return (

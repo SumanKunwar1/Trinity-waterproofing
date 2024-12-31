@@ -41,7 +41,6 @@ const Header: React.FC = () => {
   const handleLogout = useLogout();
   const userString = localStorage.getItem("user");
   const user: User | null = userString ? JSON.parse(userString) : null;
-  const userRole = localStorage.getItem("userRole");
   const isLoggedIn = !!localStorage.getItem("authToken");
 
   useEffect(() => {
@@ -71,7 +70,7 @@ const Header: React.FC = () => {
   }
 
   return (
-    <header className="bg-brand shadow-md relative">
+    <header className="bg-brand shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo and Brand Name */}
@@ -196,6 +195,14 @@ const Header: React.FC = () => {
                             </div>
                           </DropdownMenuLabel>
                           <DropdownMenuSeparator className="border-b border-gray-200 mx-1" />
+                          <DropdownMenuItem
+                            className="text-brand cursor-pointer py-2 border-b border-gray-200 hover:text-secondary transition-all duration-300"
+                            onSelect={() =>
+                              handleMenuItemClick("/customer/dashboard")
+                            }
+                          >
+                            Dashboard
+                          </DropdownMenuItem>
                           <DropdownMenuItem
                             className="text-brand cursor-pointer py-2 border-b border-gray-200 hover:text-secondary transition-all duration-300"
                             onSelect={() =>
