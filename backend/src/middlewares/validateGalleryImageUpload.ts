@@ -1,39 +1,33 @@
 import Joi from "joi";
 import { Request, Response, NextFunction } from "express";
 import { httpMessages } from "../middlewares";
-import { deleteImages } from "../config/deleteImages";
 
-const validateReview = (
+const validateGalleryImageUpload = (
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
   const schema = Joi.object({
-    content: Joi.string().required().messages({
-      "string.base": "content must be a string",
-      "any.required": "content is required",
-    }),
-    rating: Joi.number().required().min(1).max(5).messages({
-      "number.base": "Rating must be a number",
-      "any.required": "Rating is required",
-      "number.min": "Rating must be at least 1",
-      "number.max": "Rating must be at most 5",
-    }),
+    folderName: Joi.string()
+      .regex(/^[a-zA-Z0-9-_ ]+$/)
+      .required()
+      .messages({
+        "string.base": "Folder name must be a string",
+        "string.pattern.base":
+          "Folder name can only contain alphanumeric characters, dashes, and underscores",
+        "any.required": "Folder name is required",
+      }),
     image: Joi.array()
       .items(
         Joi.string().messages({
           "string.base": "Each image must be a string",
         })
       )
-      .max(5)
+      .max(25)
       .messages({
         "array.base": "Images must be an array",
         "array.max": "You can upload a maximum of 5 images",
       }),
-    productId: Joi.string().required().messages({
-      "string.base": "product ID must be a string",
-      "any.required": "product ID is required",
-    }),
   });
 
   const { error } = schema.validate(req.body, { abortEarly: false });
@@ -42,9 +36,6 @@ const validateReview = (
       field: err.context?.key,
       message: err.message,
     }));
-    if (req.body.image) {
-      deleteImages(req.body.image);
-    }
 
     return next(
       httpMessages.BAD_REQUEST(
@@ -56,4 +47,4 @@ const validateReview = (
   next();
 };
 
-export { validateReview };
+export { validateGalleryImageUpload };

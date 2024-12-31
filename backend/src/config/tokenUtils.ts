@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import { httpMessages } from "../middlewares";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
-const ACCESS_TOKEN_EXPIRY = "15m"; // Access token expiry
+const ACCESS_TOKEN_EXPIRY = "30m"; // Access token expiry
 const REFRESH_TOKEN_EXPIRY = "7d"; // Refresh token expiry
 
 export const generateAccessToken = (

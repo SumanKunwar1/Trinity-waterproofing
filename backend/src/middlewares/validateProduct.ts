@@ -39,9 +39,11 @@ const validateProduct = (
       "string.base": "Product Image must be a valid URL",
       "any.required": "Product Image is required",
     }),
-    image: Joi.array().items(Joi.string()).optional().messages({
-      "array.base": "Images must be an array of valid filename",
+    image: Joi.array().items(Joi.string()).max(10).optional().messages({
+      "array.base": "Images must be an array of valid filenames",
+      "array.max": "You can upload a maximum of 10 images",
     }),
+
     colors: Joi.array().items(colorSchema).optional().messages({
       "array.base":
         "colors must be an array of color objects with 'name' and 'hex'",

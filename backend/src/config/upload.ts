@@ -45,18 +45,6 @@ const fileFilter = (req: any, file: any, cb: any) => {
 
 const storage: multer.StorageEngine = multer.diskStorage({
   destination: (req, file, cb) => {
-    console.log("====== Request Data ======");
-
-    const body = Object.assign({}, req.body);
-    console.log("Request Body:", JSON.stringify(body, null, 2));
-
-    if (req.files) {
-      console.log("Uploaded Files:", JSON.stringify(req.files, null, 2));
-    } else {
-      console.log("No files uploaded.");
-    }
-
-    console.log("===========================");
     cb(null, uploadFolder);
   },
   filename: (req, file, cb) => {

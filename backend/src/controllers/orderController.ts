@@ -104,7 +104,7 @@ export class OrderController {
       const orderId = req.params.orderId;
       const reason = req.body.reason;
       if (!reason) {
-        httpMessages.BAD_REQUEST("Reason is required");
+        return next(httpMessages.BAD_REQUEST("Reason is required"));
       }
       const result = await this.orderService.cancelOrderByAdmin(
         orderId,
@@ -126,7 +126,7 @@ export class OrderController {
       const orderId = req.params.orderId;
       const reason = req.body.reason;
       if (!reason) {
-        httpMessages.BAD_REQUEST("Reason is required");
+        return next(httpMessages.BAD_REQUEST("Reason is required"));
       }
       const result = await this.orderService.returnRequest(orderId, reason);
       res.locals.responseData = result;
@@ -159,7 +159,7 @@ export class OrderController {
       const orderId = req.params.orderId;
       const reason = req.body.reason;
       if (!reason) {
-        httpMessages.BAD_REQUEST("Reason is required");
+        return next(httpMessages.BAD_REQUEST("Reason is required"));
       }
       const result = await this.orderService.disApproveReturn(orderId, reason);
       res.locals.responseData = result;

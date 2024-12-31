@@ -8,7 +8,7 @@ import {
   handleResponse,
   handleError,
 } from "../middlewares";
-import { imageUploadMiddleware } from "../config/upload";
+import { imageUploadMiddleware, appendImageDataToBody } from "../config/upload";
 
 const router = Router();
 const sliderController = new SliderController();
@@ -41,6 +41,7 @@ router.patch(
   isAuthenticated,
   isAuthorized("admin"),
   imageUploadMiddleware,
+  appendImageDataToBody,
   validateEditSlider,
   sliderController.editSlider.bind(sliderController),
   handleResponse
