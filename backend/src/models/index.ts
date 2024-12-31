@@ -10,3 +10,4 @@ export { Cart } from "./cart";
 export { Enquiry } from "./enquiry";
 export { Slider } from "./slider";
 export { Notification, INotification } from "./notification";
+export { CompanyDetails } from "./companyDetails";

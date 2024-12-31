@@ -67,7 +67,7 @@ router.delete(
 );
 
 // Cancel order by admin
-router.delete(
+router.patch(
   "/admin/:orderId/cancel",
   isAuthenticated,
   isAuthorized("admin"),

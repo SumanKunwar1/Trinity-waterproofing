@@ -1,3 +1,5 @@
+export { validateCompanyDetails } from "./validateCompanyDetail";
+
 export { validateGalleryImageUpload } from "./validateGalleryImageUpload";
 
 export { validateEditSlider } from "./validateEditSlider";

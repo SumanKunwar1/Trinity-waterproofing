@@ -1,3 +1,5 @@
+export { CompanyDetailService } from "./CompanyDetailService";
+
 export { NotificationService } from "./notificationService";
 
 export { SliderService } from "./sliderService";
