@@ -1,3 +1,8 @@
+export { validateEditTeam } from "./validateEditTeam";
+export { validateTeam } from "./validateTeam";
+
+export { validateCompanyDetails } from "./validateCompanyDetail";
+
 export { validateGalleryImageUpload } from "./validateGalleryImageUpload";
 
 export { validateEditSlider } from "./validateEditSlider";

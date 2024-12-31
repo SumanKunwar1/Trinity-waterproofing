@@ -73,6 +73,7 @@ export class BrandService {
         return null;
       }
       const brandResponse = {
+        _id: brand._id,
         name: brand.name,
         image: `/api/image/${brand.image}`,
       };

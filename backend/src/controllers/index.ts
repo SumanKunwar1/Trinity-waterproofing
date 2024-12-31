@@ -1,3 +1,7 @@
+export { TeamController } from "./teamController";
+
+export { CompanyDetailController } from "./companyDetailController";
+
 export { SliderController } from "./sliderController";
 
 export { EnquiryController } from "./enquiryController";

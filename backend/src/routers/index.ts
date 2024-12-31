@@ -13,6 +13,8 @@ import sliderRoutes from "./sliderRoutes";
 import reviewRoutes from "./reviewRoutes";
 import notificationRoutes from "./notificationRoutes";
 import galleryRoutes from "./galleryRoutes";
+import companyDetailRoutes from "./companyDetailRoutes";
+import teamRoutes from "./teamRoutes";
 
 const router = Router();
 
@@ -30,9 +32,10 @@ router.use("/slider", sliderRoutes);
 router.use("/review", reviewRoutes);
 router.use("/notification", notificationRoutes);
 router.use("/gallery", galleryRoutes);
+router.use("/company-detail", companyDetailRoutes);
+router.use("/team", teamRoutes);
 //company details
 //faq
-//team
 //services
 //newsletter
 //about us

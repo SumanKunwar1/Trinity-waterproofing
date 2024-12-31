@@ -9,3 +9,5 @@ export { ICartItem } from "./ICartItem";
 export { IEnquiry } from "./IEnquiry";
 export { ISlider } from "./ISlider";
 export { INotification } from "./INotification";
+export { ICompanyDetail } from "./ICompanyDetail";
+export { ITeam } from "./ITeam";
