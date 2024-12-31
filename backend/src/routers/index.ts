@@ -12,6 +12,7 @@ import enquiryRoutes from "./enquiryRoutes";
 import sliderRoutes from "./sliderRoutes";
 import reviewRoutes from "./reviewRoutes";
 import notificationRoutes from "./notificationRoutes";
+import galleryRoutes from "./galleryRoutes";
 
 const router = Router();
 
@@ -28,5 +29,12 @@ router.use("/enquiry", enquiryRoutes);
 router.use("/slider", sliderRoutes);
 router.use("/review", reviewRoutes);
 router.use("/notification", notificationRoutes);
+router.use("/gallery", galleryRoutes);
+//company details
+//faq
+//team
+//services
+//newsletter
+//about us
 
 export default router;

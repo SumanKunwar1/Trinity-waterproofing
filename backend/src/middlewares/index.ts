@@ -1,3 +1,5 @@
+export { validateGalleryImageUpload } from "./validateGalleryImageUpload";
+
 export { validateEditSlider } from "./validateEditSlider";
 
 export { validateEditBrand } from "./validateEditBrand";
@@ -27,3 +29,4 @@ export { validateOrder } from "./validateOrder";
 export { validateCart } from "./validateCart";
 export { validateEnquiry } from "./validateEnquiry";
 export { handleError } from "./handleError";
+export { validateFolderCreation } from "./validateFolderCreation";

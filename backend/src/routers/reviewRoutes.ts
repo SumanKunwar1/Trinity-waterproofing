@@ -9,7 +9,7 @@ import {
   handleResponse,
   handleError,
 } from "../middlewares";
-import { uploadMiddleware } from "../config/upload";
+import { uploadMiddleware, appendFileDataToBody } from "../config/upload";
 
 const router = Router();
 const reviewController = new ReviewController();
@@ -18,6 +18,7 @@ router.post(
   "/",
   isAuthenticated,
   uploadMiddleware,
+  appendFileDataToBody,
   validateReview,
   reviewController.createReview.bind(reviewController),
   handleResponse
