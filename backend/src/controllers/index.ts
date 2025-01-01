@@ -1,3 +1,5 @@
+export { NewsLetterController } from "./newsLetterController";
+
 export { FaqController } from "./faqController";
 
 export { TeamController } from "./teamController";

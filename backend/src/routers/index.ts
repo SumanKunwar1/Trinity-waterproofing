@@ -16,6 +16,7 @@ import galleryRoutes from "./galleryRoutes";
 import companyDetailRoutes from "./companyDetailRoutes";
 import teamRoutes from "./teamRoutes";
 import faqRoutes from "./faqRoutes";
+import newsLetterRoutes from "./newsLetterRoutes";
 
 const router = Router();
 
@@ -36,9 +37,9 @@ router.use("/gallery", galleryRoutes);
 router.use("/company-detail", companyDetailRoutes);
 router.use("/team", teamRoutes);
 router.use("/faq", faqRoutes);
+router.use("/newsletter", newsLetterRoutes);
 
 //services
-//newsletter
 //about us
 
 export default router;

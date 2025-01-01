@@ -1,3 +1,5 @@
+export { validateNewsLetter } from "./validateNewsLetter";
+
 export { validateEditTeam } from "./validateEditTeam";
 export { validateTeam } from "./validateTeam";
 

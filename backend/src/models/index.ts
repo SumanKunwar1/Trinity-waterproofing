@@ -13,3 +13,4 @@ export { Notification, INotification } from "./notification";
 export { CompanyDetails } from "./companyDetails";
 export { Team } from "./team";
 export { Faq } from "./faq";
+export { NewsLetter } from "./newsLetter";
