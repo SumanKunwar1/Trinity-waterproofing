@@ -13,3 +13,4 @@ export { ICompanyDetail } from "./ICompanyDetail";
 export { ITeam } from "./ITeam";
 export { IFaq } from "./IFaq";
 export { INewsLetter } from "./INewsLetter";
+export { ITabAbout } from "./ITabAbout";

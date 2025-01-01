@@ -6,8 +6,6 @@ interface ICartItem {
   color?: string;
   quantity: number;
   price: number;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export interface ICart extends Document {
@@ -16,8 +14,8 @@ export interface ICart extends Document {
   items: ICartItem[];
   subtotal: number;
   total: number;
-  created_at?: Date;
-  updated_at?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const cartSchema: Schema = new Schema(
