@@ -11,3 +11,4 @@ export { ISlider } from "./ISlider";
 export { INotification } from "./INotification";
 export { ICompanyDetail } from "./ICompanyDetail";
 export { ITeam } from "./ITeam";
+export { IFaq } from "./IFaq";

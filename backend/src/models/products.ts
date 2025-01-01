@@ -20,8 +20,8 @@ export interface IProduct extends Document {
   colors?: IColor[]; // Updated to an array of IColor objects
   inStock: number;
   subCategory: Types.ObjectId;
-  created_at?: Date;
-  updated_at?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const productSchema: Schema = new Schema(

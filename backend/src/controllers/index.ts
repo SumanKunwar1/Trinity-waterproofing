@@ -1,3 +1,5 @@
+export { FaqController } from "./faqController";
+
 export { TeamController } from "./teamController";
 
 export { CompanyDetailController } from "./companyDetailController";
