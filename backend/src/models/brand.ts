@@ -4,6 +4,8 @@ interface IBrand extends Document {
   _id: Types.ObjectId;
   name: string;
   image: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const brandSchema: Schema = new Schema(

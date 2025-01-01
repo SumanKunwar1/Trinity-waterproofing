@@ -1,3 +1,7 @@
+export { NewsLetterService } from "./newsLetterService";
+
+export { FaqService } from "./faqService";
+
 export { TeamService } from "./teamService";
 
 export { CompanyDetailService } from "./CompanyDetailService";

@@ -12,6 +12,8 @@ interface ICompanyDetails extends Document {
   youtube?: string;
   linkedin?: string;
   instagram?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const companyDetailsSchema: Schema = new Schema(

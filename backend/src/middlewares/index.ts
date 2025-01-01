@@ -1,3 +1,5 @@
+export { validateNewsLetter } from "./validateNewsLetter";
+
 export { validateEditTeam } from "./validateEditTeam";
 export { validateTeam } from "./validateTeam";
 
@@ -35,3 +37,4 @@ export { validateCart } from "./validateCart";
 export { validateEnquiry } from "./validateEnquiry";
 export { handleError } from "./handleError";
 export { validateFolderCreation } from "./validateFolderCreation";
+export { validateFaq } from "./validateFaq";

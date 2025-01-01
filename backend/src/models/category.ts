@@ -6,8 +6,8 @@ interface ICategory extends Document {
   name: string;
   description: string;
   subCategory: Types.ObjectId[];
-  created_at?: Date;
-  updated_at?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const categorySchema: Schema = new Schema(

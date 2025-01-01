@@ -6,6 +6,8 @@ interface ICartItem {
   color?: string;
   quantity: number;
   price: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface ICart extends Document {

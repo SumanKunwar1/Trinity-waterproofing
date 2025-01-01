@@ -8,7 +8,8 @@ interface IReview extends Document {
   content: string;
   rating: number;
   user?: string;
-  date?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const reviewSchema: Schema = new Schema(
@@ -35,10 +36,6 @@ const reviewSchema: Schema = new Schema(
       max: 5,
     },
     user: { type: Types.ObjectId, ref: "User", required: false },
-    date: {
-      type: Date,
-      default: Date.now,
-    },
   },
   { timestamps: true }
 );

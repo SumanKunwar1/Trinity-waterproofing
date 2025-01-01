@@ -2,24 +2,22 @@ import Joi from "joi";
 import { Request, Response, NextFunction } from "express";
 import { httpMessages } from "../middlewares";
 
-const validateCategory = (
+const validateNewsLetter = (
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
   // Define Joi validation schema
   const schema = Joi.object({
-    name: Joi.string().required().messages({
-      "string.base": "Name must be a string",
-      "any.required": "Name is required",
-    }),
-    description: Joi.string().required().messages({
-      "string.base": "Description must be a string",
-      "any.required": "Description is required",
+    email: Joi.string().email().required().messages({
+      "string.base": "Email must be a string",
+      "string.email": "Email must be a valid email",
+      "any.required": "Email is required",
     }),
   });
 
   const { error } = schema.validate(req.body, { abortEarly: false });
+
   if (error) {
     const errors = error.details.map((err) => ({
       field: err.context?.key,
@@ -36,4 +34,4 @@ const validateCategory = (
   next();
 };
 
-export { validateCategory };
+export { validateNewsLetter };
