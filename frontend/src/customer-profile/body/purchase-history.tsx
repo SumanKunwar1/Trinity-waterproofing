@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Label } from "../../components/ui/label";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
@@ -39,6 +40,7 @@ export const PurchaseHistory: React.FC = () => {
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
   const [selectedProductForReview, setSelectedProductForReview] =
     useState<any>(null);
+  const navigate = useNavigate();
 
   // Filter history based on search text
   const filteredHistory = orders.filter(
@@ -52,7 +54,7 @@ export const PurchaseHistory: React.FC = () => {
   const handleReviewSubmit = async (
     rating: number,
     content: string,
-    image?: File
+    images: File[]
   ) => {
     if (!selectedProductForReview || !selectedPurchase) return;
 
@@ -61,9 +63,9 @@ export const PurchaseHistory: React.FC = () => {
       formData.append("productId", selectedProductForReview.productId._id);
       formData.append("rating", rating.toString());
       formData.append("content", content);
-      if (image) {
+      images.forEach((image) => {
         formData.append("image", image);
-      }
+      });
 
       const response = await fetch(`/api/review/${selectedPurchase._id}`, {
         method: "POST",
@@ -75,6 +77,7 @@ export const PurchaseHistory: React.FC = () => {
 
       if (!response.ok) throw new Error("Failed to submit review");
       setIsReviewDialogOpen(false);
+      navigate("/customer/reviews-ratings");
     } catch (error) {
       console.error("Error submitting review:", error);
     }
@@ -193,10 +196,14 @@ export const PurchaseHistory: React.FC = () => {
                             <ul className="list-disc pl-5">
                               {order.products.map((product) => (
                                 <li
-                                  key={product.productId._id}
+                                  key={product.productId?._id || ""}
                                   className="flex justify-between items-center"
                                 >
-                                  <span>{product.productId.name}</span>
+                                  <span>
+                                    {product.productId?.name ||
+                                      "Product Name Unavailable"}
+                                  </span>
+
                                   {order.status === "order-delivered" && (
                                     <Button
                                       size="sm"
