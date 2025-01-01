@@ -135,7 +135,7 @@ export class OrderService {
       console.log("Product stock updated.");
 
       // **User Notification**
-      const formattedDate = moment(newOrder.created_at).format(
+      const formattedDate = moment(newOrder.createdAt).format(
         "MMMM Do YYYY, h:mm A"
       );
 
@@ -343,7 +343,7 @@ export class OrderService {
 
       const userNotificationData: INotification = {
         userId: new mongoose.Types.ObjectId(existingOrder.userId),
-        message: `Your order placed on ${existingOrder.created_at} has been successfully placed.`,
+        message: `Your order placed on ${existingOrder.createdAt} has been successfully placed.`,
         type: "success",
       };
       await NotificationService.createNotification(userNotificationData);
@@ -383,7 +383,7 @@ export class OrderService {
       }
       const userNotificationData: INotification = {
         userId: new mongoose.Types.ObjectId(existingOrder.userId),
-        message: `Your order placed on ${existingOrder.created_at} has been cancelled due to ${reason} Please Contact Us to Know the details.`,
+        message: `Your order placed on ${existingOrder.createdAt} has been cancelled due to ${reason} Please Contact Us to Know the details.`,
         type: "error",
       };
       await NotificationService.createNotification(userNotificationData);
@@ -418,7 +418,7 @@ export class OrderService {
 
       const userNotificationData: INotification = {
         userId: new mongoose.Types.ObjectId(existingOrder.userId),
-        message: `Your order placed on ${existingOrder.created_at} has been set to return.Confirmation require 24-48 hours.`,
+        message: `Your order placed on ${existingOrder.createdAt} has been set to return.Confirmation require 24-48 hours.`,
         type: "info",
       };
       await NotificationService.createAdminNotification(
@@ -460,7 +460,7 @@ export class OrderService {
       }
       const userNotificationData: INotification = {
         userId: new mongoose.Types.ObjectId(existingOrder.userId),
-        message: `Your order placed on ${existingOrder.created_at} has been shipped. PLease contact Us for more details.`,
+        message: `Your order placed on ${existingOrder.createdAt} has been shipped. PLease contact Us for more details.`,
         type: "info",
       };
       await NotificationService.createNotification(userNotificationData);
@@ -498,7 +498,7 @@ export class OrderService {
       }
       const userNotificationData: INotification = {
         userId: new mongoose.Types.ObjectId(existingOrder.userId),
-        message: `Your order placed on ${existingOrder.created_at} has been Delivered. Please confirm.`,
+        message: `Your order placed on ${existingOrder.createdAt} has been Delivered. Please confirm.`,
         type: "info",
       };
       await NotificationService.createNotification(userNotificationData);
@@ -536,7 +536,7 @@ export class OrderService {
       }
       const userNotificationData: INotification = {
         userId: new mongoose.Types.ObjectId(existingOrder.userId),
-        message: `Your order placed on ${existingOrder.created_at} has been approved for Return. PLease contact Us for more details.`,
+        message: `Your order placed on ${existingOrder.createdAt} has been approved for Return. PLease contact Us for more details.`,
         type: "info",
       };
       await NotificationService.createNotification(userNotificationData);
@@ -572,7 +572,7 @@ export class OrderService {
       // Notify user about the disapproval
       const userNotificationData: INotification = {
         userId: new mongoose.Types.ObjectId(existingOrder.userId),
-        message: `Your return request for the order placed on ${existingOrder.created_at} has been disapproved.Reason:${reason} Please contact support for more details.`,
+        message: `Your return request for the order placed on ${existingOrder.createdAt} has been disapproved.Reason:${reason} Please contact support for more details.`,
         type: "error",
       };
       await NotificationService.createNotification(userNotificationData);
@@ -596,7 +596,7 @@ export class OrderService {
       if (!order) {
         throw httpMessages.NOT_FOUND("Order");
       }
-      const orderCreatedAt = moment(order.created_at);
+      const orderCreatedAt = moment(order.createdAt);
       const now = moment();
       const timeDifference = now.diff(orderCreatedAt, "minutes");
 

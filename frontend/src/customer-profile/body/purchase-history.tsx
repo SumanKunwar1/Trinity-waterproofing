@@ -3,10 +3,10 @@ import { Label } from "../../components/ui/label";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import {
-  FaShoppingCart,
-  FaRegClock,
   FaCheckCircle,
-  FaTimesCircle,
+  FaRegClock,
+  FaTruck,
+  FaExclamationCircle,
   FaSearch,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,11 +21,13 @@ import {
 import { useUserData } from "../../hooks/useUserData";
 import { ReviewDialog } from "./ReviewDialog";
 
+// Updated status icons mapping for order statuses
 const statusIcons = {
-  completed: <FaCheckCircle className="text-green-500" />,
-  pending: <FaRegClock className="text-yellow-500" />,
-  cancelled: <FaTimesCircle className="text-red-500" />,
-  cart: <FaShoppingCart className="text-blue-500" />,
+  "order-delivered": <FaCheckCircle className="text-green-500" />,
+  "order-cancelled": <FaExclamationCircle className="text-red-500" />,
+  "order-shipped": <FaTruck className="text-blue-500" />,
+  "order-requested": <FaRegClock className="text-yellow-500" />,
+  "order-confirmed": <FaRegClock className="text-blue-500" />, // Example: You can choose a suitable icon for "order-confirmed"
 };
 
 export const PurchaseHistory: React.FC = () => {
@@ -38,12 +40,14 @@ export const PurchaseHistory: React.FC = () => {
   const [selectedProductForReview, setSelectedProductForReview] =
     useState<any>(null);
 
+  // Filter history based on search text
   const filteredHistory = orders.filter(
     (order) =>
       order.products.some((product) =>
         product?.name?.toLowerCase().includes(filter.toLowerCase())
       ) || order.status?.toLowerCase().includes(filter.toLowerCase())
   );
+  console.log("filteredHistory", filteredHistory);
 
   const handleReviewSubmit = async (
     rating: number,
@@ -61,7 +65,6 @@ export const PurchaseHistory: React.FC = () => {
         formData.append("image", image);
       }
 
-      // Using selectedPurchase._id as the orderId
       const response = await fetch(`/api/review/${selectedPurchase._id}`, {
         method: "POST",
         headers: {
@@ -69,12 +72,11 @@ export const PurchaseHistory: React.FC = () => {
         },
         body: formData,
       });
+
       if (!response.ok) throw new Error("Failed to submit review");
       setIsReviewDialogOpen(false);
-      // You might want to update the local state or refetch the orders here
     } catch (error) {
       console.error("Error submitting review:", error);
-      // Handle error (e.g., show an error message to the user)
     }
   };
 
@@ -112,7 +114,9 @@ export const PurchaseHistory: React.FC = () => {
           >
             <CardContent className="p-4 flex items-center space-x-3">
               <div className="text-2xl">{icon}</div>
-              <Label className="text-lg capitalize">{status}</Label>
+              <Label className="text-lg capitalize">
+                {status.split("-")[1]}
+              </Label>
             </CardContent>
           </Card>
         ))}
@@ -136,7 +140,9 @@ export const PurchaseHistory: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-3">
                       <div className="text-2xl">
-                        {statusIcons[order.status as keyof typeof statusIcons]}
+                        {statusIcons[
+                          order.status as keyof typeof statusIcons
+                        ] || <FaRegClock className="text-gray-500" />}
                       </div>
                       <div>
                         <p className="font-semibold text-lg">
@@ -162,20 +168,23 @@ export const PurchaseHistory: React.FC = () => {
                             View Details
                           </Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="bg-white rounded-md shadow-lg p-6">
                           <DialogHeader>
-                            <DialogTitle>Purchase Details</DialogTitle>
+                            <DialogTitle className="text-xl font-semibold">
+                              Purchase Details
+                            </DialogTitle>
                           </DialogHeader>
                           <div className="mt-4">
                             <p>
-                              <strong>Status:</strong> {order.status}
+                              <strong>Status:</strong>{" "}
+                              {order.status.split("-")[1].toUpperCase()}
                             </p>
                             <p>
                               <strong>Date:</strong>{" "}
                               {new Date(order.createdAt).toLocaleDateString()}
                             </p>
                             <p>
-                              <strong>Amount:</strong> Rs
+                              <strong>Amount:</strong> Rs{" "}
                               {order.subtotal.toFixed(2)}
                             </p>
                             <p>
@@ -188,16 +197,18 @@ export const PurchaseHistory: React.FC = () => {
                                   className="flex justify-between items-center"
                                 >
                                   <span>{product.productId.name}</span>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => {
-                                      setSelectedProductForReview(product);
-                                      setIsReviewDialogOpen(true);
-                                    }}
-                                  >
-                                    Review
-                                  </Button>
+                                  {order.status === "order-delivered" && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => {
+                                        setSelectedProductForReview(product);
+                                        setIsReviewDialogOpen(true);
+                                      }}
+                                    >
+                                      Review
+                                    </Button>
+                                  )}
                                 </li>
                               ))}
                             </ul>
@@ -230,10 +241,10 @@ export const PurchaseHistory: React.FC = () => {
       </AnimatePresence>
 
       <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-white rounded-md shadow-lg p-6">
           <ReviewDialog
             onSubmit={handleReviewSubmit}
-            productName={selectedProductForReview?.name}
+            productName={selectedProductForReview?.productId.name}
           />
         </DialogContent>
       </Dialog>

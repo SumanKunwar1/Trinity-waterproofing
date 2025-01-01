@@ -54,11 +54,11 @@ const Dashboard: React.FC = () => {
     status: orderStatus,
     error: orderError,
   } = useSelector((state: RootState) => state.orders);
-  const {
-    reviews,
-    status: reviewStatus,
-    error: reviewError,
-  } = useSelector((state: RootState) => state.reviews);
+  // const {
+  //   reviews,
+  //   status: reviewStatus,
+  //   error: reviewError,
+  // } = useSelector((state: RootState) => state.reviews);
 
   useEffect(() => {
     dispatch(fetchOrdersAsync());
@@ -236,7 +236,7 @@ const Dashboard: React.FC = () => {
               transition={{ duration: 0.5, delay: 0.5 }}
               className="md:col-span-2"
             >
-              <Card>
+              {/* <Card>
                 <CardHeader>
                   <CardTitle>Latest Review</CardTitle>
                 </CardHeader>
@@ -251,7 +251,7 @@ const Dashboard: React.FC = () => {
                     <LatestReviewCard review={reviews[0]} />
                   )}
                 </CardContent>
-              </Card>
+              </Card> */}
             </motion.div>
 
             <motion.div

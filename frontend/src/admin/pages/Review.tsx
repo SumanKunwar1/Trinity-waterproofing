@@ -3,12 +3,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchReviewsAsync, deleteReviewAsync } from "../store/reviewsSlice";
 import { AppDispatch, RootState } from "../store/store";
 import { motion } from "framer-motion";
+import Table from "../components/ui/table";
 import {
-  ColumnDef,
-  useReactTable,
-  flexRender,
-  getCoreRowModel,
-} from "@tanstack/react-table";
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPrevious,
+  PaginationNext,
+} from "../components/ui/pagination";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,18 +28,43 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../components/ui/dialog";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
-import { Review } from "../../types/review";
+
+interface Review {
+  _id: string;
+  fullName: string;
+  number: string;
+  image: string[];
+  content: string;
+  rating: number;
+  user: string;
+  date: string;
+  createdAt: string;
+  updatedAt: string;
+  productName?: string;
+}
+
+interface Product {
+  _id: string;
+  name: string;
+  review: Review[];
+}
 
 export default function Reviews() {
   const dispatch = useDispatch<AppDispatch>();
-  const reviews = useSelector((state: RootState) => state.reviews.reviews);
+  const products = useSelector((state: RootState) => state.reviews.reviews);
+  const isLoading = useSelector((state: RootState) => state.reviews.isLoading);
+  const error = useSelector((state: RootState) => state.reviews.error);
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     dispatch(fetchReviewsAsync());
@@ -45,88 +73,123 @@ export default function Reviews() {
   const handleDeleteReview = async () => {
     if (selectedReview) {
       try {
-        await dispatch(deleteReviewAsync(selectedReview.id)).unwrap();
+        await dispatch(deleteReviewAsync(selectedReview._id)).unwrap();
         toast.success("Review deleted successfully");
         setIsDeleteDialogOpen(false);
+        setSelectedReview(null);
+        // Refresh the reviews list
+        dispatch(fetchReviewsAsync());
       } catch (error) {
         toast.error("Failed to delete review");
       }
     }
   };
 
-  const columns: ColumnDef<Review>[] = [
+  const openViewDialog = (review: Review) => {
+    setSelectedReview(review);
+    setIsViewDialogOpen(true);
+  };
+
+  const openDeleteDialog = (review: Review) => {
+    setSelectedReview(review);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const toggleSidebar = () => setSidebarOpen((prev) => !prev);
+
+  // Flatten the products array to get all reviews
+  const allReviews = products.flatMap((product) =>
+    product.review.map((review) => ({ ...review, productName: product.name }))
+  );
+
+  // Pagination logic
+  const indexOfLastReview = currentPage * itemsPerPage;
+  const indexOfFirstReview = indexOfLastReview - itemsPerPage;
+  const currentReviews = allReviews.slice(
+    indexOfFirstReview,
+    indexOfLastReview
+  );
+
+  const totalPages = Math.ceil(allReviews.length / itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const columns = [
     {
-      accessorKey: "name",
       header: "Product",
+      accessor: "productName",
+      filterable: true,
     },
     {
-      accessorKey: "content",
       header: "Review Content",
+      accessor: "content",
+      filterable: true,
     },
     {
-      accessorKey: "rating",
       header: "Rating",
+      accessor: "rating",
     },
     {
-      accessorKey: "date",
       header: "Date",
-      cell: ({ row }) => new Date(row.getValue("date")).toLocaleDateString(),
+      accessor: "createdAt",
+      cell: (item: any) => new Date(item.createdAt).toLocaleDateString(),
     },
     {
-      id: "actions",
-      cell: ({ row }) => {
-        const review = row.original;
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="size-6"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10.5 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => {
-                  setSelectedReview(review);
-                  setIsViewDialogOpen(true);
-                }}
+      header: "Username",
+      accessor: "fullName",
+      filterable: true,
+    },
+    {
+      header: "Actions",
+      accessor: "actions",
+      cell: (item: Review) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="size-6"
               >
-                View
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  setSelectedReview(review);
-                  setIsDeleteDialogOpen(true);
-                }}
-              >
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
+                <path
+                  fillRule="evenodd"
+                  d="M10.5 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                openViewDialog(item);
+              }}
+            >
+              View
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                openDeleteDialog(item);
+              }}
+            >
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
     },
   ];
 
-  const table = useReactTable({
-    data: reviews,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
-
-  const toggleSidebar = () => setSidebarOpen((prev) => !prev);
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
     <div className="flex bg-gray-100">
@@ -139,50 +202,43 @@ export default function Reviews() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="rounded-md border">
-              <table>
-                <thead>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <tr key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => (
-                        <th key={header.id} className="px-4 py-2">
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                        </th>
-                      ))}
-                    </tr>
-                  ))}
-                </thead>
-                <tbody>
-                  {table.getRowModel().rows?.length ? (
-                    table.getRowModel().rows.map((row) => (
-                      <tr key={row.id}>
-                        {row.getVisibleCells().map((cell) => (
-                          <td key={cell.id} className="px-4 py-2">
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </td>
-                        ))}
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={columns.length} className="h-24 text-center">
-                        No results.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+            <Table
+              columns={columns}
+              data={currentReviews}
+              onRowClick={(item) => openViewDialog(item)}
+            />
 
-            <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+            <Pagination className="mt-4">
+              <PaginationPrevious
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              />
+              <PaginationContent>
+                {Array.from({ length: totalPages }, (_, index) => (
+                  <PaginationItem key={index}>
+                    <PaginationLink
+                      isActive={index + 1 === currentPage}
+                      onClick={() => handlePageChange(index + 1)}
+                    >
+                      {index + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+              </PaginationContent>
+              <PaginationNext
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              />
+            </Pagination>
+
+            {/* View Dialog */}
+            <Dialog
+              open={isViewDialogOpen}
+              onOpenChange={(open) => {
+                setIsViewDialogOpen(open);
+                if (!open) setSelectedReview(null);
+              }}
+            >
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Review Details</DialogTitle>
@@ -190,26 +246,36 @@ export default function Reviews() {
                 {selectedReview && (
                   <div className="space-y-2">
                     <p>
-                      <strong>Product:</strong> {selectedReview.name}
+                      <strong>Product:</strong> {selectedReview.productName}
                     </p>
                     <p>
                       <strong>Rating:</strong> {selectedReview.rating}/5
                     </p>
                     <p>
-                      <strong>Date:</strong>{" "}
-                      {new Date(selectedReview.date).toLocaleString()}
+                      <strong>Created At:</strong>{" "}
+                      {new Date(selectedReview.createdAt).toLocaleString()}
                     </p>
                     <p>
                       <strong>Content:</strong> {selectedReview.content}
+                    </p>
+                    <p>
+                      <strong>Full Name:</strong> {selectedReview.fullName}
+                    </p>
+                    <p>
+                      <strong>Number:</strong> {selectedReview.number}
                     </p>
                   </div>
                 )}
               </DialogContent>
             </Dialog>
 
+            {/* Delete Dialog */}
             <Dialog
               open={isDeleteDialogOpen}
-              onOpenChange={setIsDeleteDialogOpen}
+              onOpenChange={(open) => {
+                setIsDeleteDialogOpen(open);
+                if (!open) setSelectedReview(null);
+              }}
             >
               <DialogContent>
                 <DialogHeader>
@@ -235,6 +301,7 @@ export default function Reviews() {
           </motion.div>
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 }

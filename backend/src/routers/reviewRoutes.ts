@@ -41,8 +41,11 @@ router.get(
 );
 
 router.patch(
-  "/:reviewId",
+  "/:userId/:reviewId",
   isAuthenticated,
+  isAuthorizedUser,
+  uploadMiddleware,
+  appendFileDataToBody,
   validateEditReview,
   reviewController.updateReviewById.bind(reviewController),
   handleResponse

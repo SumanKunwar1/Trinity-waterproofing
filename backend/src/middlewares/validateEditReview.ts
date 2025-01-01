@@ -22,7 +22,7 @@ const validateEditReview = (
     }),
     image: Joi.array()
       .items(
-        Joi.string().uri().messages({
+        Joi.string().messages({
           "string.base": "Each image must be a string",
           "string.uri": "Each image must be a valid URI",
         })

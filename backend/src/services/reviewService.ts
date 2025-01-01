@@ -35,33 +35,37 @@ export class ReviewService {
         throw httpMessages.NOT_FOUND("Order not found");
       }
 
-      // Log the order for debugging
-      console.log("order we got", order);
-
-      // Step 5: Ensure the product is in the order
-      const productInOrder = order.products.some(
-        (orderProduct) =>
-          orderProduct.productId.toString() === reviewData.productId.toString()
-      );
-      if (!productInOrder) {
-        throw httpMessages.FORBIDDEN(
-          "You can only review products you have purchased"
-        );
-      }
-
-      // Step 6: Check if the order status is "delivered"
+      // Step 5: Check if the order status is "delivered"
       if (order.status !== OrderStatus.ORDER_DELIVERED) {
         throw httpMessages.FORBIDDEN(
           "You can only review products from completed orders"
         );
       }
 
-      // Step 7: Check if the user has already reviewed the product
-      const existingReview = await Review.findOne({
-        user: user._id,
-        product: product._id,
+      // Log the order for debugging
+      console.log("order we got", order);
+
+      const productInOrder = order.products.some((orderProduct) => {
+        console.log("Order Product ID:", orderProduct.productId.toString());
+        console.log("Review Product ID:", reviewData.productId.toString());
+        return (
+          orderProduct.productId.toString() === reviewData.productId.toString()
+        );
       });
-      if (existingReview) {
+
+      console.log("Product found in order:", productInOrder);
+      if (!productInOrder) {
+        throw httpMessages.FORBIDDEN(
+          "You can only review products you have purchased"
+        );
+      }
+
+      const productWithReviews = await Product.findById(product._id).populate({
+        path: "review", // Populate the review array
+        match: { user: user._id }, // Filter reviews for the specific user
+      });
+
+      if (productWithReviews?.review && productWithReviews.review.length > 0) {
         throw httpMessages.FORBIDDEN("You have already reviewed this product");
       }
 
@@ -91,22 +95,28 @@ export class ReviewService {
 
   public async getReviews() {
     try {
-      const reviews = await Review.find().populate({
-        path: "productId",
-        select: "name",
-      });
+      // Fetch all products that have at least one review
+      const products = await Product.find({ "review.0": { $exists: true } }) // Ensure that the review array is not empty
+        .select("name") // Select only the product name
+        .populate({
+          path: "review",
+          model: "Review", // Populate the reviews for the product
+        });
 
-      if (!reviews || reviews.length === 0) {
+      if (!products || products.length === 0) {
         return [];
       }
 
-      reviews.forEach((review) => {
-        if (review.image && review.image.length > 0) {
-          review.image = review.image.map((rev) => `/api/image/${rev}`);
-        }
+      // Modify the image URLs for each review
+      products.forEach((product: any) => {
+        product.review.forEach((review: any) => {
+          if (review.image && review.image.length > 0) {
+            review.image = review.image.map((img: any) => `/api/image/${img}`);
+          }
+        });
       });
 
-      return reviews;
+      return products;
     } catch (error) {
       throw error;
     }
@@ -114,23 +124,31 @@ export class ReviewService {
 
   public async getReviewsByUser(userId: string) {
     try {
-      const reviews = await Review.find({ user: userId }).populate({
-        path: "productId",
-        select: "name",
-      });
+      // Find all products and populate their reviews
+      const products = await Product.find()
+        .select("name") // Select only the product name
+        .populate({
+          path: "review",
+          model: "Review", // Populate the reviews
+          match: { user: userId }, // Only reviews by the specific user
+        });
 
-      if (!reviews || reviews.length === 0) {
+      if (!products || products.length === 0) {
         return [];
       }
 
-      // Modify the image URLs for each review
-      reviews.forEach((review) => {
-        if (review.image && review.image.length > 0) {
-          review.image = review.image.map((rev) => `/api/image/${rev}`);
-        }
+      products.forEach((product: any) => {
+        // Remove null entries (if no match)
+        product.review = product.review.filter((review: any) => review);
+        product.review.forEach((review: any) => {
+          if (review.image && review.image.length > 0) {
+            review.image = review.image.map((img: any) => `/api/image/${img}`);
+          }
+        });
       });
 
-      return reviews;
+      // Return only products with reviews by the user
+      return products.filter((product: any) => product.review.length > 0);
     } catch (error) {
       throw error;
     }
@@ -155,10 +173,14 @@ export class ReviewService {
         );
       }
 
-      await Product.updateOne(
-        { review: reviewId },
-        { $pull: { review: reviewId } }
+      const result = await Product.updateOne(
+        { review: review._id },
+        { $pull: { review: review._id } }
       );
+
+      if (result.modifiedCount === 0) {
+        throw httpMessages.NOT_FOUND("Review not found in the product");
+      }
       await Review.deleteOne({ _id: reviewId });
 
       return {
@@ -185,11 +207,11 @@ export class ReviewService {
       if (rating) review.rating = rating;
       if (image) {
         if (review.image) {
-          deleteImages(image);
+          deleteImages(review.image);
         }
         review.image = image;
       }
-
+      await review.save();
       return review;
     } catch (error) {
       throw error;

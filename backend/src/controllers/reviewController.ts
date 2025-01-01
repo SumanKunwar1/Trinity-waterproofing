@@ -25,6 +25,7 @@ export class ReviewController {
         userEmail
       );
       res.locals.responseData = result;
+      next();
     } catch (error: any) {
       if (req.body.image) {
         deleteImages(req.body.image);
@@ -41,6 +42,7 @@ export class ReviewController {
     try {
       const result = await this.reviewService.getReviews();
       res.locals.responseData = result;
+      next();
     } catch (error: any) {
       next(error);
     }
@@ -55,6 +57,7 @@ export class ReviewController {
       const userId = req.params.userId;
       const result = await this.reviewService.getReviewsByUser(userId);
       res.locals.responseData = result;
+      next();
     } catch (error: any) {
       next(error);
     }
@@ -73,6 +76,7 @@ export class ReviewController {
         userEmail
       );
       res.locals.responseData = result;
+      next();
     } catch (error: any) {
       next(error);
     }
@@ -91,6 +95,7 @@ export class ReviewController {
         updatedData
       );
       res.locals.responseData = result;
+      next();
     } catch (error: any) {
       if (req.body.image) {
         deleteImages(req.body.image);
