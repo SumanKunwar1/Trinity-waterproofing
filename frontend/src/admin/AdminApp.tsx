@@ -25,6 +25,7 @@ import EditProductImages from "./pages/EditProductImage";
 import Reviews from "./pages/Review";
 import { Provider } from "react-redux";
 import { store } from "../admin/store/store";
+import AdminReturnsAndCancellations from "./pages/ReturnsAndCancel";
 
 function AdminApp() {
   return (
@@ -93,6 +94,14 @@ function AdminApp() {
             element={
               <PrivateRoute>
                 <Orders />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/returns-and-cancels"
+            element={
+              <PrivateRoute>
+                <AdminReturnsAndCancellations />
               </PrivateRoute>
             }
           />

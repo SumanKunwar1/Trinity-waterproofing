@@ -37,6 +37,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     { icon: FaListUl, text: "Categories", link: "/admin/categories" },
     { icon: FaTags, text: "Brands", link: "/admin/brands" },
     { icon: FaShoppingCart, text: "Orders", link: "/admin/orders" },
+    {
+      icon: FaShoppingCart,
+      text: "Returns & Cancels",
+      link: "/admin/returns-and-cancels",
+    },
     { icon: MdReviews, text: "Reviews", link: "/admin/reviews" },
     { icon: FaUsers, text: "Users", link: "/admin/users" },
     { icon: FaFileAlt, text: "Reports", link: "/admin/reports" },

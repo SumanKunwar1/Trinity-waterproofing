@@ -17,5 +17,5 @@ export interface IProduct {
   createdAt: string;
   colors?: IColor[];
   inStock: number;
-  review: { rating: number; comment: string }[];
+  review: { rating: number; content: string }[];
 }

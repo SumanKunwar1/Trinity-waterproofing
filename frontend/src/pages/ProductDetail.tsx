@@ -9,27 +9,7 @@ import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
 import axios from "axios";
 import { toast } from "react-toastify";
-
-interface IColor {
-  name: string;
-  hex: string;
-}
-
-interface IProduct {
-  _id: string;
-  name: string;
-  description: string;
-  wholeSalePrice: number;
-  retailPrice: number;
-  productImage: string;
-  image: string[];
-  subCategory: string;
-  features: string;
-  brand: string;
-  colors?: IColor[];
-  inStock: number;
-  review: { rating: number; comment: string }[];
-}
+import { IProduct } from "../types/product";
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -39,23 +19,23 @@ const ProductDetail: React.FC = () => {
 
   useEffect(() => {
     const fetchProduct = async () => {
+      setLoading(true);
+      setError("");
       try {
         const response = await axios.get(`/api/product/${id}`);
         setProduct(response.data);
-        setLoading(false);
       } catch (error) {
         setError("Failed to fetch product");
+      } finally {
         setLoading(false);
       }
     };
 
     fetchProduct();
-  }, [id]);
+  }, [id]); // Refetch the product whenever the `id` changes
 
   const handleBuyNow = async () => {
     try {
-      // Implement the buy now logic here
-      // This could involve creating an order, redirecting to a checkout page, etc.
       toast.success("Redirecting to checkout...");
     } catch (error) {
       toast.error("Failed to process the purchase. Please try again.");
@@ -73,8 +53,8 @@ const ProductDetail: React.FC = () => {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow">
-        <div className="container mx-auto px-4 py-8 ">
-          <div className=" bg-white rounded-lg shadow-md">
+        <div className="container mx-auto px-4 py-8">
+          <div className="bg-white rounded-lg shadow-md">
             <div className="flex flex-col md:flex-row py-3 px-6">
               <div className="w-full md:w-1/2 mb-8 md:mb-0">
                 <ProductGallery

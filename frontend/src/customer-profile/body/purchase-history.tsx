@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Label } from "../../components/ui/label";
@@ -9,6 +11,7 @@ import {
   FaTruck,
   FaExclamationCircle,
   FaSearch,
+  FaEllipsisV,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "../../components/ui/input";
@@ -21,15 +24,32 @@ import {
 } from "../../components/ui/dialog";
 import { useUserData } from "../../hooks/useUserData";
 import { ReviewDialog } from "./ReviewDialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../../components/ui/dropdown-menu";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { toast } from "react-toastify";
 
-// Updated status icons mapping for order statuses
 const statusIcons = {
   "order-delivered": <FaCheckCircle className="text-green-500" />,
   "order-cancelled": <FaExclamationCircle className="text-red-500" />,
   "order-shipped": <FaTruck className="text-blue-500" />,
   "order-requested": <FaRegClock className="text-yellow-500" />,
-  "order-confirmed": <FaRegClock className="text-blue-500" />, // Example: You can choose a suitable icon for "order-confirmed"
+  "order-confirmed": <FaRegClock className="text-blue-500" />,
 };
+
+const cancelSchema = yup.object().shape({
+  reason: yup.string().required("Reason is required"),
+});
+
+const returnSchema = yup.object().shape({
+  reason: yup.string().required("Reason is required"),
+});
 
 export const PurchaseHistory: React.FC = () => {
   const { orders, isLoading, isError } = useUserData();
@@ -40,16 +60,32 @@ export const PurchaseHistory: React.FC = () => {
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
   const [selectedProductForReview, setSelectedProductForReview] =
     useState<any>(null);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [isReturnDialogOpen, setIsReturnDialogOpen] = useState(false);
   const navigate = useNavigate();
 
-  // Filter history based on search text
+  const {
+    register: registerCancel,
+    handleSubmit: handleSubmitCancel,
+    formState: { errors: errorsCancel },
+  } = useForm({
+    resolver: yupResolver(cancelSchema),
+  });
+
+  const {
+    register: registerReturn,
+    handleSubmit: handleSubmitReturn,
+    formState: { errors: errorsReturn },
+  } = useForm({
+    resolver: yupResolver(returnSchema),
+  });
+
   const filteredHistory = orders.filter(
     (order) =>
       order.products.some((product) =>
         product?.name?.toLowerCase().includes(filter.toLowerCase())
       ) || order.status?.toLowerCase().includes(filter.toLowerCase())
   );
-  console.log("filteredHistory", filteredHistory);
 
   const handleReviewSubmit = async (
     rating: number,
@@ -80,6 +116,58 @@ export const PurchaseHistory: React.FC = () => {
       navigate("/customer/reviews-ratings");
     } catch (error) {
       console.error("Error submitting review:", error);
+    }
+  };
+
+  const handleReturnRequest = async (data: { reason: string }) => {
+    try {
+      const userId = JSON.parse(localStorage.getItem("userId") || "");
+      const response = await fetch(
+        `/api/order/${userId}/return-request/${selectedPurchase._id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+          body: JSON.stringify({ reason: data.reason }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to submit return request");
+      toast.success("Return request submitted successfully");
+      setIsReturnDialogOpen(false);
+    } catch (error) {
+      console.error("Error submitting return request:", error);
+      toast.error("Failed to submit return request");
+    }
+  };
+
+  const handleCancelRequest = async (data: { reason: string }) => {
+    if (!selectedPurchase) return;
+
+    try {
+      const userId = JSON.parse(localStorage.getItem("userId") || "");
+      const response = await fetch(
+        `/api/order/${userId}/cancel/${selectedPurchase._id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+          body: JSON.stringify({ reason: data.reason }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to request cancellation");
+      }
+      toast.success("Cancel request submitted successfully");
+      setIsCancelDialogOpen(false);
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 
@@ -156,72 +244,42 @@ export const PurchaseHistory: React.FC = () => {
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-lg">
+                    <div className="text-right flex items-center">
+                      <p className="font-bold text-lg mr-4">
                         Rs {order.subtotal.toFixed(2)}
                       </p>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="mt-2"
-                            onClick={() => setSelectedPurchase(order)}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <FaEllipsisV />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem
+                            onSelect={() => setSelectedPurchase(order)}
                           >
                             View Details
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="bg-white rounded-md shadow-lg p-6">
-                          <DialogHeader>
-                            <DialogTitle className="text-xl font-semibold">
-                              Purchase Details
-                            </DialogTitle>
-                          </DialogHeader>
-                          <div className="mt-4">
-                            <p>
-                              <strong>Status:</strong>{" "}
-                              {order.status.split("-")[1].toUpperCase()}
-                            </p>
-                            <p>
-                              <strong>Date:</strong>{" "}
-                              {new Date(order.createdAt).toLocaleDateString()}
-                            </p>
-                            <p>
-                              <strong>Amount:</strong> Rs{" "}
-                              {order.subtotal.toFixed(2)}
-                            </p>
-                            <p>
-                              <strong>Items:</strong>
-                            </p>
-                            <ul className="list-disc pl-5">
-                              {order.products.map((product) => (
-                                <li
-                                  key={product.productId?._id || ""}
-                                  className="flex justify-between items-center"
-                                >
-                                  <span>
-                                    {product.productId?.name ||
-                                      "Product Name Unavailable"}
-                                  </span>
-
-                                  {order.status === "order-delivered" && (
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => {
-                                        setSelectedProductForReview(product);
-                                        setIsReviewDialogOpen(true);
-                                      }}
-                                    >
-                                      Review
-                                    </Button>
-                                  )}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
+                          </DropdownMenuItem>
+                          {order.status === "order-delivered" && (
+                            <DropdownMenuItem
+                              onSelect={() => {
+                                setSelectedPurchase(order);
+                                setIsReturnDialogOpen(true);
+                              }}
+                            >
+                              Return
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem
+                            onSelect={() => {
+                              setSelectedPurchase(order);
+                              setIsCancelDialogOpen(true);
+                            }}
+                          >
+                            Cancel
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 </CardContent>
@@ -253,6 +311,117 @@ export const PurchaseHistory: React.FC = () => {
             onSubmit={handleReviewSubmit}
             productName={selectedProductForReview?.productId.name}
           />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={selectedPurchase !== null}
+        onOpenChange={() => setSelectedPurchase(null)}
+      >
+        <DialogContent className="bg-white rounded-md shadow-lg p-6">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">
+              Purchase Details
+            </DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            <p>
+              <strong>Status:</strong>{" "}
+              {selectedPurchase?.status.split("-")[1].toUpperCase()}
+            </p>
+            <p>
+              <strong>Date:</strong>{" "}
+              {new Date(selectedPurchase?.createdAt || "").toLocaleDateString()}
+            </p>
+            <p>
+              <strong>Amount:</strong> Rs{" "}
+              {selectedPurchase?.subtotal.toFixed(2)}
+            </p>
+            <p>
+              <strong>Items:</strong>
+            </p>
+            <ul className="list-disc pl-5">
+              {selectedPurchase?.products.map((product) => (
+                <li
+                  key={product.productId?._id || ""}
+                  className="flex justify-between items-center"
+                >
+                  <span>
+                    {product.productId?.name || "Product Name Unavailable"}
+                  </span>
+
+                  {selectedPurchase.status === "order-delivered" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedProductForReview(product);
+                        setIsReviewDialogOpen(true);
+                      }}
+                    >
+                      Review
+                    </Button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isReturnDialogOpen} onOpenChange={setIsReturnDialogOpen}>
+        <DialogContent className="bg-white rounded-md shadow-lg p-6">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">
+              Return Order
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmitReturn(handleReturnRequest)}>
+            <div className="mt-4">
+              <Label htmlFor="return-reason">Reason for return</Label>
+              <Input
+                id="return-reason"
+                {...registerReturn("reason")}
+                className="mt-1"
+              />
+              {errorsReturn.reason && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errorsReturn.reason.message}
+                </p>
+              )}
+            </div>
+            <div className="mt-6 flex justify-end">
+              <Button type="submit">Submit</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
+        <DialogContent className="bg-white rounded-md shadow-lg p-6">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">
+              Cancel Order
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmitCancel(handleCancelRequest)}>
+            <div className="mt-4">
+              <Label htmlFor="cancel-reason">Reason for cancellation</Label>
+              <Input
+                id="cancel-reason"
+                {...registerCancel("reason")}
+                className="mt-1"
+              />
+              {errorsCancel.reason && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errorsCancel.reason.message}
+                </p>
+              )}
+            </div>
+            <div className="mt-6 flex justify-end">
+              <Button type="submit">Submit</Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </motion.div>

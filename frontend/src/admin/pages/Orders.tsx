@@ -230,10 +230,14 @@ function Orders() {
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     try {
-      await dispatch(updateOrderStatusAsync({ orderId, newStatus }));
+      const result = await dispatch(
+        updateOrderStatusAsync({ orderId, newStatus })
+      ).unwrap();
       toast.success(`Order status updated to ${newStatus}`);
     } catch (error) {
-      toast.error("Failed to update order status");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update order status"
+      );
     }
   };
 
@@ -242,11 +246,13 @@ function Orders() {
       try {
         await dispatch(
           cancelOrderAsync({ orderId: selectedOrder._id, reason: cancelReason })
-        );
+        ).unwrap();
         toast.success("Order cancelled successfully");
         setIsCancelDialogOpen(false);
       } catch (error) {
-        toast.error("Failed to cancel order");
+        toast.error(
+          error instanceof Error ? error.message : "Failed to cancel order"
+        );
       }
     }
   };
@@ -254,30 +260,40 @@ function Orders() {
   const handleDeleteOrder = async () => {
     if (selectedOrder) {
       try {
-        await dispatch(deleteOrderAsync(selectedOrder._id));
+        await dispatch(deleteOrderAsync(selectedOrder._id)).unwrap();
         toast.success("Order deleted successfully");
         setIsDeleteDialogOpen(false);
       } catch (error) {
-        toast.error("Failed to delete order");
+        toast.error(
+          error instanceof Error ? error.message : "Failed to delete order"
+        );
       }
     }
   };
 
   const handleMarkOrderShipped = async (orderId: string) => {
     try {
-      await dispatch(markOrderShippedAsync(orderId));
+      await dispatch(markOrderShippedAsync(orderId)).unwrap();
       toast.success("Order marked as shipped");
     } catch (error) {
-      toast.error("Failed to mark order as shipped");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to mark order as shipped"
+      );
     }
   };
 
   const handleMarkOrderDelivered = async (orderId: string) => {
     try {
-      await dispatch(markOrderDeliveredAsync(orderId));
+      await dispatch(markOrderDeliveredAsync(orderId)).unwrap();
       toast.success("Order marked as delivered");
     } catch (error) {
-      toast.error("Failed to mark order as delivered");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to mark order as delivered"
+      );
     }
   };
 
@@ -393,8 +409,6 @@ function Orders() {
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
-
-  if (status === "failed") return <div>Error: {error}</div>;
 
   return (
     <div>

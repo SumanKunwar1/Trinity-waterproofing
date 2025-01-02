@@ -7,7 +7,6 @@ const api = axios.create({
   },
 });
 
-// Add a request interceptor to set the Authorization header dynamically
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("authToken");
   if (token) {
@@ -16,7 +15,6 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Reviews API
 export const fetchReviews = async () => {
   try {
     const response = await api.get("/review");
@@ -37,7 +35,6 @@ export const deleteReview = async (reviewId: string) => {
   }
 };
 
-// Orders API
 export const fetchOrders = async () => {
   try {
     const response = await api.get("/order/admin");
@@ -98,6 +95,50 @@ export const markOrderDelivered = async (orderId: string) => {
     return response.data;
   } catch (error) {
     console.error("Error marking order as delivered:", error);
+    throw error;
+  }
+};
+
+export const submitReturnRequest = async (orderId: string) => {
+  try {
+    const response = await api.patch(`/return-request/${orderId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error submitting return request:", error);
+    throw error;
+  }
+};
+
+export const submitCancelRequest = async (orderId: string, reason: string) => {
+  try {
+    const response = await api.delete(`/cancel/${orderId}`, {
+      data: { reason },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error submitting cancel request:", error);
+    throw error;
+  }
+};
+
+export const approveReturn = async (orderId: string) => {
+  try {
+    const response = await api.patch(`/admin/${orderId}/approve-return`);
+    return response.data;
+  } catch (error) {
+    console.error("Error approving return:", error);
+    throw error;
+  }
+};
+
+export const disapproveReturn = async (orderId: string, reason: string) => {
+  try {
+    const response = await api.patch(`/admin/${orderId}/disapprove-return`, {
+      reason,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error disapproving return:", error);
     throw error;
   }
 };
