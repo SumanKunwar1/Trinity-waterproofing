@@ -1,3 +1,5 @@
+export { About } from "./about";
+
 export { User } from "./user";
 export { Review } from "./review";
 export { Product, IProduct, IColor } from "./products";

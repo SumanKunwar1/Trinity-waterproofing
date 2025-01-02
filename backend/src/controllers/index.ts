@@ -20,3 +20,4 @@ export { OrderController } from "./orderController";
 export { WishListController } from "./wishListController";
 export { CartController } from "./cartController";
 export { GalleryController } from "./galleryController";
+export { AboutController } from "./aboutController";

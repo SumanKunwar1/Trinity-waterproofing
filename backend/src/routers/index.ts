@@ -17,6 +17,7 @@ import companyDetailRoutes from "./companyDetailRoutes";
 import teamRoutes from "./teamRoutes";
 import faqRoutes from "./faqRoutes";
 import newsLetterRoutes from "./newsLetterRoutes";
+import aboutRoutes from "./aboutRoutes";
 
 const router = Router();
 
@@ -38,8 +39,8 @@ router.use("/company-detail", companyDetailRoutes);
 router.use("/team", teamRoutes);
 router.use("/faq", faqRoutes);
 router.use("/newsletter", newsLetterRoutes);
+router.use("/about", aboutRoutes);
 
 //services
-//about us
 
 export default router;
