@@ -34,6 +34,8 @@ import { RatingsAndReviews } from "./pages/customer-profile/rating-review/page";
 import { Notification } from "./pages/customer-profile/notification/page";
 import { Provider } from "react-redux";
 import { store } from "./admin/store/store";
+import ServicesPage from "./pages/Services";
+import TeamPage from "./pages/Teams";
 function App() {
   const userRole = localStorage.getItem("userRole");
   return (
@@ -47,6 +49,8 @@ function App() {
               <WishlistProvider>
                 <Routes>
                   <Route path="/" element={<Home />} />
+                  <Route path="/services" element={<ServicesPage />} />
+                  <Route path="/teams" element={<TeamPage />} />
                   <Route path="/products" element={<ProductListing />} />
                   <Route path="/products/:id" element={<ProductListing />} />
                   <Route path="/product/:id" element={<ProductDetail />} />
