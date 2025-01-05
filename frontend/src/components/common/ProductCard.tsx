@@ -4,9 +4,7 @@ import { motion } from "framer-motion";
 import Button from "./Button";
 import { useWishlist } from "../../context/WishlistContext";
 import { FaHeart } from "react-icons/fa";
-import { FiEye } from "react-icons/fi";
 import { toast } from "react-toastify";
-import AddToCartButton from "../product/AddToCartButton";
 import { IProduct } from "../../types/product";
 
 interface ProductCardProps {
@@ -87,17 +85,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
         </div>
 
-        <div className="flex items-center justify-between mt-4">
-          <Button
-            to={`/product/${product._id}`}
-            size="sm"
-            className="flex align-middle text-center justify-between"
-          >
-            <FiEye className="mr-2 font-semibold" />
-            View Details
-          </Button>
+        <div className="flex items-center justify-center w-full mt-4">
           {isLoggedIn ? (
-            <AddToCartButton product={product} />
+            <Button
+              onClick={() => navigate(`/product/${product._id}`)}
+              size="sm"
+              className="flex align-middle text-center w-full justify-center"
+            >
+              View Product
+            </Button>
           ) : (
             <Button
               onClick={() => navigate("/login")}

@@ -8,16 +8,6 @@ import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 
 const Home: React.FC = () => {
-  const brands = [
-    "/assets/dr-fixit.png",
-    "/assets/fevicol.png",
-    "/assets/makphalt.png",
-    "/assets/semitrone.jpg",
-    "/assets/dr-fixit.png",
-    "/assets/fevicol.png",
-    "/assets/makphalt.png",
-    "/assets/semitrone.jpg",
-  ];
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -27,7 +17,7 @@ const Home: React.FC = () => {
           <FeaturedCategories />
           <FeaturedProducts />
           <PopularProducts />
-          <BrandSection brands={brands} />
+          <BrandSection />
         </div>
       </main>
       <Footer />

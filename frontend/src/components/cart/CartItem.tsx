@@ -1,48 +1,40 @@
-// src/components/CartItem.tsx
-
-import React, { useState, useCallback, useEffect } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import { Button } from "../ui/button"; // Assuming this is a pre-defined Button component
-import { ICartItem } from "../../types/cart";
-import { useCart } from "../../context/CartContext"; // Use the context hook
+import { Button } from "../ui/button";
+import type { ICartItem } from "../../types/cart";
+import { useCart } from "../../hooks/useCart";
 
 interface CartItemProps {
   item: ICartItem;
 }
 
 const CartItem: React.FC<CartItemProps> = ({ item }) => {
-  const [quantity, setQuantity] = useState(item.quantity);
   const { updateQuantity, removeFromCart } = useCart();
 
-  useEffect(() => {
-    setQuantity(item.quantity);
-  }, [item]);
-
-  const handleIncrease = useCallback(() => {
-    if (quantity < item.inStock) {
-      const newQuantity = quantity + 1;
-      setQuantity(newQuantity);
-      updateQuantity(item.productId, newQuantity); // Update quantity in context
-    } else {
-      toast.error("Cannot exceed available stock.");
+  const handleQuantityChange = async (newQuantity: number) => {
+    if (newQuantity < 1) {
+      toast.error("Quantity cannot be less than 1");
+      return;
     }
-  }, [quantity, item.inStock, item.productId, updateQuantity]);
-
-  const handleDecrease = useCallback(() => {
-    if (quantity > 1) {
-      const newQuantity = quantity - 1;
-      setQuantity(newQuantity);
-      updateQuantity(item.productId, newQuantity); // Update quantity in context
-    } else {
-      toast.error("Quantity cannot be less than 1.");
+    if (newQuantity > item.inStock) {
+      toast.error("Cannot exceed available stock");
+      return;
     }
-  }, [quantity, item.productId, updateQuantity]);
+    try {
+      await updateQuantity(item._id!, newQuantity);
+    } catch (error) {
+      console.error("Failed to update quantity:", error);
+    }
+  };
 
-  const handleRemove = useCallback(() => {
-    removeFromCart(item.productId);
-    toast.success("Item removed from cart");
-  }, [item.productId, removeFromCart]);
+  const handleRemove = async () => {
+    try {
+      await removeFromCart(item._id!);
+    } catch (error) {
+      console.error("Failed to remove item:", error);
+    }
+  };
 
   return (
     <div className="flex flex-col md:flex-row items-center justify-between mb-6 p-4 border-b border-gray-300">
@@ -66,7 +58,7 @@ const CartItem: React.FC<CartItemProps> = ({ item }) => {
               <span
                 style={{ backgroundColor: item.color }}
                 className="w-5 h-5 rounded-full flex items-center justify-center border border-gray-300"
-              ></span>
+              />
             </p>
           )}
           <p className="text-sm font-medium text-gray-900 mt-1">
@@ -81,15 +73,15 @@ const CartItem: React.FC<CartItemProps> = ({ item }) => {
             variant="outline"
             size="icon"
             className="h-8 w-8 bg-secondary text-white"
-            onClick={handleDecrease}
+            onClick={() => handleQuantityChange(item.quantity - 1)}
           >
             -
           </Button>
 
           <input
             type="number"
-            value={quantity}
-            onChange={(e) => setQuantity(Number(e.target.value))}
+            value={item.quantity}
+            onChange={(e) => handleQuantityChange(Number(e.target.value))}
             className="w-16 text-center rounded-md py-1 px-2 border border-gray-300"
             min="1"
             max={item.inStock}
@@ -99,7 +91,7 @@ const CartItem: React.FC<CartItemProps> = ({ item }) => {
             variant="outline"
             size="icon"
             className="h-8 w-8 bg-secondary text-white"
-            onClick={handleIncrease}
+            onClick={() => handleQuantityChange(item.quantity + 1)}
           >
             +
           </Button>

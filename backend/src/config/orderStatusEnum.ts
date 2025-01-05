@@ -3,9 +3,9 @@ export enum OrderStatus {
   PAYMENT_COMPLETED = "payment-completed",
   ORDER_CONFIRMED = "order-confirmed",
   ORDER_SHIPPED = "order-shipped",
-  SERVICE_COMPLETED = "service-completed",
+  ORDER_DELIVERED = "order-delivered",
   ORDER_CANCELLED = "order-cancelled",
   RETURN_REQUESTED = "return-requested",
   RETURN_APPROVED = "return-approved",
-  RETURN_DISAPPROVED = "return-disapproved", // <-- Add this status
+  RETURN_DISAPPROVED = "return-disapproved",
 }

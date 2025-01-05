@@ -1,32 +1,18 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../hooks/useCart";
 import CartItem from "../components/cart/CartItem";
 import OrderSummary from "../components/cart/OrderSummary";
-import Button from "../components/common/Button";
+import { Button } from "../components/ui/button";
 import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
+import Loader from "../components/common/Loader";
 
 const Cart: React.FC = () => {
-  const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
+  const { cart, isLoading, clearCart } = useCart();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    console.log("Cart component mounted or updated");
-    console.log("Current cart state:", cart);
-  }, [cart]); // Dependency array ensures this runs when `cart` changes.
-
   const handleProceedToCheckout = () => {
-    console.log("Proceeding to checkout", cart);
-    cart.map((item) =>
-      console.log(
-        item,
-        item.productId,
-        item.quantity,
-        item.price,
-        item.color || null
-      )
-    );
     const checkoutData = cart.map((item) => ({
       productId: item.productId,
       quantity: item.quantity,
@@ -36,6 +22,16 @@ const Cart: React.FC = () => {
 
     navigate("/checkout", { state: { checkoutData } });
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <Header />
+        <Loader />
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -49,14 +45,7 @@ const Cart: React.FC = () => {
             <div className="flex flex-col md:flex-row">
               <div className="w-full md:w-2/3 md:pr-8">
                 {cart.map((item) => (
-                  <CartItem
-                    key={item._id}
-                    item={item}
-                    onRemove={() => removeFromCart(item._id)}
-                    onUpdateQuantity={(quantity) =>
-                      updateQuantity(item._id, quantity)
-                    }
-                  />
+                  <CartItem key={item._id} item={item} />
                 ))}
                 <Button
                   onClick={clearCart}
@@ -69,7 +58,8 @@ const Cart: React.FC = () => {
                 <OrderSummary cartItems={cart} />
                 <Button
                   onClick={handleProceedToCheckout}
-                  className="w-full mt-4 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                  variant="secondary"
+                  className="mt-4 w-full"
                 >
                   Proceed to Checkout
                 </Button>

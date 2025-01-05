@@ -169,6 +169,36 @@ export class OrderController {
     }
   }
 
+  public async markOrderShipped(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const orderId = req.params.orderId;
+      const result = await this.orderService.markOrderShipped(orderId);
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  public async markOrderDelivered(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const orderId = req.params.orderId;
+      const result = await this.orderService.markOrderDelivered(orderId);
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
   public async cancelOrderByUser(
     req: Request,
     res: Response,
@@ -190,7 +220,7 @@ export class OrderController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const orderId = req.params.id;
+      const orderId = req.params.orderId;
       const result = await this.orderService.deleteOrderByAdmin(orderId);
       res.locals.responseData = result;
       next();

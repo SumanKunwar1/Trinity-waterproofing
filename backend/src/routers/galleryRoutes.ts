@@ -45,11 +45,27 @@ router.get(
   handleResponse
 );
 
-router.delete(
-  "/",
+router.patch(
+  "/:FileName",
   isAuthenticated,
   isAuthorized("admin"),
-  galleryController.deleteItem.bind(galleryController),
+  galleryController.renameFolder.bind(galleryController),
+  handleResponse
+);
+
+router.delete(
+  "/folder",
+  isAuthenticated,
+  isAuthorized("admin"),
+  galleryController.deleteFolder.bind(galleryController),
+  handleResponse
+);
+
+router.delete(
+  "/files",
+  isAuthenticated,
+  isAuthorized("admin"),
+  galleryController.deleteFiles.bind(galleryController),
   handleResponse
 );
 

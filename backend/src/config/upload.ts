@@ -4,23 +4,30 @@ import fs from "fs";
 import dotenv from "dotenv";
 dotenv.config();
 
-console.log("image upload fol;der name", process.env.IMAGE_UPLOAD);
+console.log("image upload folder name:", process.env.IMAGE_UPLOAD);
 const UPLOADS = process.env.IMAGE_UPLOAD || "uploads";
 
 export const uploadFolder = path.join(__dirname, "../../../", UPLOADS);
 if (!fs.existsSync(uploadFolder)) {
   fs.mkdirSync(uploadFolder, { recursive: true });
 }
+
 const allowedImageTypes = ["image/jpeg", "image/png", "image/jpg"];
 const allowedVideoTypes = ["video/mp4", "video/avi", "video/mov"];
 
 // Add fileFilter to enforce file type restrictions
 const fileFilter = (req: any, file: any, cb: any) => {
+  console.log("Received file:", file);
+
   if (file.fieldname === "productImage" || file.fieldname === "image") {
     // Restrict to JPEG, PNG, JPG only
     if (allowedImageTypes.includes(file.mimetype)) {
+      console.log(`Allowed file type: ${file.mimetype}`);
       cb(null, true);
     } else {
+      console.error(
+        `Invalid file type: ${file.mimetype}. Allowed types are JPEG, PNG, JPG.`
+      );
       cb(
         new Error(
           `Invalid file type for ${file.fieldname}. Allowed types are JPEG, PNG, JPG.`
@@ -30,8 +37,12 @@ const fileFilter = (req: any, file: any, cb: any) => {
   } else if (file.fieldname === "video") {
     // Restrict to MP4, AVI, MOV only
     if (allowedVideoTypes.includes(file.mimetype)) {
+      console.log(`Allowed video file type: ${file.mimetype}`);
       cb(null, true);
     } else {
+      console.error(
+        `Invalid video file type: ${file.mimetype}. Allowed types are MP4, AVI, MOV.`
+      );
       cb(
         new Error(
           `Invalid file type for ${file.fieldname}. Allowed types are MP4, AVI, MOV.`
@@ -39,28 +50,33 @@ const fileFilter = (req: any, file: any, cb: any) => {
       );
     }
   } else {
+    console.error(`Unexpected field name ${file.fieldname}.`);
     cb(new Error(`Unexpected field name ${file.fieldname}.`));
   }
 };
 
 const storage: multer.StorageEngine = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, uploadFolder);
+    console.log("Uploading file to:", uploadFolder); // Log the destination folder
+    cb(null, uploadFolder); // Save to the upload folder
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
+    const filename = uniqueSuffix + path.extname(file.originalname);
+    console.log(`Saving file: ${filename}`); // Log the file name being saved
+    cb(null, filename); // Save the file with the new unique name
   },
 });
 
 const upload = multer({ storage: storage, fileFilter: fileFilter });
 
-//this middleware exclusively for product file uploads
+// This middleware exclusively for product file uploads
 export const uploadMiddleware = upload.fields([
   { name: "productImage", maxCount: 1 },
   { name: "image", maxCount: 10 },
 ]);
-//this one for all other images
+
+// This one for all other images
 export const imageUploadMiddleware = upload.fields([
   { name: "image", maxCount: 1 },
 ]);
@@ -68,30 +84,37 @@ export const imageUploadMiddleware = upload.fields([
 export const appendFileDataToBody = (req: any, res: any, next: Function) => {
   if (req.files["productImage"] && req.files["productImage"].length > 0) {
     const productImageFile = req.files["productImage"][0];
+    console.log("Added product image to body:", productImageFile.filename); // Log the image file added
     req.body.productImage = productImageFile.filename;
   }
 
   if (req.files["image"]) {
     const imageFiles = req.files["image"];
+    console.log(
+      "Added images to body:",
+      imageFiles.map((file: any) => file.filename)
+    ); // Log all images added
     req.body.image = imageFiles.map((file: any) => file.filename);
   } else {
     req.body.image = [];
   }
+
   if (req.files["video"] && req.files["video"].length > 0) {
     const video = req.files["video"][0];
+    console.log("Added video to body:", video.filename); // Log video added
     req.body.video = video.filename;
   }
 
-  console.log("Updated Request Body:", req.body);
+  console.log("Updated Request Body (appendFileDataToBody):", req.body); // Log final request body
   next();
 };
 
 export const appendImageDataToBody = (req: any, res: any, next: Function) => {
   if (req.files && req.files["image"]) {
     const imageFiles = req.files["image"];
-
     // If there's at least one image uploaded, assign the filename as a string
     if (imageFiles.length > 0) {
+      console.log("Added single image to body:", imageFiles[0].filename); // Log the image file added
       req.body.image = imageFiles[0].filename;
     } else {
       // If no images were uploaded, set it to an empty string
@@ -102,7 +125,7 @@ export const appendImageDataToBody = (req: any, res: any, next: Function) => {
     req.body.image = "";
   }
 
-  console.log("Updated Request Body (imageUploadMiddleware):", req.body);
+  console.log("Updated Request Body (appendImageDataToBody):", req.body); // Log final request body
   next();
 };
 

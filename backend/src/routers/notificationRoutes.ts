@@ -45,7 +45,7 @@ router.patch(
 );
 
 router.delete(
-  "/:userId/clear-all",
+  "/:userId/user/clear-all",
   isAuthenticated,
   isAuthorizedUser,
   notificationController.clearAllNotifications.bind(notificationController),

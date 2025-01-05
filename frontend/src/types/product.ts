@@ -14,6 +14,7 @@ export interface IProduct {
   subCategory: string;
   features: string;
   brand: string;
+  createdAt: string;
   colors?: IColor[];
   inStock: number;
   review: { rating: number; comment: string }[];

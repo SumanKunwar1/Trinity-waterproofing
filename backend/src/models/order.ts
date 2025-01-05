@@ -11,8 +11,8 @@ export interface IOrder extends Document {
   total: number;
   status: OrderStatus;
   reason: string;
-  created_at: Date;
-  updated_at: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const orderSchema: Schema = new Schema(

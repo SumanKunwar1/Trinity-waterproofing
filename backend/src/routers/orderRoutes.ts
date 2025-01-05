@@ -57,15 +57,6 @@ router.patch(
   handleResponse
 );
 
-// Cancel order (user only)
-router.delete(
-  "/:userId/cancel/:orderId",
-  isAuthenticated,
-  isAuthorizedUser,
-  orderController.cancelOrderByUser.bind(orderController),
-  handleResponse
-);
-
 // Cancel order by admin
 router.patch(
   "/admin/:orderId/cancel",
@@ -92,12 +83,29 @@ router.patch(
   orderController.approveReturn.bind(orderController),
   handleResponse
 );
-
+//order disapproved
 router.patch(
   "/admin/:orderId/disapprove-return",
   isAuthenticated,
   isAuthorized("admin"),
   orderController.disApproveReturn.bind(orderController),
+  handleResponse
+);
+// Order shipped (admin only)
+router.patch(
+  "/admin/:orderId/order-shipped",
+  isAuthenticated,
+  isAuthorized("admin"),
+  orderController.markOrderShipped.bind(orderController),
+  handleResponse
+);
+
+// Order delivered (admin only)
+router.patch(
+  "/admin/:orderId/order-delivered",
+  isAuthenticated,
+  isAuthorized("admin"),
+  orderController.markOrderDelivered.bind(orderController),
   handleResponse
 );
 
@@ -107,6 +115,15 @@ router.delete(
   isAuthenticated,
   isAuthorized("admin"),
   orderController.deleteOrderByAdmin.bind(orderController),
+  handleResponse
+);
+
+// Cancel order (user only)
+router.delete(
+  "/:userId/cancel/:orderId",
+  isAuthenticated,
+  isAuthorizedUser,
+  orderController.cancelOrderByUser.bind(orderController),
   handleResponse
 );
 

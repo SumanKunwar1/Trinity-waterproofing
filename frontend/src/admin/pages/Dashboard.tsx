@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import { Bar, Line, Pie } from "react-chartjs-2";
 import {
@@ -27,6 +28,11 @@ import {
 } from "../components/ui/card";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
+import LatestOrderTable from "../components/LatestOrderTable";
+import LatestReviewCard from "../components/LatestReviewCard";
+import { AppDispatch, RootState } from "../store/store";
+import { fetchOrdersAsync } from "../store/ordersSlice";
+import { fetchReviewsAsync } from "../store/reviewsSlice";
 
 ChartJS.register(
   CategoryScale,
@@ -41,11 +47,28 @@ ChartJS.register(
 );
 
 const Dashboard: React.FC = () => {
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [isSidebarOpen, setSidebarOpen] = React.useState(false);
+  const dispatch = useDispatch<AppDispatch>();
+  const {
+    orders,
+    status: orderStatus,
+    error: orderError,
+  } = useSelector((state: RootState) => state.orders);
+  // const {
+  //   reviews,
+  //   status: reviewStatus,
+  //   error: reviewError,
+  // } = useSelector((state: RootState) => state.reviews);
+
+  useEffect(() => {
+    dispatch(fetchOrdersAsync());
+    dispatch(fetchReviewsAsync());
+  }, [dispatch]);
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
+
   const salesData = {
     labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
     datasets: [
@@ -92,223 +115,194 @@ const Dashboard: React.FC = () => {
     ],
   };
 
-  // Pagination state for Recent Orders
-  const [currentPage, setCurrentPage] = useState(1);
-  const ordersPerPage = 5;
-
-  const recentOrders = [
-    { orderId: "#12345", amount: "$123.45" },
-    { orderId: "#12346", amount: "$67.89" },
-    { orderId: "#12347", amount: "$89.01" },
-    { orderId: "#12348", amount: "$234.56" },
-    { orderId: "#12349", amount: "$45.67" },
-    { orderId: "#12350", amount: "$300.99" },
-    { orderId: "#12351", amount: "$123.00" },
-  ];
-
-  // Get current orders to display based on pagination
-  const indexOfLastOrder = currentPage * ordersPerPage;
-  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = recentOrders.slice(indexOfFirstOrder, indexOfLastOrder);
-
-  // Change page
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
-
   return (
-    <div>
-      <div className="flex bg-gray-100">
-        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Topbar toggleSidebar={toggleSidebar} />
-          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Card className="bg-hover">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Total Revenue
-                    </CardTitle>
-                    <FaMoneyBillWave className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">$45,231.89</div>
-                    <p className="text-xs text-muted-foreground">
-                      +20.1% from last month
-                    </p>
-                  </CardContent>
-                </Card>
-              </motion.div>
+    <div className="flex bg-gray-100">
+      <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Topbar toggleSidebar={toggleSidebar} />
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Card className="bg-hover">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Total Revenue
+                  </CardTitle>
+                  <FaMoneyBillWave className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">$45,231.89</div>
+                  <p className="text-xs text-muted-foreground">
+                    +20.1% from last month
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-              >
-                <Card className="bg-tertiary">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      New Customers
-                    </CardTitle>
-                    <FaUsers className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">+2350</div>
-                    <p className="text-xs text-muted-foreground">
-                      +180.1% from last month
-                    </p>
-                  </CardContent>
-                </Card>
-              </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <Card className="bg-tertiary">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    New Customers
+                  </CardTitle>
+                  <FaUsers className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">+2350</div>
+                  <p className="text-xs text-muted-foreground">
+                    +180.1% from last month
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-              >
-                <Card className="bg-button">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Total Orders
-                    </CardTitle>
-                    <FaShoppingCart className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">+12,234</div>
-                    <p className="text-xs text-muted-foreground">
-                      +19% from last month
-                    </p>
-                  </CardContent>
-                </Card>
-              </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <Card className="bg-button">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Total Orders
+                  </CardTitle>
+                  <FaShoppingCart className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">+12,234</div>
+                  <p className="text-xs text-muted-foreground">
+                    +19% from last month
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-              >
-                <Card className="bg-[#75dede]">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Active Users
-                    </CardTitle>
-                    <FaChartLine className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">+573</div>
-                    <p className="text-xs text-muted-foreground">
-                      +201 since last hour
-                    </p>
-                  </CardContent>
-                </Card>
-              </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <Card className="bg-[#75dede]">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Active Users
+                  </CardTitle>
+                  <FaChartLine className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">+573</div>
+                  <p className="text-xs text-muted-foreground">
+                    +201 since last hour
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                className="md:col-span-2"
-              >
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Sales Overview</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Bar data={salesData} />
-                  </CardContent>
-                </Card>
-              </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="md:col-span-2"
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle>Latest Order</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {orderStatus === "loading" ? (
+                    <p>Loading latest order...</p>
+                  ) : orderStatus === "failed" ? (
+                    <p>Error loading latest order: {orderError}</p>
+                  ) : orders.length === 0 ? (
+                    <p>No recent orders.</p>
+                  ) : (
+                    <LatestOrderTable order={orders[0]} />
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.5 }}
-                className="md:col-span-2"
-              >
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Order Trends</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Line data={ordersData} />
-                  </CardContent>
-                </Card>
-              </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+              className="md:col-span-2"
+            >
+              {/* <Card>
+                <CardHeader>
+                  <CardTitle>Latest Review</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {reviewStatus === "loading" ? (
+                    <p>Loading latest review...</p>
+                  ) : reviewStatus === "failed" ? (
+                    <p>Error loading latest review: {reviewError}</p>
+                  ) : reviews.length === 0 ? (
+                    <p>No recent reviews.</p>
+                  ) : (
+                    <LatestReviewCard review={reviews[0]} />
+                  )}
+                </CardContent>
+              </Card> */}
+            </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.6 }}
-                className="lg:col-span-2 md:col-span-2"
-              >
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Sales by Category</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Pie data={categoryData} />
-                  </CardContent>
-                </Card>
-              </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+              className="md:col-span-2"
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle>Sales Overview</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Bar data={salesData} />
+                </CardContent>
+              </Card>
+            </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.7 }}
-                className="lg:col-span-2 md:col-span-2"
-              >
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Recent Orders</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full table-auto border">
-                        <thead className="border">
-                          <tr className="border-b">
-                            <th className="px-4 py-2 border-r">Order ID</th>
-                            <th className="px-4 py-2">Amount</th>
-                          </tr>
-                        </thead>
-                        <tbody className="border">
-                          {currentOrders.map((order, index) => (
-                            <tr key={index} className="border-b">
-                              <td className="px-4 py-2 border-r">
-                                {order.orderId}
-                              </td>
-                              <td className="px-4 py-2">{order.amount}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    <div className="flex justify-between mt-2">
-                      <button
-                        onClick={() => paginate(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        className="px-4 py-2 bg-gray-200 rounded-md"
-                      >
-                        Prev
-                      </button>
-                      <button
-                        onClick={() => paginate(currentPage + 1)}
-                        disabled={
-                          currentPage * ordersPerPage >= recentOrders.length
-                        }
-                        className="px-4 py-2 bg-gray-200 rounded-md"
-                      >
-                        Next
-                      </button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </div>
-          </main>
-        </div>
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.7 }}
+              className="md:col-span-2"
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle>Order Trends</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Line data={ordersData} />
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.8 }}
+              className="md:col-span-4"
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle>Sales by Category</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Pie data={categoryData} />
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </main>
       </div>
     </div>
   );

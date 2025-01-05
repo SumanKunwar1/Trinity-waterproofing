@@ -18,6 +18,7 @@ import {
   FaLightbulb,
   FaSignOutAlt,
 } from "react-icons/fa";
+import { MdReviews } from "react-icons/md";
 import { useLogout } from "../../utils/authUtils";
 
 interface SidebarProps {
@@ -36,6 +37,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     { icon: FaListUl, text: "Categories", link: "/admin/categories" },
     { icon: FaTags, text: "Brands", link: "/admin/brands" },
     { icon: FaShoppingCart, text: "Orders", link: "/admin/orders" },
+    { icon: MdReviews, text: "Reviews", link: "/admin/reviews" },
     { icon: FaUsers, text: "Users", link: "/admin/users" },
     { icon: FaFileAlt, text: "Reports", link: "/admin/reports" },
     { icon: FaSlidersH, text: "Sliders", link: "/admin/sliders" },

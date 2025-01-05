@@ -15,7 +15,7 @@ const router = Router();
 const reviewController = new ReviewController();
 
 router.post(
-  "/",
+  "/:orderId",
   isAuthenticated,
   uploadMiddleware,
   appendFileDataToBody,
@@ -41,8 +41,11 @@ router.get(
 );
 
 router.patch(
-  "/:reviewId",
+  "/:userId/:reviewId",
   isAuthenticated,
+  isAuthorizedUser,
+  uploadMiddleware,
+  appendFileDataToBody,
   validateEditReview,
   reviewController.updateReviewById.bind(reviewController),
   handleResponse

@@ -135,7 +135,7 @@ export class OrderService {
       console.log("Product stock updated.");
 
       // **User Notification**
-      const formattedDate = moment(newOrder.created_at).format(
+      const formattedDate = moment(newOrder.createdAt).format(
         "MMMM Do YYYY, h:mm A"
       );
 
@@ -207,21 +207,46 @@ export class OrderService {
 
       const ordersWithAddresses = await Promise.all(
         orders.map(async (order) => {
-          const address = user.addressBook.find(
-            (addr) => addr._id.toString() === order.AddressId.toString()
-          );
+          console.log("Processing order:", order);
+          console.log("User address book:", user.addressBook);
+
+          if (!user.addressBook || user.addressBook.length === 0) {
+            console.warn("User has no addresses in the address book.");
+            return order; // Return the order as-is
+          }
+
+          if (!order.AddressId) {
+            console.warn("Order has no AddressId:", order);
+            return order; // Return the order as-is
+          }
+
+          const address = user.addressBook.find((addr) => {
+            if (!addr._id) {
+              console.warn("Address has no _id:", addr);
+              return false;
+            }
+            return addr._id.toString() === order.AddressId.toString();
+          });
+
           const orderWithAddress = order.toObject() as IOrder & {
             address?: any;
           };
+
           if (address) {
+            console.log("Address matched for order:", address);
             orderWithAddress.address = address;
+          } else {
+            console.warn(
+              "No matching address found for order AddressId:",
+              order.AddressId
+            );
           }
 
           return orderWithAddress;
         })
       );
 
-      // Step 4: Return the orders with their addresses
+      console.log("orderwithaddress", ordersWithAddresses);
       return ordersWithAddresses;
     } catch (error) {
       throw error;
@@ -318,7 +343,7 @@ export class OrderService {
 
       const userNotificationData: INotification = {
         userId: new mongoose.Types.ObjectId(existingOrder.userId),
-        message: `Your order placed on ${existingOrder.created_at} has been successfully placed.`,
+        message: `Your order placed on ${existingOrder.createdAt} has been successfully placed.`,
         type: "success",
       };
       await NotificationService.createNotification(userNotificationData);
@@ -358,7 +383,7 @@ export class OrderService {
       }
       const userNotificationData: INotification = {
         userId: new mongoose.Types.ObjectId(existingOrder.userId),
-        message: `Your order placed on ${existingOrder.created_at} has been cancelled due to ${reason} Please Contact Us to Know the details.`,
+        message: `Your order placed on ${existingOrder.createdAt} has been cancelled due to ${reason} Please Contact Us to Know the details.`,
         type: "error",
       };
       await NotificationService.createNotification(userNotificationData);
@@ -377,7 +402,7 @@ export class OrderService {
         throw httpMessages.NOT_FOUND("Order");
       }
 
-      if (existingOrder.status !== OrderStatus.SERVICE_COMPLETED) {
+      if (existingOrder.status !== OrderStatus.ORDER_DELIVERED) {
         throw httpMessages.BAD_REQUEST(
           "Only completed orders are eligible for return requests."
         );
@@ -393,13 +418,89 @@ export class OrderService {
 
       const userNotificationData: INotification = {
         userId: new mongoose.Types.ObjectId(existingOrder.userId),
-        message: `Your order placed on ${existingOrder.created_at} has been set to return.Confirmation require 24-48 hours.`,
+        message: `Your order placed on ${existingOrder.createdAt} has been set to return.Confirmation require 24-48 hours.`,
         type: "info",
       };
       await NotificationService.createAdminNotification(
         `A new order with ID ${existingOrder._id} has been requested to return.Reason:${reason} Please review it.`,
         "info"
       );
+      await NotificationService.createNotification(userNotificationData);
+
+      return updatedOrder;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async markOrderShipped(orderId: string) {
+    try {
+      const existingOrder = await Order.findById(orderId);
+
+      if (!existingOrder) {
+        throw httpMessages.NOT_FOUND("Order");
+      }
+
+      if (existingOrder.status !== OrderStatus.ORDER_CONFIRMED) {
+        throw httpMessages.BAD_REQUEST(
+          "Only orders with confirmation can be shipped."
+        );
+      }
+
+      const updatedOrder = await this.updateOrderStatusInternal(
+        orderId,
+        OrderStatus.ORDER_SHIPPED
+      );
+
+      // Handle return stock restoration or other tasks
+      for (const productItem of existingOrder.products) {
+        await Product.findByIdAndUpdate(productItem.productId, {
+          $inc: { inStock: productItem.quantity },
+        });
+      }
+      const userNotificationData: INotification = {
+        userId: new mongoose.Types.ObjectId(existingOrder.userId),
+        message: `Your order placed on ${existingOrder.createdAt} has been shipped. PLease contact Us for more details.`,
+        type: "info",
+      };
+      await NotificationService.createNotification(userNotificationData);
+
+      return updatedOrder;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async markOrderDelivered(orderId: string) {
+    try {
+      const existingOrder = await Order.findById(orderId);
+
+      if (!existingOrder) {
+        throw httpMessages.NOT_FOUND("Order");
+      }
+
+      if (existingOrder.status !== OrderStatus.ORDER_SHIPPED) {
+        throw httpMessages.BAD_REQUEST(
+          "Only orders with shipped status can be delivered."
+        );
+      }
+
+      const updatedOrder = await this.updateOrderStatusInternal(
+        orderId,
+        OrderStatus.ORDER_DELIVERED
+      );
+
+      // Handle return stock restoration or other tasks
+      for (const productItem of existingOrder.products) {
+        await Product.findByIdAndUpdate(productItem.productId, {
+          $inc: { inStock: productItem.quantity },
+        });
+      }
+      const userNotificationData: INotification = {
+        userId: new mongoose.Types.ObjectId(existingOrder.userId),
+        message: `Your order placed on ${existingOrder.createdAt} has been Delivered. Please confirm.`,
+        type: "info",
+      };
       await NotificationService.createNotification(userNotificationData);
 
       return updatedOrder;
@@ -435,7 +536,7 @@ export class OrderService {
       }
       const userNotificationData: INotification = {
         userId: new mongoose.Types.ObjectId(existingOrder.userId),
-        message: `Your order placed on ${existingOrder.created_at} has been approved for Return. PLease contact Us for more details.`,
+        message: `Your order placed on ${existingOrder.createdAt} has been approved for Return. PLease contact Us for more details.`,
         type: "info",
       };
       await NotificationService.createNotification(userNotificationData);
@@ -471,7 +572,7 @@ export class OrderService {
       // Notify user about the disapproval
       const userNotificationData: INotification = {
         userId: new mongoose.Types.ObjectId(existingOrder.userId),
-        message: `Your return request for the order placed on ${existingOrder.created_at} has been disapproved.Reason:${reason} Please contact support for more details.`,
+        message: `Your return request for the order placed on ${existingOrder.createdAt} has been disapproved.Reason:${reason} Please contact support for more details.`,
         type: "error",
       };
       await NotificationService.createNotification(userNotificationData);
@@ -495,7 +596,7 @@ export class OrderService {
       if (!order) {
         throw httpMessages.NOT_FOUND("Order");
       }
-      const orderCreatedAt = moment(order.created_at);
+      const orderCreatedAt = moment(order.createdAt);
       const now = moment();
       const timeDifference = now.diff(orderCreatedAt, "minutes");
 
@@ -529,7 +630,23 @@ export class OrderService {
       if (!order) {
         throw httpMessages.NOT_FOUND("Order");
       }
-      if (order.status !== OrderStatus.SERVICE_COMPLETED) {
+
+      const deletableStatuses = [
+        OrderStatus.ORDER_CANCELLED,
+        OrderStatus.RETURN_DISAPPROVED,
+        OrderStatus.RETURN_APPROVED,
+        OrderStatus.ORDER_DELIVERED,
+      ];
+
+      if (!deletableStatuses.includes(order.status)) {
+        throw httpMessages.FORBIDDEN(
+          `Cannot delete order in status '${order.status}'`
+        );
+      }
+      if (
+        order.status !== OrderStatus.ORDER_DELIVERED &&
+        order.status !== OrderStatus.ORDER_SHIPPED
+      ) {
         for (const productItem of order.products) {
           await Product.findByIdAndUpdate(productItem.productId, {
             $inc: { inStock: productItem.quantity },
@@ -549,7 +666,7 @@ export class OrderService {
   public async getAllOrders() {
     try {
       const orders = await Order.find()
-        .populate("userId", "name role number") // Only populate name, role, and number from the User document
+        .populate("userId", "fullName role number") // Only populate name, role, and number from the User document
         .populate({
           path: "products.productId",
           select: "name retailPrice wholeSalePrice", // Only select specific fields from Product (e.g., name, retailPrice, wholeSalePrice)

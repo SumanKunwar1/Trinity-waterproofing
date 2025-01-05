@@ -130,10 +130,6 @@ export class NotificationService {
     try {
       const result = await Notification.deleteMany({ userId }).exec();
 
-      if (!result.deletedCount) {
-        throw httpMessages.NOT_FOUND("No notifications found to clear");
-      }
-
       return result;
     } catch (error) {
       console.error("Error clearing all notifications:", error);

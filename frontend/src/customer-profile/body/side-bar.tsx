@@ -9,7 +9,10 @@ import {
   FaUndoAlt,
   FaSignOutAlt,
 } from "react-icons/fa"; // Importing React Icons
+import { MdReviews } from "react-icons/md";
+import { IoIosNotifications } from "react-icons/io";
 import { Label } from "../../components/ui/label"; // Importing Label from ShadCN
+import { Badge } from "../../components/ui/badge"; // Importing Label from ShadCN
 // import { Button } from "../../components/ui/button"; // Importing Button from ShadCN
 import { motion } from "framer-motion"; // Importing Framer Motion for animation
 
@@ -17,12 +20,32 @@ export const SideBar = memo(() => {
   const userString = localStorage.getItem("user");
   const user: User | null = userString ? JSON.parse(userString) : null;
   const handleLogout = useLogout();
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+
   const navItems = [
     {
       label: "Dashboard",
       path: "/customer/dashboard",
       icon: <FaTachometerAlt />,
     },
+    {
+      label: "Notifications",
+      path: "/customer/notifications",
+      icon: (
+        <div className="relative">
+          <IoIosNotifications />
+          {unreadNotifications > 0 && (
+            <Badge
+              variant="destructive"
+              className="absolute -top-2 -right-2 px-1.5 py-0.5 text-xs"
+            >
+              {unreadNotifications}
+            </Badge>
+          )}
+        </div>
+      ),
+    },
+
     {
       label: "Purchase History",
       path: "/customer/purchase-history",
@@ -46,7 +69,7 @@ export const SideBar = memo(() => {
     {
       label: "Reviews & Ratings",
       path: "/customer/reviews-ratings",
-      icon: <FaUndoAlt />,
+      icon: <MdReviews />,
     },
     {
       label: "Log Out",
@@ -72,6 +95,31 @@ export const SideBar = memo(() => {
   useEffect(() => {
     localStorage.setItem("activeItem", activeItem);
   }, [activeItem]);
+  useEffect(() => {
+    // Fetch unread notifications count
+    const fetchUnreadNotifications = async () => {
+      try {
+        const userId = JSON.parse(localStorage.getItem("userId") || "");
+        const response = await fetch(`/api/notification/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+        if (!response.ok)
+          throw new Error("Failed to fetch unread notifications count");
+        const data = await response.json();
+        setUnreadNotifications(data.count);
+      } catch (error) {
+        console.error("Error fetching unread notifications count:", error);
+      }
+    };
+
+    fetchUnreadNotifications();
+    // Set up an interval to fetch the count periodically
+    const intervalId = setInterval(fetchUnreadNotifications, 60000); // every minute
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   return (
     <motion.section

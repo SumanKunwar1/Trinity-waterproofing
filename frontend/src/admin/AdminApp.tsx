@@ -22,173 +22,186 @@ import Sliders from "./pages/Sliders";
 import GenerateReport from "./pages/GenerateReport";
 import ProductForm from "./pages/ProductForm";
 import EditProductImages from "./pages/EditProductImage";
+import Reviews from "./pages/Review";
+import { Provider } from "react-redux";
+import { store } from "../admin/store/store";
+
 function AdminApp() {
   return (
     <ErrorBoundary>
-      <Routes>
-        {/* Private routes (protected by PrivateRoute) */}
-        <Route
-          path="/"
-          element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/admin/dashboard"
-          element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/admin/products"
-          element={
-            <PrivateRoute>
-              <Products />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/admin/add-product"
-          element={
-            <PrivateRoute>
-              <ProductForm />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/admin/add-product/:id"
-          element={
-            <PrivateRoute>
-              <ProductForm />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/admin/edit-product-images/:id"
-          element={
-            <PrivateRoute>
-              <EditProductImages />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/admin/categories"
-          element={
-            <PrivateRoute>
-              <Categories />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/admin/orders"
-          element={
-            <PrivateRoute>
-              <Orders />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/admin/brands"
-          element={
-            <PrivateRoute>
-              <Brands />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/admin/users"
-          element={
-            <PrivateRoute>
-              <Users />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/admin/reports"
-          element={
-            <PrivateRoute>
-              <Reports />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/admin/settings"
-          element={
-            <PrivateRoute>
-              <Settings />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/admin/faqs"
-          element={
-            <PrivateRoute>
-              <FAQs />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/admin/help"
-          element={
-            <PrivateRoute>
-              <Help />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/admin/about"
-          element={
-            <PrivateRoute>
-              <About />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/admin/privacy-policy"
-          element={
-            <PrivateRoute>
-              <PrivacyPolicy />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/admin/return-policy"
-          element={
-            <PrivateRoute>
-              <ReturnPolicy />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/admin/solutions"
-          element={
-            <PrivateRoute>
-              <Solutions />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/admin/sliders"
-          element={
-            <PrivateRoute>
-              <Sliders />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/admin/generate-report"
-          element={
-            <PrivateRoute>
-              <GenerateReport />
-            </PrivateRoute>
-          }
-        />
-      </Routes>
-
+      <Provider store={store}>
+        <Routes>
+          {/* Private routes (protected by PrivateRoute) */}
+          <Route
+            path="/"
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/products"
+            element={
+              <PrivateRoute>
+                <Products />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/add-product"
+            element={
+              <PrivateRoute>
+                <ProductForm />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/add-product/:id"
+            element={
+              <PrivateRoute>
+                <ProductForm />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/edit-product-images/:id"
+            element={
+              <PrivateRoute>
+                <EditProductImages />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/categories"
+            element={
+              <PrivateRoute>
+                <Categories />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/orders"
+            element={
+              <PrivateRoute>
+                <Orders />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/reviews"
+            element={
+              <PrivateRoute>
+                <Reviews />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/brands"
+            element={
+              <PrivateRoute>
+                <Brands />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <PrivateRoute>
+                <Users />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/reports"
+            element={
+              <PrivateRoute>
+                <Reports />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/settings"
+            element={
+              <PrivateRoute>
+                <Settings />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/faqs"
+            element={
+              <PrivateRoute>
+                <FAQs />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/help"
+            element={
+              <PrivateRoute>
+                <Help />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/about"
+            element={
+              <PrivateRoute>
+                <About />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/privacy-policy"
+            element={
+              <PrivateRoute>
+                <PrivacyPolicy />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/return-policy"
+            element={
+              <PrivateRoute>
+                <ReturnPolicy />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/solutions"
+            element={
+              <PrivateRoute>
+                <Solutions />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/sliders"
+            element={
+              <PrivateRoute>
+                <Sliders />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/generate-report"
+            element={
+              <PrivateRoute>
+                <GenerateReport />
+              </PrivateRoute>
+            }
+          />
+        </Routes>
+      </Provider>
       <ToastContainer />
     </ErrorBoundary>
   );

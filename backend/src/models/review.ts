@@ -14,10 +14,6 @@ interface IReview extends Document {
 
 const reviewSchema: Schema = new Schema(
   {
-    id: {
-      type: String,
-      required: true,
-    },
     fullName: { type: String, required: true },
     number: {
       type: String,

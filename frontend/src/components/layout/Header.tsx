@@ -41,7 +41,6 @@ const Header: React.FC = () => {
   const handleLogout = useLogout();
   const userString = localStorage.getItem("user");
   const user: User | null = userString ? JSON.parse(userString) : null;
-  const userRole = localStorage.getItem("userRole");
   const isLoggedIn = !!localStorage.getItem("authToken");
 
   useEffect(() => {
@@ -71,7 +70,7 @@ const Header: React.FC = () => {
   }
 
   return (
-    <header className="bg-brand shadow-md relative">
+    <header className="bg-brand shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo and Brand Name */}
@@ -101,7 +100,7 @@ const Header: React.FC = () => {
                     onOpenChange={setIsHovered}
                   >
                     <HoverCardTrigger>
-                      <button className="text-white font-semibold hover:text-secondary transition-colors duration-300 flex items-center">
+                      <button className="text-white font-semibold hover:text-secondary flex items-center">
                         {item.title}
                         <FaChevronDown className="ml-1" />
                       </button>
@@ -117,7 +116,7 @@ const Header: React.FC = () => {
                   <Link
                     key={item.id}
                     to={item.path}
-                    className="text-white font-semibold hover:text-secondary transition-colors duration-300"
+                    className="text-white font-semibold hover:text-secondary transition-colors"
                   >
                     {item.title}
                   </Link>
@@ -186,7 +185,7 @@ const Header: React.FC = () => {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56">
                           <DropdownMenuLabel>
-                            <div className="flex flex-col">
+                            <div className="flex flex-col ">
                               <span className="font-medium">
                                 {user.fullName}
                               </span>
@@ -195,9 +194,25 @@ const Header: React.FC = () => {
                               </span>
                             </div>
                           </DropdownMenuLabel>
-                          <DropdownMenuSeparator />
+                          <DropdownMenuSeparator className="border-b border-gray-200 mx-1" />
                           <DropdownMenuItem
-                            className="text-brand cursor-pointer hover:text-secondary transition-all duration-300"
+                            className="text-brand cursor-pointer py-2 border-b border-gray-200 hover:text-secondary transition-all duration-300"
+                            onSelect={() =>
+                              handleMenuItemClick("/customer/dashboard")
+                            }
+                          >
+                            Dashboard
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-brand cursor-pointer py-2 border-b border-gray-200 hover:text-secondary transition-all duration-300"
+                            onSelect={() =>
+                              handleMenuItemClick("/customer/notifications")
+                            }
+                          >
+                            Notifications
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-brand cursor-pointer py-2 border-b border-gray-200 hover:text-secondary transition-all duration-300"
                             onSelect={() =>
                               handleMenuItemClick("/customer/purchase-history")
                             }
@@ -205,7 +220,7 @@ const Header: React.FC = () => {
                             Order History
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            className="text-brand cursor-pointer hover:text-secondary transition-all duration-300"
+                            className="text-brand cursor-pointer py-2 border-b border-gray-200 hover:text-secondary transition-all duration-300"
                             onSelect={() =>
                               handleMenuItemClick("/customer/manage-profile")
                             }
@@ -214,7 +229,7 @@ const Header: React.FC = () => {
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
-                            className="text-red-600 border border-red-600 text-center hover:bg-tertiary flex justify-center cursor-pointer focus:text-red-700 transition-all duration-300"
+                            className="text-red-600 border rounded-2xl border-red-600 text-center hover:bg-tertiary flex justify-center cursor-pointer focus:text-red-700 transition-all duration-300"
                             onSelect={handleLogout}
                           >
                             Logout

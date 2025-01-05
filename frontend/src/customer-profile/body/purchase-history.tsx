@@ -1,14 +1,13 @@
-"use client";
-
-import { useState } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Label } from "../../components/ui/label";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import {
-  FaShoppingCart,
-  FaRegClock,
   FaCheckCircle,
-  FaTimesCircle,
+  FaRegClock,
+  FaTruck,
+  FaExclamationCircle,
   FaSearch,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,57 +19,72 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../../components/ui/dialog";
+import { useUserData } from "../../hooks/useUserData";
+import { ReviewDialog } from "./ReviewDialog";
 
-// Dummy data for purchase history
-const purchaseHistoryData = [
-  {
-    id: 1,
-    status: "completed",
-    date: "2023-05-15",
-    amount: 129.99,
-    items: ["Wireless Headphones", "Phone Case"],
-  },
-  {
-    id: 2,
-    status: "pending",
-    date: "2023-05-20",
-    amount: 79.5,
-    items: ["Smart Watch"],
-  },
-  {
-    id: 3,
-    status: "cancelled",
-    date: "2023-05-10",
-    amount: 199.99,
-    items: ["Laptop Stand", "Ergonomic Keyboard"],
-  },
-  {
-    id: 4,
-    status: "cart",
-    date: "2023-05-25",
-    amount: 54.99,
-    items: ["Bluetooth Speaker"],
-  },
-];
-
+// Updated status icons mapping for order statuses
 const statusIcons = {
-  completed: <FaCheckCircle className="text-green-500" />,
-  pending: <FaRegClock className="text-yellow-500" />,
-  cancelled: <FaTimesCircle className="text-red-500" />,
-  cart: <FaShoppingCart className="text-blue-500" />,
+  "order-delivered": <FaCheckCircle className="text-green-500" />,
+  "order-cancelled": <FaExclamationCircle className="text-red-500" />,
+  "order-shipped": <FaTruck className="text-blue-500" />,
+  "order-requested": <FaRegClock className="text-yellow-500" />,
+  "order-confirmed": <FaRegClock className="text-blue-500" />, // Example: You can choose a suitable icon for "order-confirmed"
 };
 
-export const PurchaseHistory = () => {
+export const PurchaseHistory: React.FC = () => {
+  const { orders, isLoading, isError } = useUserData();
   const [filter, setFilter] = useState("");
   const [selectedPurchase, setSelectedPurchase] = useState<
-    (typeof purchaseHistoryData)[0] | null
+    (typeof orders)[0] | null
   >(null);
+  const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
+  const [selectedProductForReview, setSelectedProductForReview] =
+    useState<any>(null);
+  const navigate = useNavigate();
 
-  const filteredHistory = purchaseHistoryData.filter(
-    (item) =>
-      item.items.some((i) => i.toLowerCase().includes(filter.toLowerCase())) ||
-      item.status.includes(filter.toLowerCase())
+  // Filter history based on search text
+  const filteredHistory = orders.filter(
+    (order) =>
+      order.products.some((product) =>
+        product?.name?.toLowerCase().includes(filter.toLowerCase())
+      ) || order.status?.toLowerCase().includes(filter.toLowerCase())
   );
+  console.log("filteredHistory", filteredHistory);
+
+  const handleReviewSubmit = async (
+    rating: number,
+    content: string,
+    images: File[]
+  ) => {
+    if (!selectedProductForReview || !selectedPurchase) return;
+
+    try {
+      const formData = new FormData();
+      formData.append("productId", selectedProductForReview.productId._id);
+      formData.append("rating", rating.toString());
+      formData.append("content", content);
+      images.forEach((image) => {
+        formData.append("image", image);
+      });
+
+      const response = await fetch(`/api/review/${selectedPurchase._id}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Failed to submit review");
+      setIsReviewDialogOpen(false);
+      navigate("/customer/reviews-ratings");
+    } catch (error) {
+      console.error("Error submitting review:", error);
+    }
+  };
+
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error loading purchase history</div>;
 
   return (
     <motion.div
@@ -103,7 +117,9 @@ export const PurchaseHistory = () => {
           >
             <CardContent className="p-4 flex items-center space-x-3">
               <div className="text-2xl">{icon}</div>
-              <Label className="text-lg capitalize">{status}</Label>
+              <Label className="text-lg capitalize">
+                {status.split("-")[1]}
+              </Label>
             </CardContent>
           </Card>
         ))}
@@ -118,31 +134,31 @@ export const PurchaseHistory = () => {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
-            {filteredHistory.map((purchase) => (
+            {filteredHistory.map((order) => (
               <Card
-                key={purchase.id}
+                key={order._id}
                 className="bg-white shadow-md hover:shadow-lg transition-shadow duration-300"
               >
                 <CardContent className="p-4">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-3">
                       <div className="text-2xl">
-                        {
-                          statusIcons[
-                            purchase.status as keyof typeof statusIcons
-                          ]
-                        }
+                        {statusIcons[
+                          order.status as keyof typeof statusIcons
+                        ] || <FaRegClock className="text-gray-500" />}
                       </div>
                       <div>
                         <p className="font-semibold text-lg">
-                          {purchase.items.join(", ")}
+                          Order #{order._id}
                         </p>
-                        <p className="text-sm text-gray-500">{purchase.date}</p>
+                        <p className="text-sm text-gray-500">
+                          {new Date(order.createdAt).toLocaleDateString()}
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-lg">
-                        ${purchase.amount.toFixed(2)}
+                        Rs {order.subtotal.toFixed(2)}
                       </p>
                       <Dialog>
                         <DialogTrigger asChild>
@@ -150,33 +166,57 @@ export const PurchaseHistory = () => {
                             variant="outline"
                             size="sm"
                             className="mt-2"
-                            onClick={() => setSelectedPurchase(purchase)}
+                            onClick={() => setSelectedPurchase(order)}
                           >
                             View Details
                           </Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="bg-white rounded-md shadow-lg p-6">
                           <DialogHeader>
-                            <DialogTitle>Purchase Details</DialogTitle>
+                            <DialogTitle className="text-xl font-semibold">
+                              Purchase Details
+                            </DialogTitle>
                           </DialogHeader>
                           <div className="mt-4">
                             <p>
                               <strong>Status:</strong>{" "}
-                              {selectedPurchase?.status}
+                              {order.status.split("-")[1].toUpperCase()}
                             </p>
                             <p>
-                              <strong>Date:</strong> {selectedPurchase?.date}
+                              <strong>Date:</strong>{" "}
+                              {new Date(order.createdAt).toLocaleDateString()}
                             </p>
                             <p>
-                              <strong>Amount:</strong> $
-                              {selectedPurchase?.amount.toFixed(2)}
+                              <strong>Amount:</strong> Rs{" "}
+                              {order.subtotal.toFixed(2)}
                             </p>
                             <p>
                               <strong>Items:</strong>
                             </p>
                             <ul className="list-disc pl-5">
-                              {selectedPurchase?.items.map((item, index) => (
-                                <li key={index}>{item}</li>
+                              {order.products.map((product) => (
+                                <li
+                                  key={product.productId?._id || ""}
+                                  className="flex justify-between items-center"
+                                >
+                                  <span>
+                                    {product.productId?.name ||
+                                      "Product Name Unavailable"}
+                                  </span>
+
+                                  {order.status === "order-delivered" && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => {
+                                        setSelectedProductForReview(product);
+                                        setIsReviewDialogOpen(true);
+                                      }}
+                                    >
+                                      Review
+                                    </Button>
+                                  )}
+                                </li>
                               ))}
                             </ul>
                           </div>
@@ -206,6 +246,15 @@ export const PurchaseHistory = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
+        <DialogContent className="bg-white rounded-md shadow-lg p-6">
+          <ReviewDialog
+            onSubmit={handleReviewSubmit}
+            productName={selectedProductForReview?.productId.name}
+          />
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };

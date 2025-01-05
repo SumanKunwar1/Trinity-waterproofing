@@ -8,7 +8,7 @@ const HeroSection: React.FC = () => {
   const carouselItems = CAROUSEL_ITEMS.map((item, index) => (
     <div
       key={index}
-      className="relative h-screen bg-cover bg-center"
+      className="relative h-[90vh] bg-cover bg-center"
       style={{ backgroundImage: `url(${item.image})` }}
     >
       {/* Overlay content on top of the image */}

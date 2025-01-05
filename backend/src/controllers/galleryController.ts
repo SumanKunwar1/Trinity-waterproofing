@@ -73,14 +73,48 @@ export class GalleryController {
     }
   }
 
-  public async deleteItem(
+  public async renameFolder(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     try {
-      const { path } = req.body;
-      const result = await this.galleryService.deleteItem(path);
+      const { folderName } = req.params;
+      const newFolderName = req.body;
+      const result = await this.galleryService.renameFolder(
+        folderName,
+        newFolderName
+      );
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  public async deleteFolder(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { folderName } = req.body;
+      const result = await this.galleryService.deleteFolder(folderName);
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  public async deleteFiles(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { folderName, files } = req.body;
+      const result = await this.galleryService.deleteFiles(folderName, files);
       res.locals.responseData = result;
       next();
     } catch (error: any) {

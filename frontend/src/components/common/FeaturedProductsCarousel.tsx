@@ -43,7 +43,12 @@ const FeaturedProductsCarousel: React.FC = () => {
       try {
         let response;
         if (isLoggedIn && userId) {
-          response = await axios.get(`/api/product/user/${userId}`);
+          const authToken = localStorage.getItem("authToken");
+          response = await axios.get(`/api/product/user/${userId}`, {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+            },
+          });
         } else {
           response = await axios.get("/api/product");
         }
