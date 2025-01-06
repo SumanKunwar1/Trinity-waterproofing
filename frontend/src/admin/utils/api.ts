@@ -142,3 +142,90 @@ export const disapproveReturn = async (orderId: string, reason: string) => {
     throw error;
   }
 };
+
+// Gallery-related functions
+export const getFolders = async () => {
+  try {
+    const response = await api.get("/gallery");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching folders:", error);
+    throw error;
+  }
+};
+
+export const getFiles = async (folderName: string) => {
+  try {
+    const response = await api.get(`/gallery/images/${folderName}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching files:", error);
+    throw error;
+  }
+};
+
+export const createFolder = async (folderName: string) => {
+  try {
+    const response = await api.post("/gallery/create-folder", { folderName });
+    return response.data;
+  } catch (error) {
+    console.error("Error creating folder:", error);
+    throw error;
+  }
+};
+
+export const uploadImage = async (folderName: string, files: File[]) => {
+  try {
+    const formData = new FormData();
+    formData.append("folderName", folderName);
+    files.forEach((file) => {
+      formData.append("image", file);
+    });
+    const response = await api.post("/gallery/upload", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    throw error;
+  }
+};
+
+export const renameFolder = async (
+  oldFolderName: string,
+  newFolderName: string
+) => {
+  try {
+    const response = await api.patch(`/gallery/${oldFolderName}`, {
+      newFolderName,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error renaming folder:", error);
+    throw error;
+  }
+};
+
+export const deleteFolder = async (folderName: string) => {
+  try {
+    const response = await api.delete("/gallery/folder", {
+      data: { folderName },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting folder:", error);
+    throw error;
+  }
+};
+
+export const deleteFiles = async (folderName: string, files: string[]) => {
+  try {
+    const response = await api.delete("/gallery/files", {
+      data: { folderName, files: files.map((file) => file.split("/").pop()) },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting files:", error);
+    throw error;
+  }
+};

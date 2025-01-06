@@ -36,6 +36,7 @@ import { Provider } from "react-redux";
 import { store } from "./admin/store/store";
 import ServicesPage from "./pages/Services";
 import TeamPage from "./pages/Teams";
+import UserGallery from "./pages/Gallery";
 function App() {
   const userRole = localStorage.getItem("userRole");
   return (
@@ -51,6 +52,7 @@ function App() {
                   <Route path="/" element={<Home />} />
                   <Route path="/services" element={<ServicesPage />} />
                   <Route path="/teams" element={<TeamPage />} />
+                  <Route path="/gallery" element={<UserGallery />} />
                   <Route path="/products" element={<ProductListing />} />
                   <Route path="/products/:id" element={<ProductListing />} />
                   <Route path="/product/:id" element={<ProductDetail />} />

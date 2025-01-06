@@ -27,6 +27,7 @@ import { Provider } from "react-redux";
 import { store } from "../admin/store/store";
 import AdminReturnsAndCancellations from "./pages/ReturnsAndCancel";
 import Newsletters from "./pages/Newsletters";
+import AdminGallery from "./pages/Gallery";
 
 function AdminApp() {
   return (
@@ -135,6 +136,14 @@ function AdminApp() {
             element={
               <PrivateRoute>
                 <Newsletters />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/gallery"
+            element={
+              <PrivateRoute>
+                <AdminGallery />
               </PrivateRoute>
             }
           />

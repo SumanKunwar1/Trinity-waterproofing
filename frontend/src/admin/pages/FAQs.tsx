@@ -8,7 +8,6 @@ import {
   deleteFaqAsync,
 } from "../store/faqSlice";
 import { motion } from "framer-motion";
-import { toast } from "react-toastify"; // Import toast for notifications
 import {
   Dialog,
   DialogContent,
@@ -28,24 +27,28 @@ import {
   DropdownMenuItem,
 } from "../../components/ui/dropdown-menu";
 import {
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import {
   Table,
   TableBody,
   TableCell,
   TableHead,
-  TableHeader,
   TableRow,
+  TableHeader,
 } from "../../components/ui/table";
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
-  PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from "../../components/ui/pagination";
 import { MoreVertical } from "lucide-react";
-import Sidebar from "../../components/Sidebar";
-import Topbar from "../../components/Topbar";
+import Sidebar from "../components/Sidebar";
+import Topbar from "../components/Topbar";
 
 interface Faq {
   _id: string;
@@ -56,84 +59,53 @@ interface Faq {
 const AdminFAQPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const faqs = useSelector((state: RootState) => state.faqs.faqs);
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const status = useSelector((state: RootState) => state.faqs.status);
+  const error = useSelector((state: RootState) => state.faqs.error);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
-  const [searchTerm, setSearchTerm] = useState("");
+  //const [searchTerm, setSearchTerm] = useState(""); //Removed
   const [selectedFaq, setSelectedFaq] = useState<Faq | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [newQuestion, setNewQuestion] = useState("");
   const [newAnswer, setNewAnswer] = useState("");
-
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
   useEffect(() => {
     dispatch(fetchFaqsAsync());
   }, [dispatch]);
 
-  const filteredFaqs = faqs.filter(
-    (faq) =>
-      faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentFaqs = filteredFaqs.slice(indexOfFirstItem, indexOfLastItem);
-
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+  //const filteredFaqs = faqs.filter( //Removed
+  //  (faq) =>
+  //    faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //    faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
+  //);
 
   const handleAddFaq = async () => {
-    try {
-      if (newQuestion && newAnswer) {
-        const response = await dispatch(
-          createFaqAsync({ question: newQuestion, answer: newAnswer })
-        );
-        if (response.payload) {
-          toast.success("FAQ added successfully!"); // Success toast
-        } else {
-          toast.error("Failed to add FAQ.");
-        }
-        setNewQuestion("");
-        setNewAnswer("");
-        setIsAddDialogOpen(false);
-      }
-    } catch (error) {
-      toast.error("Error adding FAQ: " + error.message); // Error toast
+    if (newQuestion && newAnswer) {
+      await dispatch(
+        createFaqAsync({ question: newQuestion, answer: newAnswer })
+      );
+      setNewQuestion("");
+      setNewAnswer("");
+      setIsAddDialogOpen(false);
     }
   };
 
   const handleEditFaq = async () => {
-    try {
-      if (selectedFaq && selectedFaq.question && selectedFaq.answer) {
-        const response = await dispatch(editFaqAsync(selectedFaq));
-        if (response.payload) {
-          toast.success("FAQ updated successfully!"); // Success toast
-        } else {
-          toast.error("Failed to update FAQ.");
-        }
-        setIsEditDialogOpen(false);
-        setSelectedFaq(null);
-      }
-    } catch (error) {
-      toast.error("Error updating FAQ: " + error.message); // Error toast
+    if (selectedFaq && selectedFaq.question && selectedFaq.answer) {
+      await dispatch(editFaqAsync(selectedFaq));
+      setIsEditDialogOpen(false);
+      setSelectedFaq(null);
     }
   };
 
   const handleDeleteFaq = async () => {
-    try {
-      if (selectedFaq) {
-        const response = await dispatch(deleteFaqAsync(selectedFaq._id));
-        if (response.payload) {
-          toast.success("FAQ deleted successfully!"); // Success toast
-        } else {
-          toast.error("Failed to delete FAQ.");
-        }
-        setIsDeleteDialogOpen(false);
-        setSelectedFaq(null);
-      }
-    } catch (error) {
-      toast.error("Error deleting FAQ: " + error.message); // Error toast
+    if (selectedFaq) {
+      await dispatch(deleteFaqAsync(selectedFaq._id));
+      setIsDeleteDialogOpen(false);
+      setSelectedFaq(null);
     }
   };
 
@@ -157,10 +129,73 @@ const AdminFAQPage: React.FC = () => {
     },
   };
 
+  const columns = [
+    {
+      accessorKey: "sn",
+      header: "SN",
+      cell: ({ row }) => row.index + 1,
+      enableSorting: false,
+      enableHiding: false,
+      size: 50,
+    },
+    {
+      accessorKey: "question",
+      header: "Question",
+      cell: ({ row }) => (
+        <div className="max-w-xs truncate">{row.getValue("question")}</div>
+      ),
+    },
+    {
+      accessorKey: "answer",
+      header: "Answer",
+      cell: ({ row }) => (
+        <div className="max-w-xs truncate">{row.getValue("answer")}</div>
+      ),
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => {
+        const faq = row.original;
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => {
+                  setSelectedFaq(faq);
+                  setIsEditDialogOpen(true);
+                }}
+              >
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  setSelectedFaq(faq);
+                  setIsDeleteDialogOpen(true);
+                }}
+              >
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+    },
+  ];
+
+  const table = useReactTable({
+    data: faqs,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
-
   return (
     <div className="flex h-screen bg-gray-100">
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
@@ -224,57 +259,59 @@ const AdminFAQPage: React.FC = () => {
             <motion.div variants={itemVariants}>
               <Input
                 placeholder="Search FAQs"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setCurrentPage(1);
+                  // The filtering is now handled by the Table component
+                }}
                 className="mb-6"
               />
             </motion.div>
             <motion.div variants={itemVariants}>
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Question</TableHead>
-                    <TableHead>Answer</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {currentFaqs.map((faq) => (
-                    <TableRow key={faq._id}>
-                      <TableCell className="font-medium">
-                        {faq.question}
-                      </TableCell>
-                      <TableCell>{faq.answer}</TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Open menu</span>
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={() => {
-                                setSelectedFaq(faq);
-                                setIsEditDialogOpen(true);
-                              }}
-                            >
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => {
-                                setSelectedFaq(faq);
-                                setIsDeleteDialogOpen(true);
-                              }}
-                            >
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <TableHead key={header.id} className="font-semibold">
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </TableHead>
+                      ))}
                     </TableRow>
                   ))}
+                </TableHeader>
+                <TableBody>
+                  {table.getRowModel().rows.length ? (
+                    table.getRowModel().rows.map((row) => (
+                      <TableRow
+                        key={row.id}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id}>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={columns.length}
+                        className="h-24 text-center text-gray-500"
+                      >
+                        No FAQs found.
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </motion.div>
@@ -283,28 +320,24 @@ const AdminFAQPage: React.FC = () => {
                 <PaginationContent>
                   <PaginationItem>
                     <PaginationPrevious
-                      onClick={() => paginate(currentPage - 1)}
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.max(1, prev - 1))
+                      }
                       disabled={currentPage === 1}
                     />
                   </PaginationItem>
-                  {Array.from({
-                    length: Math.ceil(filteredFaqs.length / itemsPerPage),
-                  }).map((_, index) => (
-                    <PaginationItem key={index}>
-                      <PaginationLink
-                        onClick={() => paginate(index + 1)}
-                        isActive={currentPage === index + 1}
-                      >
-                        {index + 1}
-                      </PaginationLink>
-                    </PaginationItem>
-                  ))}
                   <PaginationItem>
                     <PaginationNext
-                      onClick={() => paginate(currentPage + 1)}
+                      onClick={() =>
+                        setCurrentPage((prev) =>
+                          Math.min(
+                            Math.ceil(faqs.length / itemsPerPage),
+                            prev + 1
+                          )
+                        )
+                      }
                       disabled={
-                        currentPage ===
-                        Math.ceil(filteredFaqs.length / itemsPerPage)
+                        currentPage === Math.ceil(faqs.length / itemsPerPage)
                       }
                     />
                   </PaginationItem>
@@ -368,14 +401,20 @@ const AdminFAQPage: React.FC = () => {
           <DialogHeader>
             <DialogTitle>Delete FAQ</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this FAQ?
+              Are you sure you want to delete this FAQ? This action cannot be
+              undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button onClick={handleDeleteFaq} className="bg-red-600 text-white">
-              Yes, delete
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
+              Cancel
             </Button>
-            <Button onClick={() => setIsDeleteDialogOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDeleteFaq}>
+              Delete
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

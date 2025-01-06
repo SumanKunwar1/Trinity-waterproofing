@@ -73,7 +73,7 @@ const upload = multer({ storage: storage, fileFilter: fileFilter });
 // This middleware exclusively for product file uploads
 export const uploadMiddleware = upload.fields([
   { name: "productImage", maxCount: 1 },
-  { name: "image", maxCount: 10 },
+  { name: "image", maxCount: 25 },
 ]);
 
 // This one for all other images
