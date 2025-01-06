@@ -1,28 +1,178 @@
-import { ITabAbout } from "../interfaces";
-import { httpMessages } from "../middlewares";
 import { About } from "../models";
+import { IAbout } from "../interfaces";
+import { httpMessages } from "../middlewares";
 import { deleteImages } from "../config/deleteImages";
-import { Types } from "mongoose";
-
-interface ITabWithId extends ITabAbout {
-  _id: Types.ObjectId;
-}
 
 export class AboutService {
-  public async createTab(tabData: ITabAbout) {
-    try {
-      let about = await About.findOne();
+  // ------------------------ About CRUD ------------------------
 
-      if (about) {
-        about.tabs.push(tabData);
-        return await about.save();
-      } else {
-        about = new About({
-          tabs: [tabData],
-        });
-        await about.save();
-        return about;
+  public async createAbout(aboutData: IAbout) {
+    try {
+      const isAboutPresent = await About.findOne();
+      if (isAboutPresent) {
+        throw httpMessages.ALREADY_PRESENT("About");
       }
+
+      const newAbout = new About(aboutData);
+      await newAbout.save();
+      return newAbout;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async editAbout(aboutData: Partial<IAbout>) {
+    try {
+      const { title, description, image } = aboutData;
+
+      const existingAbout = await About.findOne();
+      if (!existingAbout) {
+        throw httpMessages.NOT_FOUND("About");
+      }
+
+      if (image && image !== "") {
+        const filesToDelete: string[] = [];
+        if (existingAbout.image && existingAbout.image !== image) {
+          filesToDelete.push(existingAbout.image);
+        }
+
+        if (filesToDelete.length > 0) {
+          await deleteImages(filesToDelete);
+        }
+        existingAbout.image = image;
+      }
+
+      if (title) existingAbout.title = title;
+      if (description) existingAbout.description = description;
+
+      await existingAbout.save();
+      return existingAbout;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async getAbout() {
+    try {
+      const about = await About.findOne();
+      if (!about) {
+        return "";
+      }
+      return about;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // ------------------------ Core CRUD ------------------------
+
+  public async createCore(coreData: any) {
+    try {
+      const about = await About.findOne();
+      if (!about) {
+        throw httpMessages.NOT_FOUND("About");
+      }
+
+      about.core.push(coreData);
+      await about.save();
+      return about.core;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async getCore() {
+    try {
+      const about = await About.findOne();
+      if (!about) {
+        throw httpMessages.NOT_FOUND("About");
+      }
+      return about.core;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async editCore(coreId: string, updateData: Partial<IAbout>) {
+    try {
+      const { title, description, image } = updateData;
+      const about = await About.findOne();
+      if (!about) {
+        throw httpMessages.NOT_FOUND("About");
+      }
+
+      const coreIndex = about.core.findIndex(
+        (core) => core._id.toString() === coreId
+      );
+      if (coreIndex === -1) {
+        throw httpMessages.NOT_FOUND("Core");
+      }
+
+      const core = about.core[coreIndex];
+
+      if (image && image !== "") {
+        const filesToDelete: string[] = [];
+        if (core.image && core.image !== image) {
+          filesToDelete.push(core.image);
+        }
+
+        if (filesToDelete.length > 0) {
+          await deleteImages(filesToDelete);
+        }
+        core.image = image;
+      }
+
+      if (title) core.title = title;
+      if (description) core.description = description;
+
+      await about.save();
+      return core;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async deleteCore(coreId: string) {
+    try {
+      const about = await About.findOne();
+      if (!about) {
+        throw httpMessages.NOT_FOUND("About");
+      }
+
+      const coreIndex = about.core.findIndex(
+        (core) => core._id.toString() === coreId
+      );
+      if (coreIndex === -1) {
+        throw httpMessages.NOT_FOUND("Core");
+      }
+
+      const core = about.core[coreIndex];
+      about.core.splice(coreIndex, 1);
+
+      await about.save();
+
+      if (core.image) {
+        await deleteImages([core.image]);
+      }
+
+      return { message: "Core deleted successfully" };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // ------------------------ Tab CRUD ------------------------
+
+  public async createTab(tabData: any) {
+    try {
+      const about = await About.findOne();
+      if (!about) {
+        throw httpMessages.NOT_FOUND("About");
+      }
+
+      about.tabs.push(tabData);
+      await about.save();
+      return about.tabs;
     } catch (error) {
       throw error;
     }
@@ -31,50 +181,49 @@ export class AboutService {
   public async getTabs() {
     try {
       const about = await About.findOne();
-      return about || "";
+      if (!about) {
+        throw httpMessages.NOT_FOUND("About");
+      }
+      return about.tabs;
     } catch (error) {
       throw error;
     }
   }
 
-  public async editTab(
-    tabId: string,
-    updateData: Partial<ITabAbout>
-  ): Promise<any> {
+  public async editTab(tabId: string, updateData: Partial<IAbout>) {
     try {
+      const { title, description, image } = updateData;
       const about = await About.findOne();
       if (!about) {
-        throw httpMessages.NOT_FOUND("About Document");
+        throw httpMessages.NOT_FOUND("About");
       }
 
-      const tabs = about.tabs as ITabWithId[];
-
-      const tabIndex = tabs.findIndex((tab) => tab._id.toString() === tabId);
+      const tabIndex = about.tabs.findIndex(
+        (tab) => tab._id.toString() === tabId
+      );
       if (tabIndex === -1) {
-        throw httpMessages.NOT_FOUND("About Tab");
+        throw httpMessages.NOT_FOUND("Tab");
       }
 
-      about.tabs[tabIndex] = { ...about.tabs[tabIndex], ...updateData };
-      return await about.save();
-    } catch (error) {
-      throw error;
-    }
-  }
+      const tab = about.tabs[tabIndex];
 
-  public async uploadTabImage(imagePath: string) {
-    try {
-      const about = await About.findOne();
-      if (!about) {
-        throw httpMessages.NOT_FOUND("About Document");
+      if (image && image !== "") {
+        const filesToDelete: string[] = [];
+        if (tab.image && tab.image !== image) {
+          filesToDelete.push(tab.image);
+        }
+
+        if (filesToDelete.length > 0) {
+          await deleteImages(filesToDelete);
+        }
+        tab.image = image;
       }
 
-      if (about.image) {
-        await deleteImages([about.image]);
-      }
+      if (title) tab.title = title;
+      if (description) tab.description = description;
 
-      about.image = imagePath;
       await about.save();
-      return about;
+      return tab;
     } catch (error) {
       throw error;
     }
@@ -84,18 +233,26 @@ export class AboutService {
     try {
       const about = await About.findOne();
       if (!about) {
-        throw httpMessages.NOT_FOUND("About Document");
+        throw httpMessages.NOT_FOUND("About");
       }
-      const tabs = about.tabs as ITabWithId[];
 
-      const tabIndex = tabs.findIndex((tab) => tab._id.toString() === tabId);
+      const tabIndex = about.tabs.findIndex(
+        (tab) => tab._id.toString() === tabId
+      );
       if (tabIndex === -1) {
-        throw httpMessages.NOT_FOUND("About Tab");
+        throw httpMessages.NOT_FOUND("Tab");
       }
+
+      const tab = about.tabs[tabIndex];
       about.tabs.splice(tabIndex, 1);
 
       await about.save();
-      return about;
+
+      if (tab.image) {
+        await deleteImages([tab.image]);
+      }
+
+      return { message: "Tab deleted successfully" };
     } catch (error) {
       throw error;
     }

@@ -49,6 +49,8 @@ router.post(
   "/cards",
   isAuthenticated,
   isAuthorized("admin"),
+  imageUploadMiddleware,
+  appendImageDataToBody,
   validateService,
   serviceController.createCard.bind(serviceController),
   handleResponse
@@ -64,6 +66,8 @@ router.patch(
   "/cards/:cardId",
   isAuthenticated,
   isAuthorized("admin"),
+  imageUploadMiddleware,
+  appendImageDataToBody,
   validateEditService,
   serviceController.editCard.bind(serviceController),
   handleResponse
