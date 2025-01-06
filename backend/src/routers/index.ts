@@ -18,6 +18,7 @@ import teamRoutes from "./teamRoutes";
 import faqRoutes from "./faqRoutes";
 import newsLetterRoutes from "./newsLetterRoutes";
 import aboutRoutes from "./aboutRoutes";
+import serviceRoutes from "./serviceRoutes";
 
 const router = Router();
 
@@ -40,7 +41,6 @@ router.use("/team", teamRoutes);
 router.use("/faq", faqRoutes);
 router.use("/newsletter", newsLetterRoutes);
 router.use("/about", aboutRoutes);
-
-//services
+router.use("/service", serviceRoutes);
 
 export default router;

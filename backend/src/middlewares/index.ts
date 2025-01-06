@@ -1,3 +1,6 @@
+export { validateService } from "./validateService";
+export { validateEditService } from "./validateEditService";
+
 export { validateNewsLetter } from "./validateNewsLetter";
 
 export { validateEditTeam } from "./validateEditTeam";

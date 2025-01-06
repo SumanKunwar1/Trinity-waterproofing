@@ -1,3 +1,5 @@
+export { ServiceController } from "./serviceController";
+
 export { NewsLetterController } from "./newsLetterController";
 
 export { FaqController } from "./faqController";
