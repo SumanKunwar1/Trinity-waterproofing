@@ -1,3 +1,5 @@
+export { ServiceService } from "./serviceService";
+
 export { AboutService } from "./aboutService";
 
 export { NewsLetterService } from "./newsLetterService";
