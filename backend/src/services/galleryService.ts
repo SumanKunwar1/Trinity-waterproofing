@@ -121,17 +121,83 @@ export class GalleryService {
     }
   }
 
-  public async deleteItem(targetPath: string) {
-    const fullPath = path.join(this.baseDir, targetPath);
+  public async renameFolder(oldFolderName: string, newFolderName: string) {
+    const oldFolderPath = path.join(this.baseDir, oldFolderName);
+    const newFolderPath = path.join(this.baseDir, newFolderName);
 
     try {
-      const stats = await fs.stat(fullPath);
-      if (stats.isDirectory()) {
-        await fs.rmdir(fullPath, { recursive: true });
-      } else {
-        await fs.unlink(fullPath);
+      // Check if the folder to be renamed exists
+      const existsOld = await fs.stat(oldFolderPath).catch(() => false);
+      if (!existsOld) {
+        throw httpMessages.NOT_FOUND(`Folder '${oldFolderName}' not found.`);
       }
-      return { message: "Item deleted successfully" };
+
+      // Check if a folder with the new name already exists
+      const existsNew = await fs.stat(newFolderPath).catch(() => false);
+      if (existsNew) {
+        throw httpMessages.ALREADY_PRESENT(
+          `Folder '${newFolderName}' already exists.`
+        );
+      }
+
+      // Rename the folder
+      await fs.rename(oldFolderPath, newFolderPath);
+
+      return { message: `Folder renamed to '${newFolderName}'` };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // Delete Folder
+  public async deleteFolder(folderName: string) {
+    const folderPath = path.join(this.baseDir, folderName);
+
+    try {
+      const exists = await fs.stat(folderPath).catch(() => false);
+      if (!exists) {
+        throw httpMessages.NOT_FOUND(`Folder '${folderName}' not found.`);
+      }
+
+      // Delete the folder
+      await fs.rmdir(folderPath, { recursive: true });
+
+      return { message: `Folder '${folderName}' deleted successfully.` };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // Delete Files in a Folder
+  public async deleteFiles(folderName: string, files: string[]) {
+    const folderPath = path.join(this.baseDir, folderName);
+
+    try {
+      const exists = await fs.stat(folderPath).catch(() => false);
+      if (!exists) {
+        throw httpMessages.NOT_FOUND(`Folder '${folderName}' not found.`);
+      }
+
+      const deletedFiles: string[] = [];
+      const notFoundFiles: string[] = [];
+
+      await Promise.all(
+        files.map(async (file) => {
+          const filePath = path.join(folderPath, file);
+
+          try {
+            await fs.unlink(filePath);
+            deletedFiles.push(file);
+          } catch (error) {
+            notFoundFiles.push(file);
+          }
+        })
+      );
+
+      return {
+        deletedFiles,
+        notFoundFiles,
+      };
     } catch (error) {
       throw error;
     }
