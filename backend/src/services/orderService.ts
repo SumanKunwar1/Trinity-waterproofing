@@ -589,7 +589,7 @@ export class OrderService {
     }
   }
 
-  public async cancelOrderByUser(orderId: string) {
+  public async cancelOrderByUser(orderId: string, reason: string) {
     try {
       const order = await Order.findById(orderId);
 
@@ -613,6 +613,7 @@ export class OrderService {
       }
 
       order.status = OrderStatus.ORDER_CANCELLED;
+      order.reason = reason;
       await order.save();
 
       return {

@@ -124,6 +124,7 @@ export class OrderController {
   ): Promise<void> {
     try {
       const orderId = req.params.orderId;
+      console.log(req.body);
       const reason = req.body.reason;
       if (!reason) {
         return next(httpMessages.BAD_REQUEST("Reason is required"));
@@ -206,7 +207,11 @@ export class OrderController {
   ): Promise<void> {
     try {
       const orderId = req.params.orderId;
-      const result = await this.orderService.cancelOrderByUser(orderId);
+      const reason = req.body.reason;
+      if (!reason) {
+        return next(httpMessages.BAD_REQUEST("Reason is required"));
+      }
+      const result = await this.orderService.cancelOrderByUser(orderId, reason);
       res.locals.responseData = result;
       next();
     } catch (error: any) {

@@ -249,13 +249,30 @@ const TestimonialCard = ({ reviews }: TestimonialCardProps) => {
             <motion.div
               key={review.id}
               whileHover={{ y: -5 }}
-              className="bg-white rounded-lg border-b p-6 mb-4"
+              className="bg-white flex flex-col space-y-3 rounded-lg border-b p-6 mb-4"
             >
               <div className="flex items-center mb-4">
-                <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
-                <div className="ml-4">
+                <div className="w-12 h-12 bg-gray-300 rounded-full">
+                  <div className="avatar-inner w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-secondary flex items-center justify-center">
+                    {review.fullName ? (
+                      <span className="text-xl text-white">
+                        {review.fullName
+                          .split(" ") // Split the name by spaces
+                          .map((word) => word.charAt(0).toUpperCase()) // Take the first character of each word and capitalize it
+                          .join("")}{" "}
+                        {/* Join the letters together */}
+                      </span>
+                    ) : (
+                      <span className="text-xl text-white">U</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="ml-4 flex space-x-4">
                   <h4 className="font-semibold text-base">{review.name}</h4>
-                  <p className="text-sm text-gray-600">{review.date}</p>
+                  <p className="text-sm text-gray-600">
+                    {new Date(review.createdAt).toDateString()}
+                  </p>
                 </div>
               </div>
 

@@ -8,7 +8,7 @@ interface Column {
   header: string;
   accessor: string;
   filterable?: boolean;
-  cell?: (item: any) => React.ReactNode;
+  cell?: (item: any, index: number) => React.ReactNode;
 }
 
 interface TableProps {
@@ -16,6 +16,7 @@ interface TableProps {
   data: any[];
   onRowClick?: (item: any) => void;
   itemsPerPage?: number;
+  startIndex?: number;
 }
 
 const Table: React.FC<TableProps> = ({
@@ -23,13 +24,27 @@ const Table: React.FC<TableProps> = ({
   data = [],
   onRowClick,
   itemsPerPage = 10,
+  startIndex = 1,
 }) => {
   const [sortColumn, setSortColumn] = useState("");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<Record<string, string>>({});
 
+  const allColumns = useMemo(
+    () => [
+      {
+        header: "S.N",
+        accessor: "serialNumber",
+        cell: (_, index: number) => startIndex + index,
+      },
+      ...columns,
+    ],
+    [columns, startIndex]
+  );
+
   const handleSort = (accessor: string) => {
+    if (accessor === "serialNumber") return;
     if (sortColumn === accessor) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
@@ -39,6 +54,7 @@ const Table: React.FC<TableProps> = ({
   };
 
   const handleFilter = (accessor: string, value: string) => {
+    if (accessor === "serialNumber") return;
     setFilters((prev) => ({ ...prev, [accessor]: value }));
     setCurrentPage(1);
   };
@@ -79,7 +95,7 @@ const Table: React.FC<TableProps> = ({
         <table className="min-w-full leading-normal">
           <thead>
             <tr>
-              {columns.map((column, index) => (
+              {allColumns.map((column, index) => (
                 <th
                   key={index}
                   className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
@@ -124,12 +140,16 @@ const Table: React.FC<TableProps> = ({
                 onClick={() => onRowClick && onRowClick(item)}
                 className="hover:bg-gray-100 cursor-pointer"
               >
-                {columns.map((column, colIndex) => (
+                {allColumns.map((column, colIndex) => (
                   <td
                     key={colIndex}
                     className="px-5 py-5 border-b border-gray-200 bg-white text-sm"
                   >
-                    {column.cell ? column.cell(item) : item[column.accessor]}
+                    {column.cell
+                      ? column.cell(item, index)
+                      : column.accessor === "serialNumber"
+                      ? startIndex + index + (currentPage - 1) * itemsPerPage
+                      : item[column.accessor]}
                   </td>
                 ))}
               </motion.tr>

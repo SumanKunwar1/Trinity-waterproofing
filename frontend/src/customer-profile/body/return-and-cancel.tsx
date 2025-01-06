@@ -1,9 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Label } from "../../components/ui/label";
-import { Button } from "../../components/ui/button";
-import { Card, CardContent } from "../../components/ui/card";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   FaUndo,
   FaTimesCircle,
@@ -11,7 +9,9 @@ import {
   FaSpinner,
   FaSearch,
 } from "react-icons/fa";
-import { motion, AnimatePresence } from "framer-motion";
+import { Label } from "../../components/ui/label";
+import { Button } from "../../components/ui/button";
+import { Card, CardContent } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
 import {
   Dialog,
@@ -20,62 +20,55 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../../components/ui/dialog";
+import { useUserData } from "../../hooks/useUserData";
 
-// Dummy data for returns and cancellations
-const returnAndCancelData = [
-  {
-    id: 1,
-    type: "return",
-    status: "requested",
-    date: "2023-05-22",
-    item: "Wireless Headphones",
-    reason: "Defective product",
-  },
-  {
-    id: 2,
-    type: "cancel",
-    status: "approved",
-    date: "2023-05-18",
-    item: "Smart Watch",
-    reason: "Changed mind",
-  },
-  {
-    id: 3,
-    type: "return",
-    status: "approved",
-    date: "2023-05-15",
-    item: "Laptop Stand",
-    reason: "Wrong size",
-  },
-  {
-    id: 4,
-    type: "cancel",
-    status: "processing",
-    date: "2023-05-20",
-    item: "Bluetooth Speaker",
-    reason: "Found better deal",
-  },
-];
+// Define types for the order and product
+interface Product {
+  productId: { _id: string; name: string };
+}
+
+interface Order {
+  _id: string;
+  status: string;
+  createdAt: string;
+  products: Product[];
+  returnReason?: string;
+  cancelReason?: string;
+}
 
 const statusIcons = {
-  requested: <FaUndo className="text-yellow-500" />,
-  approved: <FaCheckCircle className="text-green-500" />,
-  processing: <FaSpinner className="text-blue-500 animate-spin" />,
-  cancelled: <FaTimesCircle className="text-red-500" />,
+  "return-requested": <FaUndo className="text-yellow-500" />,
+  "return-approved": <FaCheckCircle className="text-green-500" />,
+  "return-disapproved": <FaTimesCircle className="text-red-500" />,
+  "order-cancelled": <FaTimesCircle className="text-red-500" />,
 };
 
 export const ReturnAndCancel = () => {
+  const { orders, isLoading, isError } = useUserData();
   const [filter, setFilter] = useState("");
-  const [selectedItem, setSelectedItem] = useState<
-    (typeof returnAndCancelData)[0] | null
-  >(null);
+  const [selectedItem, setSelectedItem] = useState<Order | null>(null);
 
-  const filteredData = returnAndCancelData.filter(
-    (item) =>
-      item.item.toLowerCase().includes(filter.toLowerCase()) ||
-      item.status.includes(filter.toLowerCase()) ||
-      item.type.includes(filter.toLowerCase())
-  );
+  // Filter orders based on multiple statuses and the search filter
+  const validStatuses = [
+    "return-requested",
+    "return-approved",
+    "return-disapproved",
+  ];
+
+  // Filter orders by valid statuses and the search term
+  const filteredOrders = orders
+    .filter((order) => validStatuses.includes(order.status))
+    .filter(
+      (order) =>
+        order._id.toLowerCase().includes(filter.toLowerCase()) ||
+        order.status.toLowerCase().includes(filter.toLowerCase()) ||
+        order.products.some((product: Product) =>
+          product.productId.name.toLowerCase().includes(filter.toLowerCase())
+        )
+    );
+
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error loading data</div>;
 
   return (
     <motion.div
@@ -108,14 +101,16 @@ export const ReturnAndCancel = () => {
           >
             <CardContent className="p-4 flex items-center space-x-3">
               <div className="text-2xl">{icon}</div>
-              <Label className="text-lg capitalize">{status}</Label>
+              <Label className="text-lg capitalize">
+                {status.replace("-", " ")}
+              </Label>
             </CardContent>
           </Card>
         ))}
       </div>
 
       <AnimatePresence>
-        {filteredData.length > 0 ? (
+        {filteredOrders.length > 0 ? (
           <motion.div
             className="space-y-4"
             initial={{ opacity: 0, y: 20 }}
@@ -123,25 +118,31 @@ export const ReturnAndCancel = () => {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
-            {filteredData.map((item) => (
+            {filteredOrders.map((order) => (
               <Card
-                key={item.id}
+                key={order._id}
                 className="bg-white shadow-md hover:shadow-lg transition-shadow duration-300"
               >
                 <CardContent className="p-4">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-3">
                       <div className="text-2xl">
-                        {statusIcons[item.status as keyof typeof statusIcons]}
+                        {statusIcons[
+                          order.status as keyof typeof statusIcons
+                        ] || <FaSpinner className="text-gray-500" />}
                       </div>
                       <div>
-                        <p className="font-semibold text-lg">{item.item}</p>
-                        <p className="text-sm text-gray-500">{item.date}</p>
+                        <p className="font-semibold text-lg">
+                          Order #{order._id}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {new Date(order.createdAt).toLocaleDateString()}
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="font-medium text-gray-600 capitalize">
-                        {item.type} - {item.status}
+                        {order.status.replace("-", " ")}
                       </p>
                       <Dialog>
                         <DialogTrigger asChild>
@@ -149,36 +150,51 @@ export const ReturnAndCancel = () => {
                             variant="outline"
                             size="sm"
                             className="mt-2"
-                            onClick={() => setSelectedItem(item)}
+                            onClick={() => setSelectedItem(order)}
                           >
                             View Details
                           </Button>
                         </DialogTrigger>
                         <DialogContent>
                           <DialogHeader>
-                            <DialogTitle>
-                              {item.type === "return"
-                                ? "Return"
-                                : "Cancellation"}{" "}
-                              Details
-                            </DialogTitle>
+                            <DialogTitle>Order Details</DialogTitle>
                           </DialogHeader>
                           <div className="mt-4">
                             <p>
-                              <strong>Item:</strong> {selectedItem?.item}
+                              <strong>Order ID:</strong> {selectedItem?._id}
                             </p>
                             <p>
-                              <strong>Type:</strong> {selectedItem?.type}
+                              <strong>Status:</strong>{" "}
+                              {selectedItem?.status.replace("-", " ")}
                             </p>
                             <p>
-                              <strong>Status:</strong> {selectedItem?.status}
+                              <strong>Date:</strong>{" "}
+                              {new Date(
+                                selectedItem?.createdAt
+                              ).toLocaleDateString()}
                             </p>
                             <p>
-                              <strong>Date:</strong> {selectedItem?.date}
+                              <strong>Products:</strong>
                             </p>
-                            <p>
-                              <strong>Reason:</strong> {selectedItem?.reason}
-                            </p>
+                            <ul className="list-disc pl-5">
+                              {selectedItem?.products.map((product: any) => (
+                                <li key={product.productId._id}>
+                                  {product.productId.name}
+                                </li>
+                              ))}
+                            </ul>
+                            {selectedItem?.returnReason && (
+                              <p>
+                                <strong>Return Reason:</strong>{" "}
+                                {selectedItem.returnReason}
+                              </p>
+                            )}
+                            {selectedItem?.cancelReason && (
+                              <p>
+                                <strong>Cancel Reason:</strong>{" "}
+                                {selectedItem.cancelReason}
+                              </p>
+                            )}
                           </div>
                         </DialogContent>
                       </Dialog>

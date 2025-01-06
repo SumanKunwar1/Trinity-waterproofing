@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import ProductCard from "../common/ProductCard";
 import axios from "axios";
 import { IProduct } from "../../types/product";
 import { toast } from "react-toastify";
+
 interface RelatedProductsProps {
-  currentProductId: string; // Assuming the product ID is a string
-  categoryId: number;
+  currentProductId: string;
+  categoryId: string; // Changed type to `string` to match `subCategory`
 }
 
 const RelatedProducts: React.FC<RelatedProductsProps> = ({
@@ -16,25 +18,24 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({
   const [relatedProducts, setRelatedProducts] = useState<IProduct[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
-  // Fetch related products based on the category and excluding the current product
   useEffect(() => {
     const fetchRelatedProducts = async () => {
       try {
         const response = await axios.get(
           `/api/product?categoryId=${categoryId}`
         );
-        // Filter products to exclude the current product
         const filteredProducts = response.data.filter(
           (product: IProduct) => product._id !== currentProductId
         );
-        setRelatedProducts(filteredProducts.slice(0, 4)); // Limit to 4 products
+        setRelatedProducts(filteredProducts.slice(0, 4));
       } catch (error: any) {
         const errorMessage =
           error.response?.data?.error ||
           "Failed to fetch related products. Please try again.";
-        setError(errorMessage); // Set the error message
-        toast.error(errorMessage); // Optionally show a toast notification
+        setError(errorMessage);
+        toast.error(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -66,7 +67,12 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <ProductCard product={product} />
+            <div
+              onClick={() => navigate(`/product/${product._id}`)} // Navigate to the new product detail page
+              className="cursor-pointer"
+            >
+              <ProductCard product={product} />
+            </div>
           </motion.div>
         ))}
       </div>
