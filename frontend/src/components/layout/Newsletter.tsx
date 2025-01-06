@@ -2,6 +2,7 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
+import axios from "axios";
 import Button from "../common/Button";
 
 const newsletterSchema = Yup.object().shape({
@@ -19,12 +20,16 @@ const Newsletter = () => {
   ) => {
     setIsSubmitting(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      toast.success("Thank you for subscribing to our newsletter!");
+      const response = await axios.post("/api/newsletter", values);
+      toast.success(
+        response.data.message || "Thank you for subscribing to our newsletter!"
+      );
       resetForm();
-    } catch (error) {
-      toast.error("Something went wrong. Please try again.");
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message ||
+        "Something went wrong. Please try again.";
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -60,12 +65,7 @@ const Newsletter = () => {
                 </div>
               )}
             </div>
-            <Button
-              onClick={() => {}}
-              variant="primary"
-              size="md"
-              className="h-12"
-            >
+            <Button type="submit" variant="primary" size="md" className="h-12">
               Subscribe Now
             </Button>
           </Form>

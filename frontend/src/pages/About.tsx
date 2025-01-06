@@ -68,10 +68,10 @@ const About: React.FC = () => {
           transition={{ duration: 0.5 }}
           className="container mx-auto px-4 sm:px-6 lg:px-8"
         >
-          <Card className="overflow-hidden mb-12">
+          <Card className="overflow-hidden mb-12 border-0 ">
             <CardContent className="p-0">
               {/* Tabs Container */}
-              <div className="flex space-x-4 bg-gray-200 dark:bg-gray-700 rounded-md p-1 mb-6 w-full max-w-4xl mx-auto">
+              <div className="flex mx-auto space-x-4 bg-gray-200 dark:bg-gray-700 max-w-4xl rounded-md p-1 ">
                 {tabs.map((tab) => (
                   <Button
                     key={tab.key}

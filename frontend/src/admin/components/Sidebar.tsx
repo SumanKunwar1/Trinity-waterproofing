@@ -17,6 +17,7 @@ import {
   FaExchangeAlt,
   FaLightbulb,
   FaSignOutAlt,
+  FaNewspaper,
 } from "react-icons/fa";
 import { MdReviews } from "react-icons/md";
 import { useLogout } from "../../utils/authUtils";
@@ -44,6 +45,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     },
     { icon: MdReviews, text: "Reviews", link: "/admin/reviews" },
     { icon: FaUsers, text: "Users", link: "/admin/users" },
+    { icon: FaNewspaper, text: "Newsletters", link: "/admin/newsletter" },
     { icon: FaFileAlt, text: "Reports", link: "/admin/reports" },
     { icon: FaSlidersH, text: "Sliders", link: "/admin/sliders" },
     { icon: FaCog, text: "Settings", link: "/admin/settings" },
