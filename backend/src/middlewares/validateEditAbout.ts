@@ -1,25 +1,22 @@
 import Joi from "joi";
 import { Request, Response, NextFunction } from "express";
-import { httpMessages } from ".";
+import { httpMessages } from "../middlewares";
 import { deleteImages } from "../config/deleteImages";
 
-const validateAbout = (
+const validateEditAbout = (
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
   const schema = Joi.object({
-    title: Joi.string().required().messages({
+    title: Joi.string().optional().messages({
       "string.base": "Title must be a string",
-      "any.required": "Title is required",
     }),
-    description: Joi.string().required().messages({
+    description: Joi.string().optional().messages({
       "string.base": "Description must be a string",
-      "any.required": "Description is required",
     }),
-    image: Joi.string().required().messages({
-      "string.base": "Image must be a string",
-      "any.required": "Image is required",
+    image: Joi.string().optional().allow("").messages({
+      "string.base": "Description must be a string",
     }),
   });
 
@@ -47,4 +44,4 @@ const validateAbout = (
   next();
 };
 
-export { validateAbout };
+export { validateEditAbout };

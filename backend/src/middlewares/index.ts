@@ -42,3 +42,4 @@ export { handleError } from "./handleError";
 export { validateFolderCreation } from "./validateFolderCreation";
 export { validateFaq } from "./validateFaq";
 export { validateAbout } from "./validateAbout";
+export { validateEditAbout } from "./validateEditAbout";
