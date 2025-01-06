@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Card,
@@ -8,13 +8,45 @@ import {
 } from "../components/ui/card";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
+import TabForm from "../components/TabForm";
+import TabList from "../components/TabList";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { IAbout, ITabAbout } from "../../types/about";
 
-const About: React.FC = () => {
+const AdminAbout: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [about, setAbout] = useState<IAbout | null>(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingTab, setEditingTab] = useState<ITabAbout | null>(null);
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
+
+  useEffect(() => {
+    fetchAbout();
+  }, []);
+
+  const fetchAbout = async () => {
+    try {
+      const response = await fetch("/api/about");
+      if (!response.ok) {
+        throw new Error("Failed to fetch about data");
+      }
+      const data = await response.json();
+      setAbout(data);
+    } catch (error) {
+      console.error("Error fetching about data:", error);
+    }
+  };
+
+  const handleFormSubmit = () => {
+    fetchAbout();
+    setIsFormOpen(false);
+    setEditingTab(null);
+  };
+
   return (
     <div>
       <div className="flex bg-gray-100">
@@ -27,44 +59,61 @@ const About: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              {/* Using ShadCN Card */}
-              <Card>
+              <Card className="mb-6">
                 <CardHeader>
                   <CardTitle>About WaterproofStore</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="mb-4">
-                    WaterproofStore is your one-stop shop for all waterproofing
-                    needs. Founded in 2010, we've been providing high-quality
-                    waterproof products and solutions to both individual
-                    consumers and businesses for over a decade.
+                    Manage your About page content here. You can add, edit, or
+                    delete tabs that will be displayed on the customer-facing
+                    About page.
                   </p>
-                  <p className="mb-4">
-                    Our mission is to deliver innovative waterproofing solutions
-                    that protect and preserve. We believe in the power of
-                    quality products, exceptional customer service, and
-                    continuous innovation.
-                  </p>
-                  <p className="mb-4">
-                    With a wide range of products including waterproof paints,
-                    sealants, membranes, and coatings, we cater to various
-                    industries such as construction, automotive, marine, and
-                    more. Our team of experts is always ready to assist you in
-                    finding the perfect solution for your waterproofing needs.
-                  </p>
-                  <p>
-                    At WaterproofStore, we're not just selling products; we're
-                    providing peace of mind. Trust us to keep you dry and
-                    protected, no matter the elements.
-                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>About Tabs</CardTitle>
+                    <button
+                      onClick={() => setIsFormOpen(true)}
+                      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                    >
+                      Add New Tab
+                    </button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {about && (
+                    <TabList
+                      tabs={about.tabs}
+                      onEdit={(tab) => {
+                        setEditingTab(tab);
+                        setIsFormOpen(true);
+                      }}
+                      onDelete={fetchAbout}
+                    />
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
           </main>
         </div>
       </div>
+      {isFormOpen && (
+        <TabForm
+          onClose={() => {
+            setIsFormOpen(false);
+            setEditingTab(null);
+          }}
+          onSubmit={handleFormSubmit}
+          editingTab={editingTab}
+        />
+      )}
+      <ToastContainer />
     </div>
   );
 };
 
-export default About;
+export default AdminAbout;
