@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
@@ -8,24 +10,50 @@ import {
 } from "../components/ui/card";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
-import TabForm from "../components/TabForm";
+import ContentForm from "../components/ContentForm";
 import TabList from "../components/TabList";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { IAbout, ITabAbout } from "../../types/about";
+
+interface IAbout {
+  _id?: string;
+  title: string;
+  description: string;
+  image: string;
+  cores: ICore[];
+  tabs: ITab[];
+}
+
+interface ICore {
+  _id?: string;
+  title: string;
+  description: string;
+  image: string;
+}
+
+interface ITab {
+  _id?: string;
+  title: string;
+  description: string;
+  image: string;
+}
 
 const AdminAbout: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [about, setAbout] = useState<IAbout | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingTab, setEditingTab] = useState<ITabAbout | null>(null);
+  const [formType, setFormType] = useState<"about" | "cores" | "tab">("about");
+  const [editingContent, setEditingContent] = useState<any | null>(null);
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
 
+  // Fetch About, cores, and Tabs separately
   useEffect(() => {
     fetchAbout();
+    fetchCore();
+    fetchTabs();
   }, []);
 
   const fetchAbout = async () => {
@@ -35,16 +63,59 @@ const AdminAbout: React.FC = () => {
         throw new Error("Failed to fetch about data");
       }
       const data = await response.json();
-      setAbout(data);
+      setAbout((prevState) => ({
+        ...prevState,
+        ...data, // Merge the about data with the previous state
+      }));
     } catch (error) {
       console.error("Error fetching about data:", error);
     }
   };
 
+  const fetchCore = async () => {
+    try {
+      const response = await fetch("/api/about/cores");
+      if (!response.ok) {
+        throw new Error("Failed to fetch cores values");
+      }
+      const data = await response.json();
+      setAbout((prevState) => ({
+        ...prevState,
+        cores: data || [], // Ensure cores is always an array
+      }));
+    } catch (error) {
+      console.error("Error fetching cores values:", error);
+    }
+  };
+
+  const fetchTabs = async () => {
+    try {
+      const response = await fetch("/api/about/tabs");
+      if (!response.ok) {
+        throw new Error("Failed to fetch tabs");
+      }
+      const data = await response.json();
+      setAbout((prevState) => ({
+        ...prevState,
+        tabs: data || [], // Ensure tabs is always an array
+      }));
+    } catch (error) {
+      console.error("Error fetching tabs:", error);
+    }
+  };
+
   const handleFormSubmit = () => {
     fetchAbout();
+    fetchCore();
+    fetchTabs();
     setIsFormOpen(false);
-    setEditingTab(null);
+    setEditingContent(null);
+  };
+
+  const openForm = (type: "about" | "cores" | "tab", content: any = null) => {
+    setFormType(type);
+    setEditingContent(content);
+    setIsFormOpen(true);
   };
 
   return (
@@ -59,25 +130,70 @@ const AdminAbout: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
+              {/* About Card */}
               <Card className="mb-6">
                 <CardHeader>
-                  <CardTitle>About WaterproofStore</CardTitle>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>About WaterproofStore</CardTitle>
+                    <button
+                      onClick={() => openForm("about", about || null)}
+                      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                    >
+                      {about ? "Edit About" : "Add About"}
+                    </button>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="mb-4">
-                    Manage your About page content here. You can add, edit, or
-                    delete tabs that will be displayed on the customer-facing
-                    About page.
-                  </p>
+                  {about ? (
+                    <>
+                      <h2 className="text-xl font-bold mb-2">{about.title}</h2>
+                      <p className="mb-4">{about.description}</p>
+                      <img
+                        src={about.image}
+                        alt="About"
+                        className="w-full h-48 object-cover rounded"
+                      />
+                    </>
+                  ) : (
+                    <p>No about content available. Please create it.</p>
+                  )}
                 </CardContent>
               </Card>
 
+              {/* cores Values Card */}
+              <Card className="mb-6">
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>Core Values</CardTitle>
+                    <button
+                      onClick={() => openForm("cores")}
+                      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                    >
+                      Add Core Value
+                    </button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {about && about.cores && about.cores.length > 0 ? (
+                    <TabList
+                      tabs={about.cores}
+                      onEdit={(cores) => openForm("cores", cores)}
+                      onDelete={fetchCore}
+                      type="cores"
+                    />
+                  ) : (
+                    <p>No core values available. Please add them.</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* About Tabs Card */}
               <Card>
                 <CardHeader>
                   <div className="flex justify-between items-center">
                     <CardTitle>About Tabs</CardTitle>
                     <button
-                      onClick={() => setIsFormOpen(true)}
+                      onClick={() => openForm("tab")}
                       className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                     >
                       Add New Tab
@@ -85,15 +201,15 @@ const AdminAbout: React.FC = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  {about && (
+                  {about && about.tabs && about.tabs.length > 0 ? (
                     <TabList
                       tabs={about.tabs}
-                      onEdit={(tab) => {
-                        setEditingTab(tab);
-                        setIsFormOpen(true);
-                      }}
-                      onDelete={fetchAbout}
+                      onEdit={(tab) => openForm("tab", tab)}
+                      onDelete={fetchTabs}
+                      type="tabs"
                     />
+                  ) : (
+                    <p>No tabs available. Please add them.</p>
                   )}
                 </CardContent>
               </Card>
@@ -101,16 +217,20 @@ const AdminAbout: React.FC = () => {
           </main>
         </div>
       </div>
+
+      {/* Content Form */}
       {isFormOpen && (
-        <TabForm
+        <ContentForm
           onClose={() => {
             setIsFormOpen(false);
-            setEditingTab(null);
+            setEditingContent(null);
           }}
           onSubmit={handleFormSubmit}
-          editingTab={editingTab}
+          type={formType}
+          content={editingContent}
         />
       )}
+
       <ToastContainer />
     </div>
   );

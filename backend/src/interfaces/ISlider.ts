@@ -1,6 +1,6 @@
 export interface ISlider {
-  title?: string;
-  subtitle?: string;
+  title: string;
+  description?: string;
   image?: string;
   video?: string;
   isvisible: boolean;

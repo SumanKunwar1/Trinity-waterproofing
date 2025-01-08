@@ -21,7 +21,7 @@ const validateEditSlider = (
     video: Joi.string().optional().allow("").messages({
       "string.base": "Video must be a string",
     }),
-    isVisible: Joi.bool().optional().messages({
+    isvisible: Joi.bool().optional().messages({
       "bool.base": "isVisible must be a boolean",
     }),
   })

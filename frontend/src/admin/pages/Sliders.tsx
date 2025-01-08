@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { FaEye, FaEdit, FaTrash, FaEllipsisV } from "react-icons/fa";
 import {
   Card,
   CardHeader,
@@ -16,75 +16,200 @@ import {
   DialogTrigger,
 } from "../components/ui/dialog";
 import { Switch } from "../components/ui/switch";
-import FormikForm from "../components/FormikForm"; // Reusable form component
-import Table from "../components/ui/table"; // Reusable table component
-import * as Yup from "yup";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
+import Table from "../components/ui/table";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../components/ui/dropdown-menu";
 
 interface Slider {
-  id: number;
+  _id: string;
   title: string;
-  image: string;
-  link: string;
-  isVisible: boolean;
+  description: string;
+  media: {
+    type: "image" | "video";
+    url: string;
+  };
+  isvisible: boolean;
 }
 
-const sliderSchema = Yup.object().shape({
-  title: Yup.string().required("Required"),
-  image: Yup.string().url("Invalid URL").required("Required"),
-  link: Yup.string().url("Invalid URL").required("Required"),
-  isVisible: Yup.boolean(),
-});
+interface FormData {
+  title: string;
+  description: string;
+  mediaType: "image" | "video";
+  mediaFile: File | null;
+  isvisible: boolean;
+}
 
 const Sliders: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [sliders, setSliders] = useState<Slider[]>([]);
+  const [editingSlider, setEditingSlider] = useState<Slider | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [viewingSlider, setViewingSlider] = useState<Slider | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [formData, setFormData] = useState<FormData>({
+    title: "",
+    description: "",
+    mediaType: "image",
+    mediaFile: null,
+    isvisible: false,
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
-  const [sliders, setSliders] = useState<Slider[]>([
-    {
-      id: 1,
-      title: "Summer Sale",
-      image: "/summer-sale.jpg",
-      link: "/sale",
-      isVisible: true,
-    },
-    {
-      id: 2,
-      title: "New Products",
-      image: "/new-products.jpg",
-      link: "/new",
-      isVisible: false,
-    },
-  ]);
 
-  const [editingSlider, setEditingSlider] = useState<Slider | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  useEffect(() => {
+    fetchSliders();
+  }, []);
 
-  const formFields = [
-    { name: "title", label: "Title", type: "text" },
-    { name: "image", label: "Image URL", type: "text" },
-    { name: "link", label: "Link", type: "text" },
-    { name: "isVisible", label: "Visible", type: "switch" },
-  ];
-
-  const handleSubmit = (values: Omit<Slider, "id">, { resetForm }: any) => {
+  useEffect(() => {
     if (editingSlider) {
-      setSliders(
-        sliders.map((s) =>
-          s.id === editingSlider.id ? { ...values, id: editingSlider.id } : s
-        )
-      );
-      toast.success("Slider updated successfully");
+      setFormData({
+        title: editingSlider.title,
+        description: editingSlider.description,
+        mediaType: editingSlider.media.type,
+        mediaFile: null,
+        isvisible: editingSlider.isvisible,
+      });
     } else {
-      setSliders([...sliders, { ...values, id: sliders.length + 1 }]);
-      toast.success("Slider added successfully");
+      setFormData({
+        title: "",
+        description: "",
+        mediaType: "image",
+        mediaFile: null,
+        isvisible: false,
+      });
     }
-    setEditingSlider(null);
-    setIsDialogOpen(false);
-    resetForm();
+  }, [editingSlider]);
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.title.trim()) {
+      newErrors.title = "Title is required";
+    }
+    if (!formData.description.trim()) {
+      newErrors.description = "Description is required";
+    }
+    if (!editingSlider && !formData.mediaFile) {
+      newErrors.mediaFile = "Media file is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const fetchSliders = async () => {
+    try {
+      const response = await fetch("/api/slider", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
+      if (!response.ok) throw new Error("Failed to fetch sliders");
+      const data = await response.json();
+      console.log("sliderData", data);
+      setSliders(data);
+    } catch (error) {
+      console.error("Error fetching sliders:", error);
+      toast.info("No sliders available at the moment");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleMediaTypeChange = (value: "image" | "video") => {
+    setFormData((prev) => ({ ...prev, mediaType: value, mediaFile: null }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setFormData((prev) => ({ ...prev, mediaFile: file }));
+  };
+
+  const handleVisibilityChange = (checked: boolean) => {
+    setFormData((prev) => ({ ...prev, isvisible: checked }));
+
+    // Show message based on visibility
+    if (checked) {
+      toast.success("Slider visibility is ON");
+    } else {
+      toast.success("Slider visibility is OFF");
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    const formDataToSend = new FormData();
+    formDataToSend.append("title", formData.title);
+    formDataToSend.append("description", formData.description);
+    formDataToSend.append("isvisible", formData.isvisible.toString());
+
+    if (formData.mediaFile) {
+      formDataToSend.append(formData.mediaType, formData.mediaFile);
+    }
+
+    try {
+      const url = editingSlider
+        ? `/api/slider/${editingSlider._id}`
+        : "/api/slider";
+      const method = editingSlider ? "PATCH" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+        body: formDataToSend,
+      });
+
+      if (!response.ok) throw new Error("Failed to save slider");
+
+      toast.success(
+        editingSlider
+          ? "Slider updated successfully"
+          : "Slider added successfully"
+      );
+      fetchSliders();
+      setEditingSlider(null);
+      setIsDialogOpen(false);
+      setFormData({
+        title: "",
+        description: "",
+        mediaType: "image",
+        mediaFile: null,
+        isvisible: false,
+      });
+    } catch (error) {
+      console.error("Error saving slider:", error);
+      toast.error("Failed to save slider");
+    }
   };
 
   const handleEdit = (slider: Slider) => {
@@ -92,40 +217,91 @@ const Sliders: React.FC = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: number) => {
-    setSliders(sliders.filter((s) => s.id !== id));
-    toast.success("Slider deleted successfully");
+  const handleView = (slider: Slider) => {
+    setViewingSlider(slider);
+    setIsViewDialogOpen(true);
   };
 
-  const handleToggleVisibility = (id: number) => {
-    setSliders(
-      sliders.map((s) => (s.id === id ? { ...s, isVisible: !s.isVisible } : s))
-    );
-    toast.success(`Slider visibility toggled`);
+  const handleDelete = async (id: string) => {
+    try {
+      const response = await fetch(`/api/slider/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to delete slider");
+
+      toast.success("Slider deleted successfully");
+      fetchSliders();
+    } catch (error) {
+      console.error("Error deleting slider:", error);
+      toast.error("Failed to delete slider");
+    }
+  };
+
+  const handleToggleVisibility = async (
+    id: string,
+    currentVisibility: boolean
+  ) => {
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append("isvisible", (!currentVisibility).toString());
+
+      const response = await fetch(`/api/slider/${id}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+        body: formDataToSend,
+      });
+
+      if (!response.ok) throw new Error("Failed to toggle visibility");
+
+      // Display the success message based on visibility state
+      const newVisibility = !currentVisibility;
+      if (newVisibility) {
+        toast.success("Slider visibility is ON");
+      } else {
+        toast.success("Slider visibility is OFF");
+      }
+
+      fetchSliders(); // Refresh the list of sliders
+    } catch (error) {
+      console.error("Error toggling visibility:", error);
+      toast.error("Failed to toggle visibility");
+    }
   };
 
   const columns = [
     { header: "Title", accessor: "title" },
+    { header: "Description", accessor: "description" },
     {
-      header: "Image",
-      accessor: "image",
-      cell: (row: Slider) => (
-        <img
-          src={row.image}
-          alt={row.title}
-          className="w-16 h-16 object-cover"
-        />
-      ),
+      header: "Media",
+      accessor: "media",
+      cell: (row: Slider) =>
+        row.media.type === "image" ? (
+          <img
+            src={row.media.url}
+            alt={row.title}
+            className="w-16 h-16 object-cover"
+          />
+        ) : (
+          <video
+            src={row.media.url}
+            className="w-16 h-16 object-cover"
+            controls
+          />
+        ),
     },
-    { header: "Link", accessor: "link" },
     {
       header: "Visibility",
-      accessor: "isVisible",
+      accessor: "isvisible",
       cell: (row: Slider) => (
         <Switch
-          id={`visibility-${row.id}`}
-          checked={row.isVisible}
-          onCheckedChange={() => handleToggleVisibility(row.id)}
+          checked={row.isvisible}
+          onCheckedChange={() => handleToggleVisibility(row._id, row.isvisible)}
         />
       ),
     },
@@ -133,18 +309,28 @@ const Sliders: React.FC = () => {
       header: "Actions",
       accessor: "actions",
       cell: (row: Slider) => (
-        <div className="flex space-x-2">
-          <Button variant="outline" size="sm" onClick={() => handleEdit(row)}>
-            <FaEdit className="mr-2" /> Edit
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleDelete(row.id)}
-          >
-            <FaTrash className="mr-2" /> Delete
-          </Button>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <FaEllipsisV className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => handleView(row)}>
+              <FaEye className="mr-2 h-4 w-4" />
+              <span>View Details</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleEdit(row)}>
+              <FaEdit className="mr-2 h-4 w-4" />
+              <span>Edit</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleDelete(row._id)}>
+              <FaTrash className="mr-2 h-4 w-4" />
+              <span>Delete</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       ),
     },
   ];
@@ -167,7 +353,7 @@ const Sliders: React.FC = () => {
                   <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogTrigger asChild>
                       <Button
-                        variant="secondary"
+                        variant="default"
                         onClick={() => setEditingSlider(null)}
                       >
                         Add New Slider
@@ -177,33 +363,147 @@ const Sliders: React.FC = () => {
                       <DialogTitle>
                         {editingSlider ? "Edit Slider" : "Add New Slider"}
                       </DialogTitle>
-                      <FormikForm
-                        initialValues={
-                          editingSlider || {
-                            title: "",
-                            image: "",
-                            link: "",
-                            isVisible: false,
-                          }
-                        }
-                        validationSchema={sliderSchema}
-                        onSubmit={handleSubmit}
-                        fields={formFields}
-                        submitButtonText={
-                          editingSlider ? "Update Slider" : "Add Slider"
-                        }
-                      />
+                      <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="title">Title</Label>
+                          <Input
+                            id="title"
+                            name="title"
+                            value={formData.title}
+                            onChange={handleInputChange}
+                          />
+                          {errors.title && (
+                            <p className="text-red-500 text-sm">
+                              {errors.title}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="description">Description</Label>
+                          <Input
+                            id="description"
+                            name="description"
+                            value={formData.description}
+                            onChange={handleInputChange}
+                          />
+                          {errors.description && (
+                            <p className="text-red-500 text-sm">
+                              {errors.description}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Media Type</Label>
+                          <Select
+                            value={formData.mediaType}
+                            onValueChange={handleMediaTypeChange}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="image">Image</SelectItem>
+                              <SelectItem value="video">Video</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="mediaFile">
+                            Upload {formData.mediaType}
+                          </Label>
+                          <Input
+                            id="mediaFile"
+                            type="file"
+                            accept={
+                              formData.mediaType === "image"
+                                ? "image/*"
+                                : "video/*"
+                            }
+                            onChange={handleFileChange}
+                          />
+                          {errors.mediaFile && (
+                            <p className="text-red-500 text-sm">
+                              {errors.mediaFile}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          <Switch
+                            id="isvisible"
+                            checked={formData.isvisible}
+                            onCheckedChange={handleVisibilityChange}
+                          />
+                          <Label htmlFor="isvisible">Visible</Label>
+                        </div>
+
+                        <Button type="submit" className="w-full">
+                          {editingSlider ? "Update Slider" : "Add Slider"}
+                        </Button>
+                      </form>
                     </DialogContent>
                   </Dialog>
                 </CardHeader>
                 <CardContent>
-                  <Table data={sliders} columns={columns} />
+                  {isLoading ? (
+                    <div>Loading...</div>
+                  ) : (
+                    <Table data={sliders} columns={columns} />
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
           </main>
         </div>
       </div>
+
+      {/* View Details Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogTitle>Slider Details</DialogTitle>
+          {viewingSlider && (
+            <div className="space-y-4">
+              <div>
+                <Label>Title</Label>
+                <p>{viewingSlider.title}</p>
+              </div>
+              <div>
+                <Label>Description</Label>
+                <p>{viewingSlider.description}</p>
+              </div>
+              <div>
+                <Label>Media</Label>
+                {viewingSlider.media.type === "image" ? (
+                  <img
+                    src={viewingSlider.media.url}
+                    alt={viewingSlider.title}
+                    className="w-full h-auto"
+                  />
+                ) : (
+                  <video
+                    src={viewingSlider.media.url}
+                    controls
+                    className="w-full h-auto"
+                  />
+                )}
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="view-isvisible"
+                  checked={viewingSlider.isvisible}
+                  onCheckedChange={(checked) =>
+                    handleToggleVisibility(viewingSlider._id, !checked)
+                  }
+                />
+                <Label htmlFor="view-isvisible">Visible</Label>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -45,6 +45,7 @@ export class SliderController {
   ): Promise<void> {
     try {
       const sliderData: ISlider = req.body;
+      console.log("create slider", sliderData);
       const slider = await this.sliderService.createSlider(sliderData);
       res.locals.responseData = slider;
       next();
@@ -65,7 +66,7 @@ export class SliderController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const sliderId = req.params.id;
+      const sliderId = req.params.sliderId;
       const sliderData: Partial<ISlider> = req.body;
       const updatedSlider = await this.sliderService.editSlider(
         sliderData,
@@ -90,7 +91,7 @@ export class SliderController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const sliderId = req.params.id;
+      const sliderId = req.params.sliderId;
       const result = await this.sliderService.deleteSlider(sliderId);
       res.locals.responseData = result;
       next();

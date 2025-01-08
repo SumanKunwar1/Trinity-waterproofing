@@ -54,11 +54,16 @@ export class AboutService {
 
   public async getAbout() {
     try {
-      const about = await About.findOne();
+      const about = await About.findOne({}, " _id title description image"); // Fetch only the necessary fields
       if (!about) {
         return "";
       }
-      return about;
+
+      // Format the image URL and return the selected fields
+      return {
+        ...about.toObject(), // Spread the data
+        image: `/api/image/${about.image}`, // Format image URL
+      };
     } catch (error) {
       throw error;
     }
@@ -87,7 +92,16 @@ export class AboutService {
       if (!about) {
         throw httpMessages.NOT_FOUND("About");
       }
-      return about.core;
+
+      // Format core data to include only selected fields
+      const formattedCore = about.core.map((core) => ({
+        _id: core._id,
+        title: core.title,
+        description: core.description,
+        image: core.image ? `/api/image/${core.image}` : null, // Format image URL
+      }));
+
+      return formattedCore;
     } catch (error) {
       throw error;
     }
@@ -184,7 +198,16 @@ export class AboutService {
       if (!about) {
         throw httpMessages.NOT_FOUND("About");
       }
-      return about.tabs;
+
+      // Format tabs data to include only selected fields
+      const formattedTabs = about.tabs.map((tab) => ({
+        _id: tab._id,
+        title: tab.title,
+        description: tab.description,
+        image: tab.image ? `/api/image/${tab.image}` : null, // Format image URL
+      }));
+
+      return formattedTabs;
     } catch (error) {
       throw error;
     }

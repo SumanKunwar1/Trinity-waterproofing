@@ -3,7 +3,7 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 interface ISlider extends Document {
   _id: Types.ObjectId;
   title?: string;
-  subtitle?: string;
+  description?: string;
   media: { type: string; url: string };
   isvisible?: boolean;
   createdAt: Date;
@@ -13,7 +13,7 @@ interface ISlider extends Document {
 const sliderSchema = new Schema(
   {
     title: { type: String },
-    subtitle: { type: String },
+    description: { type: String },
     media: {
       type: {
         type: String,

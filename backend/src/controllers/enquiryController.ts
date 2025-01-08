@@ -18,6 +18,7 @@ export class EnquiryController {
       const enquiryData: IEnquiry = req.body;
       const result = await this.enquiryService.createEnquiry(enquiryData);
       res.locals.responseData = result;
+      next();
     } catch (error) {
       next(error);
     }
@@ -31,6 +32,7 @@ export class EnquiryController {
     try {
       const result = await this.enquiryService.getEnquiries();
       res.locals.responseData = result;
+      next();
     } catch (error) {
       next(error);
     }

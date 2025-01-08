@@ -35,12 +35,42 @@ export const deleteReview = async (reviewId: string) => {
   }
 };
 
+export const fetchProducts = async () => {
+  try {
+    const response = await api.get("/product");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    throw error;
+  }
+};
+
 export const fetchOrders = async () => {
   try {
     const response = await api.get("/order/admin");
     return response.data;
   } catch (error) {
     console.error("Error fetching orders:", error);
+    throw error;
+  }
+};
+
+export const fetchCategories = async () => {
+  try {
+    const response = await api.get("/category");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    throw error;
+  }
+};
+
+export const fetchSubcategories = async () => {
+  try {
+    const response = await api.get("/subcategory");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching subcategories:", error);
     throw error;
   }
 };

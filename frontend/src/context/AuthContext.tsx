@@ -6,7 +6,7 @@ import React, {
   ReactNode,
 } from "react";
 import { jwtDecode } from "jwt-decode";
-import { useLogout } from "../utils/authUtils";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 // Utility function to decode token and check expiration
@@ -40,14 +40,37 @@ export const useAuth = () => {
   return context;
 };
 
+// Custom hook for handling logout
+const useLogoutHandler = () => {
+  const navigate = useNavigate();
+
+  return () => {
+    const keysToRemove = [
+      "authToken",
+      "userRole",
+      "user",
+      "userId",
+      "userFullName",
+      "userEmail",
+      "userPassword",
+      "userNumber",
+    ];
+
+    keysToRemove.forEach((key) => localStorage.removeItem(key));
+    navigate("/login");
+    window.location.reload();
+  };
+};
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [lastActiveTime, setLastActiveTime] = useState<number>(Date.now());
-  const handleLogout = useLogout();
+  const handleLogout = useLogoutHandler();
 
   const ACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes
   const TOKEN_REFRESH_INTERVAL = 14 * 60 * 1000; // 14 minutes
+  const ACTIVITY_CHECK_INTERVAL = 60000; // Check every minute
 
   const checkTokenExpiry = (token: string | null) => {
     if (token) {
@@ -69,7 +92,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = () => {
     setToken(null);
     setIsAuthenticated(false);
-    localStorage.removeItem("authToken");
     handleLogout();
   };
 
@@ -100,6 +122,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  // Initialize auth state
   useEffect(() => {
     const storedToken = localStorage.getItem("authToken");
     if (storedToken && checkTokenExpiry(storedToken)) {
@@ -107,29 +130,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsAuthenticated(true);
       setLastActiveTime(Date.now());
     } else if (storedToken) {
-      // If token exists but is expired, try to refresh it
       refreshToken();
     }
   }, []);
 
+  // Activity and token refresh checker
   useEffect(() => {
     const checkActivity = () => {
       const currentTime = Date.now();
-      if (currentTime - lastActiveTime > ACTIVITY_TIMEOUT) {
+      const timeSinceLastActivity = currentTime - lastActiveTime;
+
+      if (timeSinceLastActivity > ACTIVITY_TIMEOUT) {
+        toast.info("Session expired due to inactivity");
         logout();
-      } else if (
-        token &&
-        currentTime - lastActiveTime > TOKEN_REFRESH_INTERVAL
-      ) {
+      } else if (token && timeSinceLastActivity > TOKEN_REFRESH_INTERVAL) {
         refreshToken();
       }
     };
 
-    const activityInterval = setInterval(checkActivity, 60000); // Check every minute
+    const activityInterval = setInterval(
+      checkActivity,
+      ACTIVITY_CHECK_INTERVAL
+    );
 
     return () => clearInterval(activityInterval);
   }, [lastActiveTime, token]);
 
+  // Activity event listeners
   useEffect(() => {
     const handleActivity = () => {
       setLastActiveTime(Date.now());

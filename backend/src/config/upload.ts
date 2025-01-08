@@ -13,7 +13,12 @@ if (!fs.existsSync(uploadFolder)) {
 }
 
 const allowedImageTypes = ["image/jpeg", "image/png", "image/jpg"];
-const allowedVideoTypes = ["video/mp4", "video/avi", "video/mov"];
+const allowedVideoTypes = [
+  "video/mp4",
+  "video/avi",
+  "video/mov",
+  "video/quicktime",
+];
 
 // Add fileFilter to enforce file type restrictions
 const fileFilter = (req: any, file: any, cb: any) => {
@@ -80,6 +85,30 @@ export const uploadMiddleware = upload.fields([
 export const imageUploadMiddleware = upload.fields([
   { name: "image", maxCount: 1 },
 ]);
+
+export const sliderUploadMiddleware = upload.fields([
+  { name: "image", maxCount: 1 },
+  { name: "video", maxCount: 1 },
+]);
+
+export const appendSliderDataToBody = (req: any, res: any, next: Function) => {
+  // Handle image files
+  if (req.files && req.files["image"]) {
+    // If there's an image uploaded, assign the filename to req.body.image
+    console.log("Added image to body:", req.files["image"][0].filename); // Log the image file added
+    req.body.image = req.files["image"][0].filename;
+  }
+
+  // Handle video files
+  if (req.files && req.files["video"]) {
+    // If there's a video uploaded, assign the filename to req.body.video
+    console.log("Added video to body:", req.files["video"][0].filename); // Log the video file added
+    req.body.video = req.files["video"][0].filename;
+  }
+
+  console.log("Updated Request Body (appendSliderDataToBody):", req.body); // Log final request body
+  next();
+};
 
 export const appendFileDataToBody = (req: any, res: any, next: Function) => {
   if (req.files["productImage"] && req.files["productImage"].length > 0) {
