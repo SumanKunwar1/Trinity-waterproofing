@@ -15,3 +15,4 @@ export { IFaq } from "./IFaq";
 export { INewsLetter } from "./INewsLetter";
 export { IAbout } from "./ITabAbout";
 export { IService } from "./IService";
+export { IPolicy } from "./IPolicy";

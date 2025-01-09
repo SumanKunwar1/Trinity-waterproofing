@@ -27,3 +27,5 @@ export { WishListService } from "./wishListService";
 export { CartService } from "./cartService";
 export { GalleryService } from "./galleryService";
 export { MetaInfoService } from "./metaInfoService";
+export { ReturnPolicyService } from "./returnPolicyService";
+export { ShippingPolicyService } from "./shippingPolicyReturn";
