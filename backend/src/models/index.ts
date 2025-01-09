@@ -17,3 +17,6 @@ export { Team } from "./team";
 export { Faq } from "./faq";
 export { NewsLetter } from "./newsLetter";
 export { Service } from "./service";
+export { MetaInfo } from "./metaInfo";
+export { ReturnPolicy } from "./returnPolicy";
+export { ShippingPolicy } from "./shippingPolicy";

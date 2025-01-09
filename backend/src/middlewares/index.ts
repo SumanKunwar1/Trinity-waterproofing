@@ -43,3 +43,5 @@ export { validateFolderCreation } from "./validateFolderCreation";
 export { validateFaq } from "./validateFaq";
 export { validateAbout } from "./validateAbout";
 export { validateEditAbout } from "./validateEditAbout";
+export { validatePolicy } from "./validatePolicy";
+export { validateEditPolicy } from "./validateEditPolicy";

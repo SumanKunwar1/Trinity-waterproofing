@@ -19,6 +19,9 @@ import faqRoutes from "./faqRoutes";
 import newsLetterRoutes from "./newsLetterRoutes";
 import aboutRoutes from "./aboutRoutes";
 import serviceRoutes from "./serviceRoutes";
+import metaInfoRoutes from "./metaInfoRoutes";
+import returnPolicyRoutes from "./returnPolicyRoutes";
+import shipingPolicyRoutes from "./shippingPolicyRoutes";
 
 const router = Router();
 
@@ -42,5 +45,8 @@ router.use("/faq", faqRoutes);
 router.use("/newsletter", newsLetterRoutes);
 router.use("/about", aboutRoutes);
 router.use("/service", serviceRoutes);
+router.use("/metainfo", metaInfoRoutes);
+router.use("/return-policy", returnPolicyRoutes);
+router.use("/shipping-policy", shipingPolicyRoutes);
 
 export default router;
