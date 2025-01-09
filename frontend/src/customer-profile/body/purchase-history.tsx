@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Label } from "../../components/ui/label";
@@ -20,7 +18,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "../../components/ui/dialog";
 import { useUserData } from "../../hooks/useUserData";
 import { ReviewDialog } from "./ReviewDialog";
@@ -34,6 +31,21 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { toast } from "react-toastify";
+
+interface Product {
+  productId: {
+    _id: string;
+    name: string;
+  };
+}
+
+interface Order {
+  _id: string;
+  status: string;
+  createdAt: string;
+  subtotal: number;
+  products: Product[];
+}
 
 const statusIcons = {
   "order-delivered": <FaCheckCircle className="text-green-500" />,
@@ -54,12 +66,11 @@ const returnSchema = yup.object().shape({
 export const PurchaseHistory: React.FC = () => {
   const { orders, isLoading, isError } = useUserData();
   const [filter, setFilter] = useState("");
-  const [selectedPurchase, setSelectedPurchase] = useState<
-    (typeof orders)[0] | null
-  >(null);
+  const [statusFilter, setStatusFilter] = useState("");
+  const [selectedPurchase, setSelectedPurchase] = useState<Order | null>(null);
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
   const [selectedProductForReview, setSelectedProductForReview] =
-    useState<any>(null);
+    useState<Product | null>(null);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isReturnDialogOpen, setIsReturnDialogOpen] = useState(false);
   const navigate = useNavigate();
@@ -80,12 +91,20 @@ export const PurchaseHistory: React.FC = () => {
     resolver: yupResolver(returnSchema),
   });
 
-  const filteredHistory = orders.filter(
-    (order) =>
-      order.products.some((product) =>
-        product?.name?.toLowerCase().includes(filter.toLowerCase())
-      ) || order.status?.toLowerCase().includes(filter.toLowerCase())
-  );
+  console.log("Orders:", orders);
+  const filteredHistory = orders
+    .filter(
+      (order: any) =>
+        (statusFilter === "" || order.status === statusFilter) &&
+        (order.products.some((product: any) =>
+          product?.productId?.name?.toLowerCase().includes(filter.toLowerCase())
+        ) ||
+          order.status?.toLowerCase().includes(filter.toLowerCase()))
+    )
+    .sort(
+      (a: any, b: any) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
 
   const handleReviewSubmit = async (
     rating: number,
@@ -123,7 +142,7 @@ export const PurchaseHistory: React.FC = () => {
     try {
       const userId = JSON.parse(localStorage.getItem("userId") || "");
       const response = await fetch(
-        `/api/order/${userId}/return-request/${selectedPurchase._id}`,
+        `/api/order/${userId}/return-request/${selectedPurchase?._id}`,
         {
           method: "PATCH",
           headers: {
@@ -201,7 +220,12 @@ export const PurchaseHistory: React.FC = () => {
         {Object.entries(statusIcons).map(([status, icon]) => (
           <Card
             key={status}
-            className="bg-white shadow-lg hover:shadow-xl transition-shadow duration-300"
+            className={`bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer ${
+              statusFilter === status ? "ring-2 ring-blue-500" : ""
+            }`}
+            onClick={() =>
+              setStatusFilter(statusFilter === status ? "" : status)
+            }
           >
             <CardContent className="p-4 flex items-center space-x-3">
               <div className="text-2xl">{icon}</div>
@@ -213,6 +237,17 @@ export const PurchaseHistory: React.FC = () => {
         ))}
       </div>
 
+      <Button
+        variant="outline"
+        onClick={() => {
+          setStatusFilter("");
+          setFilter("");
+        }}
+        className="mt-4"
+      >
+        Clear Filters
+      </Button>
+
       <AnimatePresence>
         {filteredHistory.length > 0 ? (
           <motion.div
@@ -222,7 +257,7 @@ export const PurchaseHistory: React.FC = () => {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
-            {filteredHistory.map((order) => (
+            {filteredHistory.map((order: any) => (
               <Card
                 key={order._id}
                 className="bg-white shadow-md hover:shadow-lg transition-shadow duration-300"
@@ -343,11 +378,11 @@ export const PurchaseHistory: React.FC = () => {
             <ul className="list-disc pl-5">
               {selectedPurchase?.products.map((product) => (
                 <li
-                  key={product.productId?._id || ""}
+                  key={product.productId._id}
                   className="flex justify-between items-center"
                 >
                   <span>
-                    {product.productId?.name || "Product Name Unavailable"}
+                    {product.productId.name || "Product Name Unavailable"}
                   </span>
 
                   {selectedPurchase.status === "order-delivered" && (
@@ -427,3 +462,5 @@ export const PurchaseHistory: React.FC = () => {
     </motion.div>
   );
 };
+
+export default PurchaseHistory;

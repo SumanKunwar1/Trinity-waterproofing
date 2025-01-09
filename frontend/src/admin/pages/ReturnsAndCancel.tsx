@@ -43,9 +43,15 @@ import {
   PaginationPrevious,
 } from "../components/ui/pagination";
 
+interface Product {
+  productId: {
+    name: string;
+  };
+}
+
 interface Order {
   _id: string;
-  products: string[];
+  products: Product[];
   reason: string;
   status: string;
   createdAt: string;
@@ -61,14 +67,18 @@ function AdminReturnsAndCancellations() {
   const [isDisapproveDialogOpen, setIsDisapproveDialogOpen] = useState(false);
   const [disapprovalReason, setDisapprovalReason] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const itemsPerPage = 10;
 
-  const totalPages = Math.ceil(items.length / itemsPerPage);
-  const paginatedItems = items.slice(
+  const filteredItems = items.filter((item) =>
+    statusFilter ? item.status === statusFilter : true
+  );
+
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+  const paginatedItems = filteredItems.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-  console.log("Items", items);
 
   useEffect(() => {
     fetchOrders();
@@ -186,6 +196,42 @@ function AdminReturnsAndCancellations() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
+                <div className="mb-4 flex space-x-2">
+                  <Button
+                    onClick={() => setStatusFilter(null)}
+                    variant={statusFilter === null ? "default" : "outline"}
+                  >
+                    All
+                  </Button>
+                  <Button
+                    onClick={() => setStatusFilter("return-approved")}
+                    variant={
+                      statusFilter === "return-approved" ? "default" : "outline"
+                    }
+                  >
+                    Approved
+                  </Button>
+                  <Button
+                    onClick={() => setStatusFilter("return-disapproved")}
+                    variant={
+                      statusFilter === "return-disapproved"
+                        ? "default"
+                        : "outline"
+                    }
+                  >
+                    Disapproved
+                  </Button>
+                  <Button
+                    onClick={() => setStatusFilter("return-requested")}
+                    variant={
+                      statusFilter === "return-requested"
+                        ? "default"
+                        : "outline"
+                    }
+                  >
+                    Requested
+                  </Button>
+                </div>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -202,9 +248,9 @@ function AdminReturnsAndCancellations() {
                       <TableRow key={item._id}>
                         <TableCell>{item._id}</TableCell>
                         <TableCell>
-                          {item.products.map(
-                            (product) => product.productId.name
-                          )}
+                          {item.products
+                            .map((product) => product.productId.name)
+                            .join(", ")}
                         </TableCell>
                         <TableCell>
                           {item.reason.split(" ").length > 20 ? (
@@ -217,15 +263,15 @@ function AdminReturnsAndCancellations() {
                         </TableCell>
                         <TableCell>
                           <Badge
-                            variant={
+                            className={
                               item.status.includes("approved")
-                                ? "success"
+                                ? "bg-[#c4e1c5] text-green-800"
                                 : item.status.includes("disapproved")
-                                ? "destructive"
-                                : "default"
+                                ? "bg-red-200 text-red-800"
+                                : ""
                             }
                           >
-                            {item.status.replace("-", " ")}
+                            {item.status.toUpperCase().replace("-", " ")}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -281,10 +327,12 @@ function AdminReturnsAndCancellations() {
                 </Table>
                 <Pagination className="mt-4">
                   <PaginationContent>
-                    <PaginationPrevious
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                    />
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                      />
+                    </PaginationItem>
                     {Array.from({ length: totalPages }, (_, index) => (
                       <PaginationItem key={index}>
                         <PaginationLink
@@ -295,10 +343,12 @@ function AdminReturnsAndCancellations() {
                         </PaginationLink>
                       </PaginationItem>
                     ))}
-                    <PaginationNext
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                    />
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                      />
+                    </PaginationItem>
                   </PaginationContent>
                 </Pagination>
               </CardContent>
@@ -317,13 +367,16 @@ function AdminReturnsAndCancellations() {
             </p>
             <p>
               <strong>Products:</strong>{" "}
-              {selectedItem?.products.map((product) => product.productId.name)}
+              {selectedItem?.products
+                .map((product) => product.productId.name)
+                .join(", ")}
             </p>
             <p>
               <strong>Reason:</strong> {selectedItem?.reason}
             </p>
             <p>
-              <strong>Status:</strong> {selectedItem?.status.replace("-", " ")}
+              <strong>Status:</strong>{" "}
+              {selectedItem?.status.toUpperCase().replace("-", " ")}
             </p>
             <p>
               <strong>Date:</strong>{" "}

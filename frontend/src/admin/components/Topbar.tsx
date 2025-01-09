@@ -174,22 +174,32 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
           <DropdownMenuContent>
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={() => setIsProfileDialogOpen(true)}>
+            <DropdownMenuItem
+              className="border-b border-gray-200 border-t py-2"
+              onSelect={() => setIsProfileDialogOpen(true)}
+            >
               <User className="mr-2 h-4 w-4" />
               Profile
             </DropdownMenuItem>
             <DropdownMenuItem
+              className="border-b border-gray-200 py-2"
               onSelect={() => setIsChangePasswordDialogOpen(true)}
             >
               <KeyRound className="mr-2 h-4 w-4" />
               Change Password
             </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => navigate("/admin/settings")}>
+            <DropdownMenuItem
+              className="border-b border-gray-200  py-2"
+              onSelect={() => navigate("/admin/settings")}
+            >
               <Settings className="mr-2 h-4 w-4" />
               Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-600" onSelect={handleLogout}>
+            <DropdownMenuItem
+              className="text-red-600 hover:text-white hover:bg-red-500 py-2 rounded-md transition duration-300"
+              onSelect={handleLogout}
+            >
               <LogOut className="mr-2 h-4 w-4" />
               Logout
             </DropdownMenuItem>

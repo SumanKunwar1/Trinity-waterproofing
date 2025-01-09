@@ -121,7 +121,8 @@ const Reports: React.FC = () => {
     );
     const data = filteredOrders.map((order: any) =>
       order.products.reduce(
-        (total: number, product: any) => total + product.price,
+        (total: number, product: any) =>
+          total + product.price * product.quantity,
         0
       )
     );
@@ -149,38 +150,47 @@ const Reports: React.FC = () => {
   const generateProductsReport = async (): Promise<ReportData> => {
     const orders = await fetchOrders();
     const products = await fetchProducts();
-    console.log("Products:", products);
     const productSalesMap = new Map();
 
     orders.forEach((order: any) => {
+      const orderDate = new Date(order.createdAt);
+      if (
+        selectedDate &&
+        orderDate.toDateString() !== selectedDate.toDateString()
+      ) {
+        return;
+      }
       order.products.forEach((product: any) => {
         const totalProductSales = product.price * product.quantity;
-        if (productSalesMap.has(product.productId)) {
-          productSalesMap.set(
-            product.productId,
-            productSalesMap.get(product.productId) + totalProductSales
-          );
+        const productId = product.productId;
+        if (productSalesMap.has(productId)) {
+          productSalesMap.set(productId, {
+            sales: productSalesMap.get(productId).sales + totalProductSales,
+            lastDate: orderDate,
+          });
         } else {
-          productSalesMap.set(product.productId, totalProductSales);
+          productSalesMap.set(productId, {
+            sales: totalProductSales,
+            lastDate: orderDate,
+          });
         }
       });
     });
 
     const sortedProducts = Array.from(productSalesMap.entries())
-      .map(([productId, sales]) => ({ productId, sales }))
+      .map(([productId, data]) => ({ productId, ...data }))
       .sort((a: any, b: any) => b.sales - a.sales);
-    console.log("Sorted Products:", sortedProducts);
+
     const topSellingProducts = sortedProducts.slice(0, 10);
 
     const labels = topSellingProducts.map((product: any) => {
-      console.log("Product ID:", product.productId);
-      console.log("Products:", products);
-      const productData = products.find((p: any) => p.id === products._id);
-      console.log("Product Data:", productData);
-      return productData?.name || `Product ${product.productId}`;
+      const productData = products.find((p: any) => p.id === product._id);
+      return `${productData?.name || `Product ${product.productId}`} (${
+        product.lastDate.toISOString().split("T")[0]
+      })`;
     });
     const data = topSellingProducts.map((product: any) => product.sales);
-    console.log("Labels:", labels, labels[0]);
+
     return {
       labels,
       data,
@@ -189,9 +199,9 @@ const Reports: React.FC = () => {
         { label: "Top Selling Product", value: labels[0] || "N/A" },
         {
           label: "Total Sales",
-          value: data
+          value: `Rs ${data
             .reduce((sum: number, value: number) => sum + value, 0)
-            .toFixed(2),
+            .toFixed(2)}`,
         },
       ],
     };
@@ -277,6 +287,23 @@ const Reports: React.FC = () => {
                 },
               ],
             }}
+            options={{
+              responsive: true,
+              scales: {
+                x: {
+                  title: {
+                    display: true,
+                    text: "Date",
+                  },
+                },
+                y: {
+                  title: {
+                    display: true,
+                    text: "Order Total (Rs)",
+                  },
+                },
+              },
+            }}
           />
         );
       case "products":
@@ -291,6 +318,27 @@ const Reports: React.FC = () => {
                   backgroundColor: "rgba(153, 102, 255, 0.6)",
                 },
               ],
+            }}
+            options={{
+              responsive: true,
+              scales: {
+                x: {
+                  ticks: {
+                    maxRotation: 90,
+                    minRotation: 90,
+                  },
+                  title: {
+                    display: true,
+                    text: "Product (Date)",
+                  },
+                },
+                y: {
+                  title: {
+                    display: true,
+                    text: "Sales (Rs)",
+                  },
+                },
+              },
             }}
           />
         );
@@ -312,6 +360,18 @@ const Reports: React.FC = () => {
                 },
               ],
             }}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: "right",
+                },
+                title: {
+                  display: true,
+                  text: "Categories Distribution",
+                },
+              },
+            }}
           />
         );
       case "customers":
@@ -326,6 +386,23 @@ const Reports: React.FC = () => {
                   backgroundColor: "rgba(255, 159, 64, 0.6)",
                 },
               ],
+            }}
+            options={{
+              responsive: true,
+              scales: {
+                x: {
+                  title: {
+                    display: true,
+                    text: "Order Frequency",
+                  },
+                },
+                y: {
+                  title: {
+                    display: true,
+                    text: "Number of Customers",
+                  },
+                },
+              },
             }}
           />
         );

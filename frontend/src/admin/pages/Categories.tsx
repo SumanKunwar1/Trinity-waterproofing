@@ -240,7 +240,7 @@ const Categories: React.FC = () => {
     setIsDeleteSubcategoryDialogOpen(false);
     setSubcategoryToDelete(null);
   };
-
+  console.log("Categories in page:", categories);
   return (
     <div>
       <div className="flex bg-gray-100">

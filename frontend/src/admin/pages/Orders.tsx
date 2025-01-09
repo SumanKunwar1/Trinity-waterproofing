@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchOrdersAsync,
@@ -39,12 +39,15 @@ import Topbar from "../components/Topbar";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import Table from "../components/ui/table";
+import { Tabs, TabsList, TabsTrigger } from "../components/ui/tabs";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../components/ui/tabs";
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "../components/ui/pagination";
 
 type Order = {
   _id: string;
@@ -53,11 +56,21 @@ type Order = {
     fullName: string;
     role: string;
   };
+  address: {
+    _id: string;
+    street: string;
+    city: string;
+    province: string;
+    district: string;
+    postalCode: string;
+    country: string;
+  };
   products: any[];
   subtotal: number;
   status: string;
   createdAt: string;
   reason: string | null;
+  paymentMethod: string | null; // Added paymentMethod field
 };
 
 const getStatusBadge = (status: string) => {
@@ -94,10 +107,13 @@ function Orders() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isViewMoreDialogOpen, setIsViewMoreDialogOpen] = useState(false); // Added state for View More dialog
   const [cancelReason, setCancelReason] = useState("");
   const [customerFilter, setCustomerFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ordersPerPage = 10;
 
   useEffect(() => {
     dispatch(fetchOrdersAsync());
@@ -238,18 +254,32 @@ function Orders() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuLabel className="font-semibold text-center">
+                Actions
+              </DropdownMenuLabel>
               <DropdownMenuItem
+                className="border-b border-t border-gray-300 hover:rounded-md hover:bg-button hover:text-white"
+                onClick={() => {
+                  setSelectedOrder(item);
+                  setIsViewMoreDialogOpen(true);
+                }}
+              >
+                View Details
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="border-b border-gray-300 hover:rounded-md "
                 onClick={() => handleStatusChange(item._id, "order-confirmed")}
               >
                 Mark as Confirmed
               </DropdownMenuItem>
               <DropdownMenuItem
+                className="border-b border-gray-300 "
                 onClick={() => handleMarkOrderShipped(item._id)}
               >
                 Mark as Shipped
               </DropdownMenuItem>
               <DropdownMenuItem
+                className="border-b border-gray-300 "
                 onClick={() => handleMarkOrderDelivered(item._id)}
               >
                 Mark as Delivered
@@ -259,7 +289,7 @@ function Orders() {
                   setSelectedOrder(item);
                   setIsCancelDialogOpen(true);
                 }}
-                className="text-red-600"
+                className="text-red-600 border-b border-gray-300 "
               >
                 Cancel Order
               </DropdownMenuItem>
@@ -268,7 +298,7 @@ function Orders() {
                   setSelectedOrder(item);
                   setIsDeleteDialogOpen(true);
                 }}
-                className="text-red-600"
+                className="text-red-600 ext-red-600"
               >
                 Delete Order
               </DropdownMenuItem>
@@ -281,20 +311,31 @@ function Orders() {
   );
 
   const filteredOrders = useMemo(() => {
-    return orders.filter((order) => {
-      const matchesCustomer =
-        !customerFilter ||
-        order.userId.fullName
-          .toLowerCase()
-          .includes(customerFilter.toLowerCase());
-      const matchesDate =
-        !dateFilter ||
-        format(new Date(order.createdAt), "yyyy-MM-dd") === dateFilter;
-      const matchesStatus =
-        statusFilter === "all" || order.status === statusFilter;
-      return matchesCustomer && matchesDate && matchesStatus;
-    });
+    return orders
+      .filter((order) => {
+        const matchesCustomer =
+          !customerFilter ||
+          order.userId.fullName
+            .toLowerCase()
+            .includes(customerFilter.toLowerCase());
+        const matchesDate =
+          !dateFilter ||
+          format(new Date(order.createdAt), "yyyy-MM-dd") === dateFilter;
+        const matchesStatus =
+          statusFilter === "all" || order.status === statusFilter;
+        return matchesCustomer && matchesDate && matchesStatus;
+      })
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
   }, [orders, customerFilter, dateFilter, statusFilter]);
+
+  const pageCount = Math.ceil(filteredOrders.length / ordersPerPage);
+  const paginatedOrders = filteredOrders.slice(
+    (currentPage - 1) * ordersPerPage,
+    currentPage * ordersPerPage
+  );
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
@@ -342,9 +383,43 @@ function Orders() {
                     </Tabs>
                     <Table
                       columns={columns}
-                      data={filteredOrders}
+                      data={paginatedOrders}
                       onRowClick={(item) => console.log("Clicked row:", item)}
                     />
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            onClick={() =>
+                              setCurrentPage((prev) => Math.max(prev - 1, 1))
+                            }
+                            disabled={currentPage === 1}
+                          />
+                        </PaginationItem>
+                        {Array.from({ length: pageCount }, (_, i) => i + 1).map(
+                          (page) => (
+                            <PaginationItem key={page}>
+                              <PaginationLink
+                                onClick={() => setCurrentPage(page)}
+                                isActive={currentPage === page}
+                              >
+                                {page}
+                              </PaginationLink>
+                            </PaginationItem>
+                          )
+                        )}
+                        <PaginationItem>
+                          <PaginationNext
+                            onClick={() =>
+                              setCurrentPage((prev) =>
+                                Math.min(prev + 1, pageCount)
+                              )
+                            }
+                            disabled={currentPage === pageCount}
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
                   </div>
                 </CardContent>
               </Card>
@@ -403,6 +478,89 @@ function Orders() {
             </Button>
             <Button variant="destructive" onClick={handleDeleteOrder}>
               Confirm Deletion
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={isViewMoreDialogOpen}
+        onOpenChange={setIsViewMoreDialogOpen}
+      >
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Order Details</DialogTitle>
+          </DialogHeader>
+          {selectedOrder && (
+            <div className="grid gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h3 className="font-semibold">Customer</h3>
+                  <p>{selectedOrder.userId.fullName}</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold">Order ID</h3>
+                  <p>{selectedOrder._id}</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold">Date</h3>
+                  <p>
+                    {format(new Date(selectedOrder.createdAt), "MMM dd, yyyy")}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="font-semibold">Status</h3>
+                  <p>{getStatusBadge(selectedOrder.status)}</p>
+                </div>
+              </div>
+              <div>
+                <h3 className="font-semibold">Address</h3>
+                <p>
+                  {[
+                    selectedOrder.address.street,
+                    selectedOrder.address.city,
+                    selectedOrder.address.province,
+                    selectedOrder.address.district,
+                    selectedOrder.address.postalCode,
+                    selectedOrder.address.country,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
+                </p>
+              </div>
+              <div>
+                <h3 className="font-semibold">Payment Method</h3>
+                <p>{selectedOrder.paymentMethod || "N/A"}</p>
+              </div>
+              <div>
+                <h3 className="font-semibold">Products</h3>
+                <ul className="list-disc pl-5">
+                  {selectedOrder.products.map((product: any, index: number) => (
+                    <li key={index}>
+                      {product.productId.name} (Qty: {product.quantity} x Price:{" "}
+                      {new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "NPR",
+                      }).format(product.price)}
+                      )
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-semibold">Subtotal</h3>
+                <p>
+                  {new Intl.NumberFormat("en-US", {
+                    style: "currency",
+                    currency: "NPR",
+                  }).format(selectedOrder.subtotal)}
+                </p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button onClick={() => setIsViewMoreDialogOpen(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>
