@@ -8,17 +8,20 @@ export class SliderService {
     try {
       const sliders = await Slider.find();
       const sliderResponse = sliders.map((slider) => {
-        let media;
+        let mediaUrl;
 
-        if (slider.media.type === "image") {
-          media = `/api/image/${slider.media.url}`;
-        } else if (slider.media.type === "video") {
-          media = `/api/image/${slider.media.url}`;
+        // Construct media URL based on the type (image or video)
+        if (slider.media.type === "image" || slider.media.type === "video") {
+          mediaUrl = `/api/image/${slider.media.url}`; // Assuming your /api/image/ route handles both types
         }
 
         return {
           ...slider.toObject(),
-          media: media,
+          media: {
+            // Return media as an object with type and url
+            type: slider.media.type, // media type ("image" or "video")
+            url: mediaUrl, // media URL
+          },
         };
       });
 
@@ -33,18 +36,24 @@ export class SliderService {
       const sliders = await Slider.find({ isvisible: true });
       const sliderResponse = sliders.map((slider) => {
         let media;
+        let mediaType;
 
+        // Based on the media type, assign a value to media and mediaType
         if (slider.media.type === "image") {
           media = `/api/image/${slider.media.url}`;
+          mediaType = "image";
         } else if (slider.media.type === "video") {
+          mediaType = "video";
           media = `/api/image/${slider.media.url}`;
         }
 
         return {
-          ...slider.toObject(),
-          media: media,
+          ...slider.toObject(), // Convert mongoose document to plain object
+          media: media, // Add media URL
+          mediaType: mediaType, // Add mediaType (image/video)
         };
       });
+
       return sliderResponse;
     } catch (error) {
       throw error;
@@ -53,7 +62,7 @@ export class SliderService {
 
   public async createSlider(sliderData: ISlider) {
     try {
-      const { image, video, title, subtitle, isvisible } = sliderData;
+      const { image, description, video, title, isvisible } = sliderData;
       let media;
       if (image) {
         media = {
@@ -66,17 +75,23 @@ export class SliderService {
           url: video,
         };
       }
-      const slider = new Slider({ title, subtitle, isvisible, media });
+      const slider = new Slider({
+        title,
+        isvisible,
+        media,
+        description,
+      });
       await slider.save();
       return slider;
     } catch (error) {
+      console.log("error in create slider service", error);
       throw error;
     }
   }
 
   public async editSlider(sliderData: Partial<ISlider>, sliderId: string) {
     try {
-      const { title, subtitle, image, video, isvisible } = sliderData;
+      const { title, description, image, video, isvisible } = sliderData;
       const slider = await Slider.findById(sliderId);
 
       if (!slider) {
@@ -106,8 +121,8 @@ export class SliderService {
       if (title) {
         slider.title = title;
       }
-      if (subtitle) {
-        slider.subtitle = subtitle;
+      if (description) {
+        slider.description = description;
       }
       if (typeof isvisible !== "undefined") {
         slider.isvisible = isvisible;

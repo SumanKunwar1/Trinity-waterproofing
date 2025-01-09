@@ -1,5 +1,6 @@
 export interface ICompanyDetail {
-  Name: string;
+  name: string;
+  description: string;
   phoneNumber: string;
   location: string;
   email: string;

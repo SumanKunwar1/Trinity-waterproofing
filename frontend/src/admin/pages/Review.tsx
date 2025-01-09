@@ -202,6 +202,7 @@ export default function Reviews() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
+            <h1 className="text-2xl font-semibold">Reviews</h1>
             <Table
               columns={columns}
               data={currentReviews}

@@ -37,6 +37,7 @@ import { Provider } from "react-redux";
 import { store } from "./admin/store/store";
 import ServicesPage from "./pages/Services";
 import TeamPage from "./pages/Teams";
+import UserGallery from "./pages/Gallery";
 function App() {
   const userRole = localStorage.getItem("userRole");
   return (

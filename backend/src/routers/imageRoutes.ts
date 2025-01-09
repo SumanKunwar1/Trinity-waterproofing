@@ -42,6 +42,7 @@ function renderImage(
     if (!mimeType) {
       return res.status(415).json({ error: "Unsupported file type" });
     }
+    console.log(mimeType);
 
     res.setHeader("Content-Type", mimeType);
 

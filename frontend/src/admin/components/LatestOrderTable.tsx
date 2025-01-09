@@ -1,54 +1,54 @@
 import React from "react";
-import Table from "../components/ui/table"; // Path to your Table component
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../../components/ui/table";
+import { format } from "date-fns";
 
 interface Order {
-  id: string;
-  customerName: string;
-  total: number;
+  _id: string;
+  userId: {
+    fullName: string;
+  };
+  subtotal: number;
   status: string;
   createdAt: string;
 }
 
 interface LatestOrderTableProps {
-  order: Order | null;
+  orders: Order[];
 }
 
-const LatestOrderTable: React.FC<LatestOrderTableProps> = ({ order }) => {
-  if (!order) {
-    return <p>No recent orders.</p>;
-  }
-
-  // Define table columns for orders
-  const columns = [
-    {
-      header: "Order ID",
-      accessor: "id",
-    },
-    {
-      header: "Customer",
-      accessor: "customerName",
-    },
-    {
-      header: "Total",
-      accessor: "total",
-      cell: (item: Order) => `$${item.total}`, // Custom cell formatting for total
-    },
-    {
-      header: "Status",
-      accessor: "status",
-    },
-    {
-      header: "Date",
-      accessor: "createdAt",
-      cell: (item: Order) => new Date(item.createdAt).toLocaleString(), // Format date
-    },
-  ];
-
-  // Create data array for the table (we're using the single order here)
-  const data = [order];
-
+const LatestOrderTable: React.FC<LatestOrderTableProps> = ({ orders }) => {
   return (
-    <Table columns={columns} data={data} itemsPerPage={1} /> // Only 1 item per page as it's a single order
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Order ID</TableHead>
+          <TableHead>Customer</TableHead>
+          <TableHead>Amount</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Date</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {orders.map((order) => (
+          <TableRow key={order._id}>
+            <TableCell>{order._id}</TableCell>
+            <TableCell>{order.userId.fullName}</TableCell>
+            <TableCell>Rs {order.subtotal.toFixed(2)}</TableCell>
+            <TableCell>{order.status}</TableCell>
+            <TableCell>
+              {format(new Date(order.createdAt), "MMM dd, yyyy")}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 };
 

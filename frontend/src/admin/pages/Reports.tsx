@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaFileAlt, FaDownload } from "react-icons/fa";
 import {
@@ -34,8 +34,15 @@ import { Link } from "react-router-dom";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
+import {
+  fetchProducts,
+  fetchOrders,
+  fetchCategories,
+  fetchSubcategories,
+} from "../utils/api";
 
 ChartJS.register(
   CategoryScale,
@@ -49,85 +56,304 @@ ChartJS.register(
   Legend
 );
 
+interface ReportData {
+  labels: string[];
+  data: number[];
+  insights: { label: string; value: string }[];
+}
+
 const Reports: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<string>("orders");
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [reportData, setReportData] = useState<ReportData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
-  const [selectedReport, setSelectedReport] = useState<string>("sales");
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  const salesData = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-    datasets: [
-      {
-        label: "Sales",
-        data: [12000, 19000, 3000, 5000, 2000, 3000],
-        backgroundColor: "rgba(75, 192, 192, 0.6)",
-      },
-    ],
+  useEffect(() => {
+    fetchData();
+  }, [selectedReport, selectedDate]);
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      let data: ReportData;
+      switch (selectedReport) {
+        case "orders":
+          data = await generateOrdersReport();
+          break;
+        case "products":
+          data = await generateProductsReport();
+          break;
+        case "categories":
+          data = await generateCategoriesReport();
+          break;
+        case "customers":
+          data = await generateCustomersReport();
+          break;
+        default:
+          throw new Error("Invalid report type");
+      }
+      setReportData(data);
+      toast.success("Report data fetched successfully");
+    } catch (error) {
+      console.error("Error fetching report data:", error);
+      toast.error("Failed to fetch report data");
+    }
+    setIsLoading(false);
   };
 
-  const productPerformanceData = {
-    labels: ["Product A", "Product B", "Product C", "Product D", "Product E"],
-    datasets: [
-      {
-        label: "Units Sold",
-        data: [300, 250, 200, 150, 100],
-        backgroundColor: [
-          "rgba(255, 99, 132, 0.6)",
-          "rgba(54, 162, 235, 0.6)",
-          "rgba(255, 206, 86, 0.6)",
-          "rgba(75, 192, 192, 0.6)",
-          "rgba(153, 102, 255, 0.6)",
-        ],
-      },
-    ],
+  const generateOrdersReport = async (): Promise<ReportData> => {
+    const orders = await fetchOrders();
+    const filteredOrders = selectedDate
+      ? orders.filter(
+          (order: any) =>
+            new Date(order.createdAt).toDateString() ===
+            selectedDate.toDateString()
+        )
+      : orders;
+
+    const labels = filteredOrders.map((order: any) =>
+      new Date(order.createdAt).toLocaleDateString()
+    );
+    const data = filteredOrders.map((order: any) =>
+      order.products.reduce(
+        (total: number, product: any) => total + product.price,
+        0
+      )
+    );
+
+    const totalRevenue = data.reduce(
+      (sum: number, value: number) => sum + value,
+      0
+    );
+    const averageOrderValue = data.length > 0 ? totalRevenue / data.length : 0;
+
+    return {
+      labels,
+      data,
+      insights: [
+        { label: "Total Orders", value: filteredOrders.length.toString() },
+        { label: "Total Revenue", value: `Rs ${totalRevenue.toFixed(2)}` },
+        {
+          label: "Average Order Value",
+          value: `Rs ${averageOrderValue.toFixed(2)}`,
+        },
+      ],
+    };
   };
 
-  const customerAnalyticsData = {
-    labels: ["New Customers", "Returning Customers"],
-    datasets: [
-      {
-        data: [60, 40],
-        backgroundColor: ["rgba(255, 99, 132, 0.6)", "rgba(54, 162, 235, 0.6)"],
-      },
-    ],
+  const generateProductsReport = async (): Promise<ReportData> => {
+    const orders = await fetchOrders();
+    const products = await fetchProducts();
+    console.log("Products:", products);
+    const productSalesMap = new Map();
+
+    orders.forEach((order: any) => {
+      order.products.forEach((product: any) => {
+        const totalProductSales = product.price * product.quantity;
+        if (productSalesMap.has(product.productId)) {
+          productSalesMap.set(
+            product.productId,
+            productSalesMap.get(product.productId) + totalProductSales
+          );
+        } else {
+          productSalesMap.set(product.productId, totalProductSales);
+        }
+      });
+    });
+
+    const sortedProducts = Array.from(productSalesMap.entries())
+      .map(([productId, sales]) => ({ productId, sales }))
+      .sort((a: any, b: any) => b.sales - a.sales);
+    console.log("Sorted Products:", sortedProducts);
+    const topSellingProducts = sortedProducts.slice(0, 10);
+
+    const labels = topSellingProducts.map((product: any) => {
+      console.log("Product ID:", product.productId);
+      console.log("Products:", products);
+      const productData = products.find((p: any) => p.id === products._id);
+      console.log("Product Data:", productData);
+      return productData?.name || `Product ${product.productId}`;
+    });
+    const data = topSellingProducts.map((product: any) => product.sales);
+    console.log("Labels:", labels, labels[0]);
+    return {
+      labels,
+      data,
+      insights: [
+        { label: "Total Products", value: products.length.toString() },
+        { label: "Top Selling Product", value: labels[0] || "N/A" },
+        {
+          label: "Total Sales",
+          value: data
+            .reduce((sum: number, value: number) => sum + value, 0)
+            .toFixed(2),
+        },
+      ],
+    };
+  };
+
+  const generateCategoriesReport = async (): Promise<ReportData> => {
+    const categories = await fetchCategories();
+    const subcategories = await fetchSubcategories();
+
+    const labels = categories.map((category: any) => category.name);
+    const data = categories.map((category: any) => {
+      return subcategories.filter(
+        (subcategory: any) => subcategory.categoryId === category.id
+      ).length;
+    });
+
+    return {
+      labels,
+      data,
+      insights: [
+        { label: "Total Categories", value: categories.length.toString() },
+        {
+          label: "Total Subcategories",
+          value: subcategories.length.toString(),
+        },
+        {
+          label: "Most Diverse Category",
+          value: labels[data.indexOf(Math.max(...data))],
+        },
+      ],
+    };
+  };
+
+  const generateCustomersReport = async (): Promise<ReportData> => {
+    const orders = await fetchOrders();
+    const customerMap = new Map();
+
+    orders.forEach((order: any) => {
+      const customerId = order.userId;
+      if (customerMap.has(customerId)) {
+        customerMap.set(customerId, customerMap.get(customerId) + 1);
+      } else {
+        customerMap.set(customerId, 1);
+      }
+    });
+
+    const labels = ["1 Order", "2-5 Orders", "6-10 Orders", "10+ Orders"];
+    const data = [0, 0, 0, 0];
+
+    customerMap.forEach((orderCount) => {
+      if (orderCount === 1) data[0]++;
+      else if (orderCount >= 2 && orderCount <= 5) data[1]++;
+      else if (orderCount >= 6 && orderCount <= 10) data[2]++;
+      else data[3]++;
+    });
+
+    return {
+      labels,
+      data,
+      insights: [
+        { label: "Total Customers", value: customerMap.size.toString() },
+        { label: "Customers with 1 Order", value: data[0].toString() },
+        { label: "Customers with 10+ Orders", value: data[3].toString() },
+      ],
+    };
   };
 
   const renderChart = () => {
+    if (!reportData) return null;
+
     switch (selectedReport) {
-      case "sales":
-        return <Bar data={salesData} />;
-      case "product-performance":
-        return <Line data={productPerformanceData} />;
-      case "customer-analytics":
-        return <Pie data={customerAnalyticsData} />;
+      case "orders":
+        return (
+          <Line
+            data={{
+              labels: reportData.labels,
+              datasets: [
+                {
+                  label: "Order Total",
+                  data: reportData.data,
+                  borderColor: "rgba(75, 192, 192, 1)",
+                  tension: 0.1,
+                },
+              ],
+            }}
+          />
+        );
+      case "products":
+        return (
+          <Bar
+            data={{
+              labels: reportData.labels,
+              datasets: [
+                {
+                  label: "Sales",
+                  data: reportData.data,
+                  backgroundColor: "rgba(153, 102, 255, 0.6)",
+                },
+              ],
+            }}
+          />
+        );
+      case "categories":
+        return (
+          <Pie
+            data={{
+              labels: reportData.labels,
+              datasets: [
+                {
+                  data: reportData.data,
+                  backgroundColor: [
+                    "rgba(255, 99, 132, 0.6)",
+                    "rgba(54, 162, 235, 0.6)",
+                    "rgba(255, 206, 86, 0.6)",
+                    "rgba(75, 192, 192, 0.6)",
+                    "rgba(153, 102, 255, 0.6)",
+                  ],
+                },
+              ],
+            }}
+          />
+        );
+      case "customers":
+        return (
+          <Bar
+            data={{
+              labels: reportData.labels,
+              datasets: [
+                {
+                  label: "Number of Customers",
+                  data: reportData.data,
+                  backgroundColor: "rgba(255, 159, 64, 0.6)",
+                },
+              ],
+            }}
+          />
+        );
       default:
         return null;
     }
   };
 
   const generatePDFReport = () => {
+    if (!reportData) return;
+
     const doc = new jsPDF();
 
     // Add company logo
     const logo = new Image();
-    logo.src = "/company-logo.svg";
-    doc.addImage(logo, "SVG", 14, 10, 30, 30);
+    logo.src = "/assets/logo.png";
+    doc.addImage(logo, "PNG", 14, 10, 30, 30);
 
     // Add company name and date
     doc.setFontSize(20);
-    doc.text("SELLER CENTER", 50, 25);
+    doc.text("Trinity Waterproofing", 50, 25);
     doc.setFontSize(12);
     doc.text(new Date().toLocaleDateString(), 14, 45);
 
     // Rest of the report content starting lower on the page
     doc.text(
       `${
-        selectedReport.charAt(0).toUpperCase() +
-        selectedReport.slice(1).replace("-", " ")
+        selectedReport.charAt(0).toUpperCase() + selectedReport.slice(1)
       } Report`,
       14,
       60
@@ -144,8 +370,7 @@ const Reports: React.FC = () => {
     doc.text("Report Details:", 14, 185);
     doc.text(
       `Report Type: ${
-        selectedReport.charAt(0).toUpperCase() +
-        selectedReport.slice(1).replace("-", " ")
+        selectedReport.charAt(0).toUpperCase() + selectedReport.slice(1)
       }`,
       14,
       195
@@ -158,15 +383,14 @@ const Reports: React.FC = () => {
       205
     );
 
-    // Example of adding key insights
+    // Adding key insights
     doc.text("Key Insights:", 14, 215);
     doc.autoTable({
       head: [["Insight", "Value"]],
-      body: [
-        ["Total Revenue", "$44,000"],
-        ["Best Selling Product", "Product A"],
-        ["New Customer Growth", "15%"],
-      ],
+      body: reportData.insights.map((insight) => [
+        insight.label,
+        insight.value,
+      ]),
       startY: 220,
     });
 
@@ -208,12 +432,15 @@ const Reports: React.FC = () => {
                           <SelectValue placeholder="Select report type" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="sales">Sales Report</SelectItem>
-                          <SelectItem value="product-performance">
-                            Product Performance
+                          <SelectItem value="orders">Orders Report</SelectItem>
+                          <SelectItem value="products">
+                            Products Report
                           </SelectItem>
-                          <SelectItem value="customer-analytics">
-                            Customer Analytics
+                          <SelectItem value="categories">
+                            Categories Report
+                          </SelectItem>
+                          <SelectItem value="customers">
+                            Customers Report
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -226,7 +453,11 @@ const Reports: React.FC = () => {
                         className="w-48 p-2 rounded-md"
                       />
 
-                      <Button variant="secondary" onClick={handleDownload}>
+                      <Button
+                        variant="secondary"
+                        onClick={handleDownload}
+                        disabled={!reportData}
+                      >
                         <FaDownload className="mr-2" /> Download Report
                       </Button>
                       <Link to="/admin/generate-report">
@@ -235,17 +466,22 @@ const Reports: React.FC = () => {
                         </Button>
                       </Link>
                     </div>
-                    <div className="h-[400px]">{renderChart()}</div>
+                    <div className="h-[400px]">
+                      {isLoading ? (
+                        <div className="flex items-center justify-center h-full">
+                          <p>Loading...</p>
+                        </div>
+                      ) : (
+                        renderChart()
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, y: 50 }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
                 <Card>
@@ -260,7 +496,7 @@ const Reports: React.FC = () => {
                         <h3 className="font-semibold">Report Type:</h3>
                         <p>
                           {selectedReport.charAt(0).toUpperCase() +
-                            selectedReport.slice(1).replace("-", " ")}
+                            selectedReport.slice(1)}
                         </p>
                       </div>
                       <div>
@@ -274,9 +510,11 @@ const Reports: React.FC = () => {
                       <div>
                         <h3 className="font-semibold">Key Insights:</h3>
                         <ul className="list-disc pl-5">
-                          <li>Total Revenue: $44,000</li>
-                          <li>Best Selling Product: Product A</li>
-                          <li>New Customer Growth: 15%</li>
+                          {reportData?.insights.map((insight, index) => (
+                            <li
+                              key={index}
+                            >{`${insight.label}: ${insight.value}`}</li>
+                          ))}
                         </ul>
                       </div>
                     </div>

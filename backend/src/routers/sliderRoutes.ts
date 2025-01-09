@@ -8,7 +8,10 @@ import {
   handleResponse,
   handleError,
 } from "../middlewares";
-import { imageUploadMiddleware, appendImageDataToBody } from "../config/upload";
+import {
+  sliderUploadMiddleware,
+  appendSliderDataToBody,
+} from "../config/upload";
 
 const router = Router();
 const sliderController = new SliderController();
@@ -31,24 +34,26 @@ router.post(
   "/",
   isAuthenticated,
   isAuthorized("admin"),
-  imageUploadMiddleware,
+  sliderUploadMiddleware,
+  appendSliderDataToBody,
   validateSlider,
-  sliderController.createSlider.bind(sliderController)
+  sliderController.createSlider.bind(sliderController),
+  handleResponse
 );
 
 router.patch(
-  "/",
+  "/:sliderId",
   isAuthenticated,
   isAuthorized("admin"),
-  imageUploadMiddleware,
-  appendImageDataToBody,
+  sliderUploadMiddleware,
+  appendSliderDataToBody,
   validateEditSlider,
   sliderController.editSlider.bind(sliderController),
   handleResponse
 );
 
 router.delete(
-  "/",
+  "/:sliderId",
   isAuthenticated,
   isAuthorized("admin"),
   sliderController.deleteSlider.bind(sliderController),

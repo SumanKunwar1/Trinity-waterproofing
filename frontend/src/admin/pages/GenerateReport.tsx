@@ -2,143 +2,281 @@ import React, { useState } from "react";
 import { toast } from "react-toastify";
 import { FaFileAlt } from "react-icons/fa";
 import { jsPDF } from "jspdf";
-import "jspdf-autotable"; // Ensure this import is here
+import "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { Button } from "../components/ui/button";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
+import { fetchOrders, fetchProducts, fetchCategories } from "../utils/api";
 
 interface DateRange {
   from: Date | null;
   to: Date | null;
 }
 
+interface OrderData {
+  id: string;
+  products: string;
+  userId: string;
+  addressId: string;
+  subtotal: number;
+  status: string;
+  createdAt: string;
+}
+
+interface ProductData {
+  id: string;
+  name: string;
+  description: string;
+  retailPrice: number;
+  wholeSalePrice: number;
+  productImage: string;
+  images: string;
+  features: string;
+  brand: string;
+  inStock: number;
+  subCategory: string;
+  createdAt: string;
+}
+
+interface CategoryData {
+  id: string;
+  name: string;
+  description: string;
+  subCategory: string;
+  createdAt: string;
+}
+
 const GenerateReport: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-
-  const toggleSidebar = () => {
-    setSidebarOpen((prev) => !prev);
-  };
   const [reportType, setReportType] = useState<string>("orders");
   const [dateRange, setDateRange] = useState<DateRange>({
     from: null,
     to: null,
   });
   const [fileFormat, setFileFormat] = useState<string>("pdf");
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Function to generate mock report data with filtering based on date range
-  const generateReportData = (
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => !prev);
+  };
+
+  const fetchReportData = async (
     type: string,
     startDate: Date | null,
     endDate: Date | null
   ) => {
-    const mockData = {
-      orders: [
-        { id: 1, date: "2024-12-01", total: 100 },
-        { id: 2, date: "2024-12-02", total: 200 },
-        { id: 3, date: "2024-12-03", total: 150 },
-        { id: 4, date: "2024-12-10", total: 250 },
-      ],
-      products: [
-        { id: 1, name: "Product A", stock: 100, price: 50 },
-        { id: 2, name: "Product B", stock: 75, price: 60 },
-        { id: 3, name: "Product C", stock: 120, price: 40 },
-      ],
-      categories: [
-        { id: 1, name: "Category A", productCount: 10 },
-        { id: 2, name: "Category B", productCount: 15 },
-        { id: 3, name: "Category C", productCount: 8 },
-      ],
-    };
-
-    const data = mockData[type as keyof typeof mockData];
-
-    // Filter data by date range (only for orders)
-    if (type === "orders" && startDate && endDate) {
-      return data.filter((order) => {
-        const orderDate = new Date(order.date);
-        return orderDate >= startDate && orderDate <= endDate;
-      });
+    if (!startDate || !endDate) {
+      throw new Error("Invalid date range");
     }
 
-    return data; // For other types (e.g., products, categories), no date filtering needed
+    try {
+      let data;
+      switch (type) {
+        case "orders":
+          data = await fetchOrders(startDate, endDate);
+          console.log("Fetched Orders Data:", data); // Log orders data
+          return data.map((order: any) => ({
+            id: order._id,
+            products: order.products
+              .map((p: any) => `${p._id} (${p.quantity})`)
+              .join(", "),
+            userId: order.userId._id,
+            addressId: order.addressId,
+            subtotal: order.subtotal,
+            status: order.status,
+            createdAt: new Date(order.createdAt).toLocaleDateString(),
+          }));
+
+        case "products":
+          data = await fetchProducts();
+
+          // Function to clean HTML tags from content
+          function cleanFeaturesContent(content: any) {
+            // Remove HTML tags from each feature
+            return content.replace(/<[^>]*>/g, "").replace(/\n/g, ""); // Remove newlines as well
+          }
+
+          console.log("Fetched Products Data:", data); // Log products data
+
+          return data.map((product: any) => {
+            return {
+              id: product._id,
+              name: product.name,
+              description: product.description,
+              retailPrice: product.retailPrice,
+              wholeSalePrice: product.wholeSalePrice,
+              productImage: product.productImage,
+              images: product.image.join(", "), // Join all image URLs into a string
+              // Check if features is an array or a string
+              features: Array.isArray(product.features)
+                ? product.features
+                    .map((feature: any) => cleanFeaturesContent(feature))
+                    .join(", ") // Clean each feature if it's an array
+                : cleanFeaturesContent(product.features), // If it's a string, clean directly
+              brand: product.brand._id,
+              inStock: product.inStock,
+              subCategory: product.subCategory._id,
+              createdAt: new Date(product.createdAt).toLocaleDateString(), // Format creation date
+            };
+          });
+
+        case "categories":
+          data = await fetchCategories();
+          console.log("Fetched Categories Data:", data); // Log categories data
+          return data.map((category: any) => ({
+            id: category._id,
+            name: category.name,
+            description: category.description,
+            subCategory: category.subCategories._id,
+            createdAt: new Date(category.createdAt).toLocaleDateString(),
+          }));
+        default:
+          throw new Error("Invalid report type");
+      }
+    } catch (error) {
+      console.error("Error fetching report data:", error);
+      throw new Error("Failed to fetch report data.");
+    }
   };
 
-  // Function to generate PDF report
-  const generatePDF = (data: any[]) => {
-    const doc = new jsPDF();
+  const generatePDF = (data: OrderData[] | ProductData[] | CategoryData[]) => {
+    const doc = new jsPDF({
+      orientation: "landscape",
+      unit: "mm",
+      format: "a4",
+    });
+
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+    const margin = 10;
+
+    doc.setFontSize(18);
     doc.text(
       `${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report`,
-      14,
-      15
+      margin,
+      margin + 10
     );
+
+    doc.setFontSize(12);
     if (dateRange.from && dateRange.to) {
       doc.text(
         `Date Range: ${dateRange.from.toDateString()} - ${dateRange.to.toDateString()}`,
-        14,
-        25
+        margin,
+        margin + 20
       );
     }
 
+    const headers = Object.keys(data[0]);
+    const rows = data.map((item) => Object.values(item));
+
+    const tableWidth = pageWidth - 2 * margin;
+    const columnWidth = tableWidth / headers.length;
+
     doc.autoTable({
-      head: [Object.keys(data[0])],
-      body: data.map(Object.values),
-      startY: 35,
+      head: [headers],
+      body: rows,
+      startY: margin + 30,
+      margin: { left: margin, right: margin },
+      columnStyles: headers.reduce((acc, _, index) => {
+        acc[index] = {
+          cellWidth: columnWidth,
+          overflow: "linebreak",
+        };
+        return acc;
+      }, {}),
+      styles: {
+        overflow: "linebreak",
+        cellPadding: 2,
+        fontSize: 8,
+        textColor: [0, 0, 0],
+      },
+      headStyles: {
+        fillColor: [41, 128, 185],
+        textColor: 255,
+        fontStyle: "bold",
+        fontSize: 9,
+      },
+      alternateRowStyles: { fillColor: [242, 242, 242] },
+      bodyStyles: { valign: "middle" },
+      theme: "grid",
+      tableWidth: "auto",
+      didDrawPage: (data: any) => {
+        doc.setFontSize(8);
+        doc.text(
+          `Page ${data.pageNumber} of ${data.pageCount}`,
+          pageWidth / 2,
+          pageHeight - 5,
+          { align: "center" }
+        );
+      },
     });
 
     doc.save(`${reportType}_report.pdf`);
   };
 
-  // Function to generate CSV report
-  const generateCSV = (data: any[]) => {
+  const generateCSV = (data: OrderData[] | ProductData[] | CategoryData[]) => {
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
     XLSX.writeFile(workbook, `${reportType}_report.csv`);
   };
 
-  // Function to generate Excel report
-  const generateExcel = (data: any[]) => {
+  const generateExcel = (
+    data: OrderData[] | ProductData[] | CategoryData[]
+  ) => {
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
     XLSX.writeFile(workbook, `${reportType}_report.xlsx`);
   };
 
-  // Function to handle report generation based on selected options
-  const handleGenerateReport = () => {
+  const handleGenerateReport = async () => {
     if (!dateRange.from || !dateRange.to) {
       toast.error("Please select a valid date range");
       return;
     }
 
-    const data = generateReportData(reportType, dateRange.from, dateRange.to);
+    setIsLoading(true);
 
-    if (data.length === 0) {
-      toast.error("No data found for the selected date range");
-      return;
-    }
+    try {
+      const data = await fetchReportData(
+        reportType,
+        dateRange.from,
+        dateRange.to
+      );
 
-    switch (fileFormat) {
-      case "pdf":
-        generatePDF(data);
-        break;
-      case "csv":
-        generateCSV(data);
-        break;
-      case "excel":
-        generateExcel(data);
-        break;
-      default:
-        toast.error("Invalid file format");
+      if (data.length === 0) {
+        toast.error("No data found for the selected date range");
         return;
-    }
+      }
 
-    toast.success(
-      `${
-        reportType.charAt(0).toUpperCase() + reportType.slice(1)
-      } report generated successfully!`
-    );
+      switch (fileFormat) {
+        case "pdf":
+          generatePDF(data);
+          break;
+        case "csv":
+          generateCSV(data);
+          break;
+        case "excel":
+          generateExcel(data);
+          break;
+        default:
+          toast.error("Invalid file format");
+          return;
+      }
+
+      toast.success(
+        `${
+          reportType.charAt(0).toUpperCase() + reportType.slice(1)
+        } report generated successfully!`
+      );
+    } catch (error) {
+      console.error("Error generating report:", error);
+      toast.error("Failed to generate report. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -236,8 +374,10 @@ const GenerateReport: React.FC = () => {
                   onClick={handleGenerateReport}
                   variant="secondary"
                   className="w-full"
+                  disabled={isLoading}
                 >
-                  <FaFileAlt className="mr-2" /> Generate Report
+                  <FaFileAlt className="mr-2" />
+                  {isLoading ? "Generating..." : "Generate Report"}
                 </Button>
               </div>
             </div>

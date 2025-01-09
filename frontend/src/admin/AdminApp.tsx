@@ -27,6 +27,9 @@ import { Provider } from "react-redux";
 import { store } from "../admin/store/store";
 import AdminReturnsAndCancellations from "./pages/ReturnsAndCancel";
 import Newsletters from "./pages/Newsletters";
+import AdminGallery from "./pages/Gallery";
+import { AuthProvider } from "../context/AuthContext";
+import Enquiries from "./pages/Enquiry";
 import { SocketProvider } from "../context/SocketContext";
 
 function AdminApp() {

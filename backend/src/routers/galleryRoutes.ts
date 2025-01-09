@@ -40,7 +40,7 @@ router.get(
 );
 
 router.get(
-  "/images",
+  "/images/:folderName",
   galleryController.getFiles.bind(galleryController),
   handleResponse
 );

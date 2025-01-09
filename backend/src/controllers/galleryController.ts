@@ -64,7 +64,7 @@ export class GalleryController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { folderName } = req.body;
+      const { folderName } = req.params;
       const result = await this.galleryService.getFiles(folderName);
       res.locals.responseData = result;
       next();

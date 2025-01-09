@@ -1,4 +1,6 @@
-import { useState } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Card,
@@ -8,13 +10,114 @@ import {
 } from "../components/ui/card";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
+import ContentForm from "../components/ContentForm";
+import TabList from "../components/TabList";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-const About: React.FC = () => {
+interface IAbout {
+  _id?: string;
+  title: string;
+  description: string;
+  image: string;
+  cores: ICore[];
+  tabs: ITab[];
+}
+
+interface ICore {
+  _id?: string;
+  title: string;
+  description: string;
+  image: string;
+}
+
+interface ITab {
+  _id?: string;
+  title: string;
+  description: string;
+  image: string;
+}
+
+const AdminAbout: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [about, setAbout] = useState<IAbout | null>(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [formType, setFormType] = useState<"about" | "cores" | "tab">("about");
+  const [editingContent, setEditingContent] = useState<any | null>(null);
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
+
+  // Fetch About, cores, and Tabs separately
+  useEffect(() => {
+    fetchAbout();
+    fetchCore();
+    fetchTabs();
+  }, []);
+
+  const fetchAbout = async () => {
+    try {
+      const response = await fetch("/api/about");
+      if (!response.ok) {
+        throw new Error("Failed to fetch about data");
+      }
+      const data = await response.json();
+      setAbout((prevState) => ({
+        ...prevState,
+        ...data, // Merge the about data with the previous state
+      }));
+    } catch (error) {
+      console.error("Error fetching about data:", error);
+    }
+  };
+
+  const fetchCore = async () => {
+    try {
+      const response = await fetch("/api/about/cores");
+      if (!response.ok) {
+        throw new Error("Failed to fetch cores values");
+      }
+      const data = await response.json();
+      setAbout((prevState) => ({
+        ...prevState,
+        cores: data || [], // Ensure cores is always an array
+      }));
+    } catch (error) {
+      console.error("Error fetching cores values:", error);
+    }
+  };
+
+  const fetchTabs = async () => {
+    try {
+      const response = await fetch("/api/about/tabs");
+      if (!response.ok) {
+        throw new Error("Failed to fetch tabs");
+      }
+      const data = await response.json();
+      setAbout((prevState) => ({
+        ...prevState,
+        tabs: data || [], // Ensure tabs is always an array
+      }));
+    } catch (error) {
+      console.error("Error fetching tabs:", error);
+    }
+  };
+
+  const handleFormSubmit = () => {
+    fetchAbout();
+    fetchCore();
+    fetchTabs();
+    setIsFormOpen(false);
+    setEditingContent(null);
+  };
+
+  const openForm = (type: "about" | "cores" | "tab", content: any = null) => {
+    setFormType(type);
+    setEditingContent(content);
+    setIsFormOpen(true);
+  };
+
   return (
     <div>
       <div className="flex bg-gray-100">
@@ -27,44 +130,110 @@ const About: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              {/* Using ShadCN Card */}
-              <Card>
+              {/* About Card */}
+              <Card className="mb-6">
                 <CardHeader>
-                  <CardTitle>About WaterproofStore</CardTitle>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>About WaterproofStore</CardTitle>
+                    <button
+                      onClick={() => openForm("about", about || null)}
+                      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                    >
+                      {about ? "Edit About" : "Add About"}
+                    </button>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="mb-4">
-                    WaterproofStore is your one-stop shop for all waterproofing
-                    needs. Founded in 2010, we've been providing high-quality
-                    waterproof products and solutions to both individual
-                    consumers and businesses for over a decade.
-                  </p>
-                  <p className="mb-4">
-                    Our mission is to deliver innovative waterproofing solutions
-                    that protect and preserve. We believe in the power of
-                    quality products, exceptional customer service, and
-                    continuous innovation.
-                  </p>
-                  <p className="mb-4">
-                    With a wide range of products including waterproof paints,
-                    sealants, membranes, and coatings, we cater to various
-                    industries such as construction, automotive, marine, and
-                    more. Our team of experts is always ready to assist you in
-                    finding the perfect solution for your waterproofing needs.
-                  </p>
-                  <p>
-                    At WaterproofStore, we're not just selling products; we're
-                    providing peace of mind. Trust us to keep you dry and
-                    protected, no matter the elements.
-                  </p>
+                  {about ? (
+                    <>
+                      <h2 className="text-xl font-bold mb-2">{about.title}</h2>
+                      <p className="mb-4">{about.description}</p>
+                      <img
+                        src={about.image}
+                        alt="About"
+                        className="w-full h-48 object-cover rounded"
+                      />
+                    </>
+                  ) : (
+                    <p>No about content available. Please create it.</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* cores Values Card */}
+              <Card className="mb-6">
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>Core Values</CardTitle>
+                    <button
+                      onClick={() => openForm("cores")}
+                      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                    >
+                      Add Core Value
+                    </button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {about && about.cores && about.cores.length > 0 ? (
+                    <TabList
+                      tabs={about.cores}
+                      onEdit={(cores) => openForm("cores", cores)}
+                      onDelete={fetchCore}
+                      type="cores"
+                    />
+                  ) : (
+                    <p>No core values available. Please add them.</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* About Tabs Card */}
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>About Tabs</CardTitle>
+                    <button
+                      onClick={() => openForm("tab")}
+                      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                    >
+                      Add New Tab
+                    </button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {about && about.tabs && about.tabs.length > 0 ? (
+                    <TabList
+                      tabs={about.tabs}
+                      onEdit={(tab) => openForm("tab", tab)}
+                      onDelete={fetchTabs}
+                      type="tabs"
+                    />
+                  ) : (
+                    <p>No tabs available. Please add them.</p>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
           </main>
         </div>
       </div>
+
+      {/* Content Form */}
+      {isFormOpen && (
+        <ContentForm
+          onClose={() => {
+            setIsFormOpen(false);
+            setEditingContent(null);
+          }}
+          onSubmit={handleFormSubmit}
+          type={formType}
+          content={editingContent}
+        />
+      )}
+
+      <ToastContainer />
     </div>
   );
 };
 
-export default About;
+export default AdminAbout;

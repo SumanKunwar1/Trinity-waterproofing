@@ -2,8 +2,9 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 
 interface ICompanyDetails extends Document {
   _id: Types.ObjectId;
-  Name: string;
+  name: string;
   phoneNumber: string;
+  description: string;
   location: string;
   email: string;
   twitter?: string;
@@ -18,7 +19,8 @@ interface ICompanyDetails extends Document {
 
 const companyDetailsSchema: Schema = new Schema(
   {
-    Name: { type: String, required: true },
+    name: { type: String, required: true },
+    description: { type: String, required: true },
     phoneNumber: { type: String, required: true },
     location: { type: String, required: true },
     email: { type: String, required: true, unique: true },

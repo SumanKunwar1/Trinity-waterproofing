@@ -8,9 +8,13 @@ const validateCompanyDetails = (
   next: NextFunction
 ): void => {
   const schema = Joi.object({
-    Name: Joi.string().required().messages({
+    name: Joi.string().required().messages({
       "string.base": "Name must be a string",
       "any.required": "Name is required",
+    }),
+    description: Joi.string().required().messages({
+      "string.base": "Description must be a string",
+      "any.required": "Description is required",
     }),
     phoneNumber: Joi.string().required().messages({
       "string.base": "Phone number must be a string",
@@ -43,9 +47,9 @@ const validateCompanyDetails = (
     instagram: Joi.string().optional().allow(null).messages({
       "string.base": "Instagram must be a string",
     }),
-  });
+  }).unknown(true);
 
-  console.log(req.body);
+  console.log("company details put validation", req.body);
 
   const { error } = schema.validate(req.body, { abortEarly: false });
 

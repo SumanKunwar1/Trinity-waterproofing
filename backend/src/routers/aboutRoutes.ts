@@ -39,10 +39,10 @@ router.patch(
   handleResponse
 );
 
-// ------------------------ Core Routes ------------------------
+// ------------------------ cores Routes ------------------------
 
 router.post(
-  "/core",
+  "/cores",
   isAuthenticated,
   isAuthorized("admin"),
   imageUploadMiddleware,
@@ -53,13 +53,13 @@ router.post(
 );
 
 router.get(
-  "/core",
+  "/cores",
   aboutController.getCore.bind(aboutController),
   handleResponse
 );
 
 router.patch(
-  "/core/:coreId",
+  "/cores/:coreId",
   isAuthenticated,
   isAuthorized("admin"),
   imageUploadMiddleware,
@@ -70,7 +70,7 @@ router.patch(
 );
 
 router.delete(
-  "/core/:coreId",
+  "/cores/:coreId",
   isAuthenticated,
   isAuthorized("admin"),
   aboutController.deleteCore.bind(aboutController),

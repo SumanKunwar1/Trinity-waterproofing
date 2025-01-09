@@ -193,7 +193,8 @@ export class GalleryService {
           }
         })
       );
-
+      console.log("deletediles", deletedFiles);
+      console.log("notfoundFoles", notFoundFiles);
       return {
         deletedFiles,
         notFoundFiles,
