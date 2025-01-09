@@ -56,7 +56,7 @@ const GenerateReport: React.FC = () => {
   });
   const [fileFormat, setFileFormat] = useState<string>("pdf");
   const [isLoading, setIsLoading] = useState(false);
-
+  const baseURL = window.location.origin;
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
@@ -79,10 +79,24 @@ const GenerateReport: React.FC = () => {
           return data.map((order: any) => ({
             id: order._id,
             products: order.products
-              .map((p: any) => `${p._id} (${p.quantity})`)
+              .map(
+                (p: any) =>
+                  `${p.productId.name} (${p.quantity}) (${
+                    p.color ? p.color : ""
+                  })`
+              )
               .join(", "),
-            userId: order.userId._id,
-            addressId: order.addressId,
+            userId: order.userId.fullName,
+            address: [
+              order.address.street,
+              order.address.city,
+              order.address.province,
+              order.address.district,
+              order.address.postalCode,
+              order.address.country,
+            ]
+              .filter(Boolean) // Remove undefined or null values
+              .join(", "),
             subtotal: order.subtotal,
             status: order.status,
             createdAt: new Date(order.createdAt).toLocaleDateString(),
@@ -106,8 +120,8 @@ const GenerateReport: React.FC = () => {
               description: product.description,
               retailPrice: product.retailPrice,
               wholeSalePrice: product.wholeSalePrice,
-              productImage: product.productImage,
-              images: product.image.join(", "), // Join all image URLs into a string
+              productImage: baseURL + product.productImage,
+              images: baseURL + product.image.join(", "), // Join all image URLs into a string
               // Check if features is an array or a string
               features: Array.isArray(product.features)
                 ? product.features
@@ -116,7 +130,7 @@ const GenerateReport: React.FC = () => {
                 : cleanFeaturesContent(product.features), // If it's a string, clean directly
               brand: product.brand._id,
               inStock: product.inStock,
-              subCategory: product.subCategory._id,
+              subCategory: product.subCategory.name,
               createdAt: new Date(product.createdAt).toLocaleDateString(), // Format creation date
             };
           });
@@ -128,9 +142,20 @@ const GenerateReport: React.FC = () => {
             id: category._id,
             name: category.name,
             description: category.description,
-            subCategory: category.subCategories._id,
-            createdAt: new Date(category.createdAt).toLocaleDateString(),
+            subCategory: category.subCategories
+              .map((subCat: any) => subCat.name)
+              .join(", "), // Join subcategory names
+            products: category.subCategories
+              .map(
+                (subCat: any) =>
+                  subCat.products
+                    .map((product: any) => product.name) // Extract product names
+                    .join(", ") // Join product names with commas
+              )
+              .join(", "), // Join all subcategory products with commas
+            createdAt: new Date(category.createdAt).toLocaleDateString(), // Format creation date
           }));
+
         default:
           throw new Error("Invalid report type");
       }
