@@ -1,58 +1,70 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "../components/ui/card";
 import FeatureSection from "../components/ui/feature-section";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import ImageContentSection from "../components/common/ImageContentSection";
+import axios from "axios";
+import { toast } from "react-hot-toast";
+
+interface ICard {
+  _id?: string;
+  title: string;
+  description: string;
+  image: string;
+}
+
+interface IService {
+  _id?: string;
+  title: string;
+  description: string;
+  image: string;
+}
 
 const ServicesPage: React.FC = () => {
-  const services = [
-    {
-      title: "Bathroom",
-      description:
-        "Our experts know the right techniques to keep your bathroom watertight, preventing leaks and moisture buildup.",
-      icon: "🚿",
-      imageUrl: "/assets/waterproofing-1.png",
-    },
-    {
-      title: "Terrace",
-      description:
-        "We apply a waterproofing membrane that ensures your terrace remains dry and long-lasting, protecting it from rain damage.",
-      icon: "🏠",
-      imageUrl: "/assets/waterproofing-2.jpg",
-    },
-    {
-      title: "Swimming Pool",
-      description:
-        "Our specialists use high-quality materials to seal pool surfaces and prevent leaks, ensuring your pool remains in perfect condition.",
-      icon: "🏊",
-      imageUrl: "/assets/waterproofing-3.jpg",
-    },
-    {
-      title: "Pest Control",
-      description:
-        "We specialize in eliminating termites, controlling cockroaches, and managing mice infestations with safe and effective methods.",
-      icon: "🐜",
-      imageUrl: "/assets/waterproofing-1.png",
-    },
-    {
-      title: "Anti-Termite Treatment",
-      description:
-        "Protect your property from termite damage with our specialized treatments.",
-      icon: "🪵",
-      imageUrl: "/assets/waterproofing-2.jpg",
-    },
-    {
-      title: "Expansion Joints Treatment",
-      description:
-        "We install flexible materials between structural gaps to accommodate movement and prevent damage & leakage.",
-      icon: "🏗️",
-      imageUrl: "/assets/waterproofing-3.jpg",
-    },
-  ];
+  const [service, setService] = useState<IService | null>(null);
+  const [cards, setCards] = useState<ICard[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const authToken = localStorage.getItem("authToken");
+
+  // Fetch service data
+  const fetchService = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get("/api/service", {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      setService(response.data || null);
+    } catch (error) {
+      console.error("Error fetching service:", error);
+      toast.error("Failed to load service");
+    }
+  };
+
+  // Fetch cards for the service
+  const fetchCards = async () => {
+    try {
+      const response = await axios.get("/api/service/cards", {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      setCards(response.data || []);
+    } catch (error) {
+      console.error("Error fetching cards:", error);
+      toast.error("Failed to load cards");
+    }
+  };
+
+  useEffect(() => {
+    fetchService();
+    fetchCards();
+  }, []);
+
+  if (!service) {
+    return <div>No service data available.</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -64,6 +76,7 @@ const ServicesPage: React.FC = () => {
           transition={{ duration: 0.5 }}
           className="container mx-auto px-4 sm:px-6 lg:px-8"
         >
+          {/* Our Services Section */}
           <motion.section
             id="services"
             className="py-12"
@@ -79,138 +92,59 @@ const ServicesPage: React.FC = () => {
               <CardContent className="p-8">
                 <ImageContentSection
                   imagePosition="left"
-                  imageUrl="/assets/waterproofing-1.png"
+                  imageUrl={`${service.image}`}
                   content={
                     <div>
                       <h2 className="text-2xl font-semibold mb-4">
-                        Comprehensive Waterproofing Solutions
+                        {service.title}
                       </h2>
                       <p className="text-gray-600 dark:text-gray-400 mb-6">
-                        We provide comprehensive services of building
-                        waterproofing covering bathrooms, terraces, basements,
-                        underground water tanks, exterior walls, etc., building
-                        expansion joint treatment, structure retrofitting by FRP
-                        carbon & laminates, epoxy & PU flooring & coating, and
-                        pest control. Trinity is a common platform for
-                        waterproofing applicators. We offer waterproofing
-                        training and a knowledge-sharing program to strengthen
-                        and enhance knowledge and awareness in this field.
+                        {service.description}
                       </p>
                     </div>
                   }
                 />
               </CardContent>
             </Card>
-            <FeatureSection features={services} columns={3} className="gap-8" />
+
+            {/* Feature Section (Cards Section) */}
+            <FeatureSection
+              features={cards} // Pass the dynamic cards data
+              className="gap-8"
+            />
           </motion.section>
 
-          <motion.section
-            id="waterproofing"
-            className="py-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl font-bold text-center mb-8">
-              Waterproofing Services
-            </h2>
-            <div className="space-y-12">
-              {services.map((service, index) => (
-                <Card key={service.title}>
-                  <CardContent className="p-6">
-                    <ImageContentSection
-                      imagePosition={index % 2 === 0 ? "left" : "right"}
-                      imageUrl={service.imageUrl}
-                      content={
-                        <div>
-                          <h3 className="text-xl font-semibold mb-4">
-                            {service.title}
-                          </h3>
-                          <p className="text-gray-600 dark:text-gray-400">
-                            {service.description}
-                          </p>
-                        </div>
-                      }
-                    />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </motion.section>
-
-          <motion.section
-            id="pest-control"
-            className="py-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl font-bold text-center mb-8">
-              Pest Control Services
-            </h2>
-            <Card>
-              <CardContent className="p-6">
-                <ImageContentSection
-                  imagePosition="right"
-                  imageUrl="/assets/waterproofing-2.jpg"
-                  content={
-                    <div>
-                      <p className="text-gray-600 dark:text-gray-400 mb-4">
-                        Our expert team specializes in eliminating termites,
-                        controlling cockroaches, and managing mice infestations
-                        with safe and effective methods. We ensure your property
-                        remains pest-free, providing peace of mind in both
-                        residential and commercial spaces.
-                      </p>
-                      <ul className="list-disc list-inside text-gray-600 dark:text-gray-400">
-                        <li>Anti-Termite Treatment</li>
-                        <li>Cockroach Treatment</li>
-                        <li>Mice Control Treatment</li>
-                      </ul>
-                    </div>
-                  }
-                />
-              </CardContent>
-            </Card>
-          </motion.section>
-
-          <motion.section
-            id="trainings"
-            className="py-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl font-bold text-center mb-8">
-              Training Services
-            </h2>
-            <Card>
-              <CardContent className="p-6">
-                <ImageContentSection
-                  imagePosition="left"
-                  imageUrl="/assets/waterproofing-3.jpg"
-                  content={
-                    <div>
-                      <p className="text-gray-600 dark:text-gray-400">
-                        Our expert provides specialized training sessions
-                        covering basic level of construction chemicals
-                        application, and offer different intellectual discussion
-                        forums that resolve newly arising construction issues
-                        regarding construction chemicals. These sessions are
-                        designed to enhance the skills and knowledge of
-                        professionals in the field, ensuring they stay
-                        up-to-date with the latest industry trends and best
-                        practices.
-                      </p>
-                    </div>
-                  }
-                />
-              </CardContent>
-            </Card>
-          </motion.section>
+          {/* Detailed Service Sections (Left-Right pattern) */}
+          {cards.map((card, index) => (
+            <motion.section
+              key={card._id}
+              className="py-12"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-3xl font-bold text-center mb-8">
+                {card.title}
+              </h2>
+              <Card>
+                <CardContent className="p-6">
+                  <ImageContentSection
+                    // Alternating image position: Left for even index, Right for odd index
+                    imagePosition={index % 2 === 0 ? "left" : "right"}
+                    imageUrl={`${card.image}`}
+                    content={
+                      <div>
+                        <p className="text-gray-600 dark:text-gray-400">
+                          {card.description}
+                        </p>
+                      </div>
+                    }
+                  />
+                </CardContent>
+              </Card>
+            </motion.section>
+          ))}
         </motion.div>
       </main>
       <Footer />

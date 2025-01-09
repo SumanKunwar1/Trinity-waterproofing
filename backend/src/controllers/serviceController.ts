@@ -70,9 +70,8 @@ export class ServiceController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const serviceId = req.params.serviceId;
       const cardData: IService = req.body;
-      const result = await this.serviceService.createCard(serviceId, cardData);
+      const result = await this.serviceService.createCard(cardData);
       res.locals.responseData = result;
       next();
     } catch (error: any) {

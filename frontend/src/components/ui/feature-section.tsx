@@ -1,21 +1,21 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { Card, CardContent } from "./card";
 
 interface Feature {
+  _id: string;
   title: string;
   description: string;
-  icon: string;
+  image: string; // Renamed from imageUrl to image as per the provided structure
 }
 
 interface FeatureSectionProps {
-  features: Feature[];
-  columns: number;
+  features: Feature[]; // Pass dynamic feature data
   className?: string;
 }
 
 const FeatureSection: React.FC<FeatureSectionProps> = ({
   features,
-  columns,
   className = "",
 }) => {
   const containerVariants = {
@@ -38,22 +38,30 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({
 
   return (
     <motion.div
-      className={`grid grid-cols-1 md:grid-cols-${columns} gap-6 ${className}`}
+      className={`grid grid-cols-1 md:grid-cols-3 gap-6 ${className}`}
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      {features.map((feature, index) => (
-        <motion.div
-          key={index}
-          className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md"
-          variants={itemVariants}
-        >
-          <div className="text-4xl mb-4">{feature.icon}</div>
-          <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-          <p className="text-gray-600 dark:text-gray-300">
-            {feature.description}
-          </p>
+      {features.map((feature) => (
+        <motion.div key={feature._id} variants={itemVariants}>
+          <Card className="h-full">
+            <CardContent className="p-4 flex items-center space-x-4">
+              {/* Image on the left side */}
+              <img
+                src={`${feature.image}`} // Assuming the images are stored in the assets folder
+                alt={feature.title}
+                className="w-16 h-16 object-cover rounded-md flex-shrink-0"
+              />
+              {/* Content on the right side */}
+              <div>
+                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
+                <p className="text-gray-600 dark:text-gray-300 line-clamp-3">
+                  {feature.description}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </motion.div>
       ))}
     </motion.div>

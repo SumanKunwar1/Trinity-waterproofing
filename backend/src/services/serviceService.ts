@@ -52,19 +52,22 @@ export class ServiceService {
 
   public async getService() {
     try {
-      const service = await Service.findOne();
+      const service = await Service.findOne({}, " _id title description image");
       if (!service) {
         return "";
       }
-      return service;
+      return {
+        ...service.toObject(), // Spread the data
+        image: `/api/image/${service.image}`, // Format image URL
+      };
     } catch (error) {
       throw error;
     }
   }
 
-  public async createCard(serviceId: string, cardData: any) {
+  public async createCard(cardData: any) {
     try {
-      const service = await Service.findById(serviceId);
+      const service = await Service.findOne();
       if (!service) {
         throw httpMessages.NOT_FOUND("Service");
       }
@@ -84,7 +87,13 @@ export class ServiceService {
       if (!service) {
         throw httpMessages.NOT_FOUND("Service");
       }
-      return service.cards;
+      const formattedCards = service.cards.map((card) => ({
+        _id: card._id,
+        title: card.title,
+        description: card.description,
+        image: card.image ? `/api/image/${card.image}` : null, // Format image URL
+      }));
+      return formattedCards;
     } catch (error) {
       throw error;
     }

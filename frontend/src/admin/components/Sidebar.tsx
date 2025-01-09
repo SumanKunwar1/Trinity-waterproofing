@@ -55,6 +55,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     { icon: FaQuestionCircle, text: "FAQs", link: "/admin/faqs" },
     { icon: FaLifeRing, text: "Help", link: "/admin/help" },
     { icon: FaInfoCircle, text: "About", link: "/admin/about" },
+    { icon: FaInfoCircle, text: "Services", link: "/admin/services" },
     {
       icon: FaShieldAlt,
       text: "Privacy Policy",
@@ -65,7 +66,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       text: "Return Policy",
       link: "/admin/return-policy",
     },
-    { icon: FaLightbulb, text: "Solutions", link: "/admin/solutions" },
     {
       icon: FaFileAlt,
       text: "Generate Report",
