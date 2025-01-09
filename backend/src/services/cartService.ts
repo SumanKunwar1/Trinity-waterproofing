@@ -2,7 +2,7 @@
 import { Cart, Product, IProduct } from "../models";
 import { ICartItem } from "../interfaces";
 import { httpMessages } from "../middlewares";
-import { cp } from "fs";
+
 export class CartService {
   public async addToCart(userId: string, cartItem: ICartItem) {
     try {
