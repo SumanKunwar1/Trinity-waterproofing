@@ -15,7 +15,11 @@ const validateEditBrand = (
     image: Joi.string().optional().allow("").messages({
       "string.base": "Description must be a string",
     }),
-  });
+  })
+    .min(1)
+    .messages({
+      "object.min": "At least one field must be provided to update the brand",
+    });
 
   console.log("validateEditBrand", req.body, { abortEarly: false });
   const { error } = schema.validate(req.body);

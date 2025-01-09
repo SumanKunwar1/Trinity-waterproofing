@@ -47,7 +47,11 @@ const schema = Joi.object({
       "string.base": "SubCategory ID must be a string",
       "string.pattern.base": "SubCategory ID must be a valid ObjectId",
     }),
-});
+})
+  .min(1)
+  .messages({
+    "object.min": "At least one field must be provided to update the product",
+  });
 
 const validateEditProduct = (
   req: Request,

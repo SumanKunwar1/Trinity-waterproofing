@@ -235,7 +235,7 @@ const ProductForm: React.FC = () => {
     try {
       const url = id ? `/api/product/${id}` : "/api/product";
       const method = id ? "PATCH" : "POST";
-
+      console.log(url, method, productFormData);
       const response = await fetch(url, {
         method,
         headers: {
@@ -243,7 +243,7 @@ const ProductForm: React.FC = () => {
         },
         body: productFormData,
       });
-
+      console.log(response, response.data);
       if (!response.ok) throw new Error("Failed to submit product");
 
       toast.success(

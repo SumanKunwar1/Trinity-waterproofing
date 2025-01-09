@@ -28,7 +28,11 @@ const validateEditUser = (
       "string.base": "Role must be a string",
       "string.valid": 'Role must be either "b2b" or "b2c"',
     }),
-  });
+  })
+    .min(1)
+    .messages({
+      "object.min": "At least one field must be provided to update the user",
+    });
 
   // Validate request body
   console.log("validationg user");
