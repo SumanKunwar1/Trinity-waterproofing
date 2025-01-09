@@ -1,11 +1,11 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
-import { IOrderItem } from "../interfaces";
+import { IOrderItem, IAddress } from "../interfaces";
 import { OrderStatus } from "../config/orderStatusEnum";
 
 export interface IOrder extends Document {
   products: IOrderItem[];
   userId: Types.ObjectId;
-  AddressId: Types.ObjectId;
+  AddressId: IAddress;
   subtotal: number;
   tax: number;
   total: number;
@@ -26,9 +26,14 @@ const orderSchema: Schema = new Schema(
       },
     ],
     userId: { type: Types.ObjectId, ref: "User", required: true },
-    addressId: {
-      type: Types.ObjectId,
-      required: true,
+    address: {
+      street: { type: String, required: true },
+      city: { type: String, required: true },
+      province: { type: String, required: true },
+      district: { type: String, required: true },
+      postalCode: { type: String, required: true },
+      country: { type: String, required: true },
+      default: { type: Boolean, default: false },
     },
     subtotal: { type: Number, required: true },
     status: {
