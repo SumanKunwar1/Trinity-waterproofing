@@ -33,41 +33,50 @@ interface Order {
   createdAt: string;
   products: Product[];
   returnReason?: string;
-  cancelReason?: string;
+  reason?: string;
 }
 
 const statusIcons = {
-  "return-requested": <FaUndo className="text-yellow-500" />,
-  "return-approved": <FaCheckCircle className="text-green-500" />,
-  "return-disapproved": <FaTimesCircle className="text-red-500" />,
-  "order-cancelled": <FaTimesCircle className="text-red-500" />,
+  "return-requested": {
+    icon: <FaUndo className="text-yellow-500" />,
+    label: "Requested",
+  },
+  "return-approved": {
+    icon: <FaCheckCircle className="text-green-500" />,
+    label: "Approved",
+  },
+  "return-disapproved": {
+    icon: <FaTimesCircle className="text-red-500" />,
+    label: "Disapproved",
+  },
+  "order-cancelled": {
+    icon: <FaTimesCircle className="text-red-500" />,
+    label: "Cancelled",
+  },
 };
 
 export const ReturnAndCancel = () => {
   const { orders, isLoading, isError } = useUserData();
   const [filter, setFilter] = useState("");
   const [selectedItem, setSelectedItem] = useState<Order | null>(null);
+  const [statusFilter, setStatusFilter] = useState("");
 
   // Filter orders based on multiple statuses and the search filter
-  const validStatuses = [
-    "return-requested",
-    "return-approved",
-    "return-disapproved",
-  ];
+  const validStatuses = Object.keys(statusIcons);
 
-  // Filter orders by valid statuses and the search term
+  // Filter orders by valid statuses, status filter, and the search term
   const filteredOrders = orders
     .filter((order) => validStatuses.includes(order.status))
     .filter(
       (order) =>
-        order._id.toLowerCase().includes(filter.toLowerCase()) ||
-        order.status.toLowerCase().includes(filter.toLowerCase()) ||
-        order.products.some((product: Product) =>
-          product.productId.name.toLowerCase().includes(filter.toLowerCase())
-        )
+        (statusFilter === "" || order.status === statusFilter) &&
+        (order._id.toLowerCase().includes(filter.toLowerCase()) ||
+          order.status.toLowerCase().includes(filter.toLowerCase()) ||
+          order.products.some((product: Product) =>
+            product.productId.name.toLowerCase().includes(filter.toLowerCase())
+          ))
     );
 
-  if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error loading data</div>;
 
   return (
@@ -81,33 +90,37 @@ export const ReturnAndCancel = () => {
         <Label className="text-3xl font-bold text-gray-800">
           Returns & Cancellations
         </Label>
-        <div className="relative">
-          <Input
-            type="text"
-            placeholder="Search returns & cancellations..."
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="pl-10 pr-4 py-2 rounded-full border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-          />
-          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-        </div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {Object.entries(statusIcons).map(([status, icon]) => (
+        {Object.entries(statusIcons).map(([status, { icon, label }]) => (
           <Card
             key={status}
-            className="bg-white shadow-lg hover:shadow-xl transition-shadow duration-300"
+            className={`bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer ${
+              statusFilter === status ? "ring-2 ring-blue-500" : ""
+            }`}
+            onClick={() =>
+              setStatusFilter(statusFilter === status ? "" : status)
+            }
           >
             <CardContent className="p-4 flex items-center space-x-3">
               <div className="text-2xl">{icon}</div>
-              <Label className="text-lg capitalize">
-                {status.replace("-", " ")}
-              </Label>
+              <Label className="text-lg capitalize">{label}</Label>
             </CardContent>
           </Card>
         ))}
       </div>
+
+      <Button
+        variant="outline"
+        onClick={() => {
+          setStatusFilter("");
+          setFilter("");
+        }}
+        className="mt-4"
+      >
+        Clear Filters
+      </Button>
 
       <AnimatePresence>
         {filteredOrders.length > 0 ? (
@@ -127,9 +140,8 @@ export const ReturnAndCancel = () => {
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-3">
                       <div className="text-2xl">
-                        {statusIcons[
-                          order.status as keyof typeof statusIcons
-                        ] || <FaSpinner className="text-gray-500" />}
+                        {statusIcons[order.status as keyof typeof statusIcons]
+                          .icon || <FaSpinner className="text-gray-500" />}
                       </div>
                       <div>
                         <p className="font-semibold text-lg">
@@ -142,7 +154,10 @@ export const ReturnAndCancel = () => {
                     </div>
                     <div className="text-right">
                       <p className="font-medium text-gray-600 capitalize">
-                        {order.status.replace("-", " ")}
+                        {
+                          statusIcons[order.status as keyof typeof statusIcons]
+                            .label
+                        }
                       </p>
                       <Dialog>
                         <DialogTrigger asChild>
@@ -165,23 +180,29 @@ export const ReturnAndCancel = () => {
                             </p>
                             <p>
                               <strong>Status:</strong>{" "}
-                              {selectedItem?.status.replace("-", " ")}
+                              {
+                                statusIcons[
+                                  selectedItem?.status as keyof typeof statusIcons
+                                ]?.label
+                              }
                             </p>
                             <p>
                               <strong>Date:</strong>{" "}
                               {new Date(
-                                selectedItem?.createdAt
+                                selectedItem?.createdAt || ""
                               ).toLocaleDateString()}
                             </p>
                             <p>
                               <strong>Products:</strong>
                             </p>
                             <ul className="list-disc pl-5">
-                              {selectedItem?.products.map((product: any) => (
-                                <li key={product.productId._id}>
-                                  {product.productId.name}
-                                </li>
-                              ))}
+                              {selectedItem?.products.map(
+                                (product: Product) => (
+                                  <li key={product.productId._id}>
+                                    {product.productId.name}
+                                  </li>
+                                )
+                              )}
                             </ul>
                             {selectedItem?.returnReason && (
                               <p>
@@ -189,10 +210,10 @@ export const ReturnAndCancel = () => {
                                 {selectedItem.returnReason}
                               </p>
                             )}
-                            {selectedItem?.cancelReason && (
+                            {selectedItem?.reason && (
                               <p>
                                 <strong>Cancel Reason:</strong>{" "}
-                                {selectedItem.cancelReason}
+                                {selectedItem.reason}
                               </p>
                             )}
                           </div>

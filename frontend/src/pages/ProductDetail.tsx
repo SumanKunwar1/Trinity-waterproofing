@@ -10,7 +10,7 @@ import Header from "../components/layout/Header";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { IProduct } from "../types/product";
-
+import { Helmet } from "react-helmet";
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [product, setProduct] = useState<IProduct | null>(null);
@@ -32,7 +32,7 @@ const ProductDetail: React.FC = () => {
     };
 
     fetchProduct();
-  }, [id]); // Refetch the product whenever the `id` changes
+  }, [id]);
 
   const handleBuyNow = async () => {
     try {
@@ -49,8 +49,24 @@ const ProductDetail: React.FC = () => {
     return <div>Product not found</div>;
   }
 
+  // Dynamic meta tags using the product data
+  const productMetaDescription =
+    product.description || "Check out this amazing product!";
+  const productMetaKeywords = product.name
+    ? product.name + ", shopping, buy"
+    : "product, online store";
+
   return (
     <div className="flex flex-col min-h-screen">
+      <Helmet>
+        <title>{product.name}</title>
+        <meta name="description" content={productMetaDescription} />
+        <meta name="keywords" content={productMetaKeywords} />
+        <meta property="og:title" content={product.name} />
+        <meta property="og:description" content={productMetaDescription} />
+        <meta property="og:image" content={product.productImage} />
+        <meta property="og:url" content={window.location.href} />
+      </Helmet>
       <Header />
       <main className="flex-grow">
         <div className="container mx-auto px-4 py-8">
