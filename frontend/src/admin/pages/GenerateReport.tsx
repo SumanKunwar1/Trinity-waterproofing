@@ -79,7 +79,7 @@ const GenerateReport: React.FC = () => {
           return data.map((order: any) => ({
             id: order._id,
             products: order.products
-              .map((p: any) => `${p.productId._id} (${p.productId.quantity})`)
+              .map((p: any) => `${p._id} (${p.quantity})`)
               .join(", "),
             userId: order.userId._id,
             addressId: order.addressId,
@@ -87,6 +87,7 @@ const GenerateReport: React.FC = () => {
             status: order.status,
             createdAt: new Date(order.createdAt).toLocaleDateString(),
           }));
+
         case "products":
           data = await fetchProducts();
 

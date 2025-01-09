@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import { Bar, Line, Pie } from "react-chartjs-2";
@@ -18,7 +18,7 @@ import {
   FaShoppingCart,
   FaUsers,
   FaMoneyBillWave,
-  FaChartLine,
+  FaBoxOpen,
 } from "react-icons/fa";
 import {
   Card,
@@ -29,10 +29,10 @@ import {
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 import LatestOrderTable from "../components/LatestOrderTable";
-import LatestReviewCard from "../components/LatestReviewCard";
 import { AppDispatch, RootState } from "../store/store";
 import { fetchOrdersAsync } from "../store/ordersSlice";
-import { fetchReviewsAsync } from "../store/reviewsSlice";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 ChartJS.register(
   CategoryScale,
@@ -46,35 +46,177 @@ ChartJS.register(
   Legend
 );
 
+interface IProduct {
+  _id: string;
+  name: string;
+  price: number;
+  createdAt: string;
+}
+
+interface IOrder {
+  _id: string;
+  userId: {
+    _id: string;
+    fullName: string;
+  };
+  products: IProduct[];
+  subtotal: number;
+  status: string;
+  createdAt: string;
+}
+
+interface IUser {
+  _id: string;
+  fullName: string;
+  createdAt: string;
+}
+
+interface ICategory {
+  _id: string;
+  name: string;
+}
+
 const Dashboard: React.FC = () => {
-  const [isSidebarOpen, setSidebarOpen] = React.useState(false);
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [products, setProducts] = useState<IProduct[]>([]);
+  const [users, setUsers] = useState<IUser[]>([]);
+  const [categories, setCategories] = useState<ICategory[]>([]);
   const dispatch = useDispatch<AppDispatch>();
-  const {
-    orders,
-    status: orderStatus,
-    error: orderError,
-  } = useSelector((state: RootState) => state.orders);
-  // const {
-  //   reviews,
-  //   status: reviewStatus,
-  //   error: reviewError,
-  // } = useSelector((state: RootState) => state.reviews);
+  const { orders } = useSelector((state: RootState) => state.orders);
 
   useEffect(() => {
     dispatch(fetchOrdersAsync());
-    dispatch(fetchReviewsAsync());
+    fetchProducts();
+    fetchUsers();
+    fetchCategories();
   }, [dispatch]);
+
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch("/api/product", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to fetch products");
+      }
+      const data = await response.json();
+      setProducts(data);
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch("/api/users", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to fetch users");
+      }
+      const data = await response.json();
+      setUsers(data);
+    } catch (error: any) {
+      console.error("Error fetching users:", error);
+      toast.error(error.message);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get("/api/category");
+      setCategories(response.data);
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.error ||
+        error.message ||
+        "Failed to fetch categories";
+      toast.error(errorMessage);
+    }
+  };
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
+
+  const calculatePercentageChange = (current: number, previous: number) => {
+    if (previous === 0) return current > 0 ? 100 : 0;
+    return ((current - previous) / previous) * 100;
+  };
+
+  const filterDataByMonth = <T extends { createdAt: string }>(
+    data: T[],
+    monthsAgo: number
+  ): T[] => {
+    const targetDate = new Date();
+    targetDate.setMonth(targetDate.getMonth() - monthsAgo);
+    targetDate.setDate(1); // Start of the month
+    const nextMonth = new Date(targetDate);
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+
+    return data.filter((item) => {
+      const itemDate = new Date(item.createdAt);
+      return itemDate >= targetDate && itemDate < nextMonth;
+    });
+  };
+
+  const currentMonthOrders = filterDataByMonth(orders, 0);
+  const prevMonthOrders = filterDataByMonth(orders, 1);
+  const currentMonthProducts = filterDataByMonth(products, 0);
+  const prevMonthProducts = filterDataByMonth(products, 1);
+  const currentMonthUsers = filterDataByMonth(users, 0);
+  const prevMonthUsers = filterDataByMonth(users, 1);
+
+  const totalRevenue = orders.reduce((sum, order) => sum + order.subtotal, 0);
+  const prevTotalRevenue = prevMonthOrders.reduce(
+    (sum, order) => sum + order.subtotal,
+    0
+  );
+  const revenueChange = calculatePercentageChange(
+    totalRevenue,
+    prevTotalRevenue
+  );
+
+  const totalOrders = orders.length;
+  const prevTotalOrders = prevMonthOrders.length;
+  const ordersChange = calculatePercentageChange(totalOrders, prevTotalOrders);
+
+  const totalProducts = products.length;
+  const prevTotalProducts = prevMonthProducts.length;
+  const productsChange = calculatePercentageChange(
+    totalProducts,
+    prevTotalProducts
+  );
+
+  const totalCustomers = users.length;
+  const prevTotalCustomers = prevMonthUsers.length;
+  const customersChange = calculatePercentageChange(
+    totalCustomers,
+    prevTotalCustomers
+  );
 
   const salesData = {
     labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
     datasets: [
       {
         label: "Sales",
-        data: [12, 19, 3, 5, 2, 3],
+        data: orders
+          .filter(
+            (order) =>
+              new Date(order.createdAt).getFullYear() ===
+              new Date().getFullYear()
+          )
+          .reduce((acc, order) => {
+            const month = new Date(order.createdAt).getMonth();
+            acc[month] = (acc[month] || 0) + order.subtotal;
+            return acc;
+          }, Array(6).fill(0)),
         backgroundColor: "rgba(75, 192, 192, 0.6)",
       },
     ],
@@ -85,25 +227,37 @@ const Dashboard: React.FC = () => {
     datasets: [
       {
         label: "Orders",
-        data: [65, 59, 80, 81, 56, 55],
+        data: orders
+          .filter(
+            (order) =>
+              new Date(order.createdAt).getFullYear() ===
+              new Date().getFullYear()
+          )
+          .reduce((acc, order) => {
+            const month = new Date(order.createdAt).getMonth();
+            acc[month] = (acc[month] || 0) + 1;
+            return acc;
+          }, Array(6).fill(0)),
         fill: false,
         borderColor: "rgb(75, 192, 192)",
         tension: 0.1,
       },
     ],
   };
-
+  console.log("Categories:", categories);
   const categoryData = {
-    labels: [
-      "Waterproof Paints",
-      "Sealants",
-      "Membranes",
-      "Coatings",
-      "Others",
-    ],
+    labels: categories.map((category) => category.name),
     datasets: [
       {
-        data: [30, 25, 20, 15, 10],
+        data: categories.map((category) => {
+          // Find all products in the subcategories of the category
+          const subCategoryProducts = category.subCategories.reduce(
+            (total, subCategory) => total + subCategory.products.length,
+            0
+          );
+
+          return subCategoryProducts;
+        }),
         backgroundColor: [
           "rgba(255, 99, 132, 0.6)",
           "rgba(54, 162, 235, 0.6)",
@@ -114,6 +268,8 @@ const Dashboard: React.FC = () => {
       },
     ],
   };
+
+  console.log("Category Data:", categoryData);
 
   return (
     <div className="flex bg-gray-100">
@@ -135,9 +291,12 @@ const Dashboard: React.FC = () => {
                   <FaMoneyBillWave className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">$45,231.89</div>
+                  <div className="text-2xl font-bold">
+                    Rs {totalRevenue.toFixed(2)}
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    +20.1% from last month
+                    {revenueChange > 0 ? "+" : ""}
+                    {revenueChange.toFixed(1)}% from last month
                   </p>
                 </CardContent>
               </Card>
@@ -151,14 +310,15 @@ const Dashboard: React.FC = () => {
               <Card className="bg-tertiary">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
-                    New Customers
+                    Total Customers
                   </CardTitle>
                   <FaUsers className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">+2350</div>
+                  <div className="text-2xl font-bold">{totalCustomers}</div>
                   <p className="text-xs text-muted-foreground">
-                    +180.1% from last month
+                    {customersChange > 0 ? "+" : ""}
+                    {customersChange.toFixed(1)}% from last month
                   </p>
                 </CardContent>
               </Card>
@@ -177,9 +337,10 @@ const Dashboard: React.FC = () => {
                   <FaShoppingCart className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">+12,234</div>
+                  <div className="text-2xl font-bold">{totalOrders}</div>
                   <p className="text-xs text-muted-foreground">
-                    +19% from last month
+                    {ordersChange > 0 ? "+" : ""}
+                    {ordersChange.toFixed(1)}% from last month
                   </p>
                 </CardContent>
               </Card>
@@ -193,67 +354,19 @@ const Dashboard: React.FC = () => {
               <Card className="bg-[#75dede]">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
-                    Active Users
+                    Total Products
                   </CardTitle>
-                  <FaChartLine className="h-4 w-4 text-muted-foreground" />
+                  <FaBoxOpen className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">+573</div>
+                  <div className="text-2xl font-bold">{totalProducts}</div>
                   <p className="text-xs text-muted-foreground">
-                    +201 since last hour
+                    {productsChange > 0 ? "+" : ""}
+                    {productsChange.toFixed(1)}% from last month
                   </p>
                 </CardContent>
               </Card>
             </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="md:col-span-2"
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle>Latest Order</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {orderStatus === "loading" ? (
-                    <p>Loading latest order...</p>
-                  ) : orderStatus === "failed" ? (
-                    <p>Error loading latest order: {orderError}</p>
-                  ) : orders.length === 0 ? (
-                    <p>No recent orders.</p>
-                  ) : (
-                    <LatestOrderTable order={orders[0]} />
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              className="md:col-span-2"
-            >
-              {/* <Card>
-                <CardHeader>
-                  <CardTitle>Latest Review</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {reviewStatus === "loading" ? (
-                    <p>Loading latest review...</p>
-                  ) : reviewStatus === "failed" ? (
-                    <p>Error loading latest review: {reviewError}</p>
-                  ) : reviews.length === 0 ? (
-                    <p>No recent reviews.</p>
-                  ) : (
-                    <LatestReviewCard review={reviews[0]} />
-                  )}
-                </CardContent>
-              </Card> */}
-            </motion.div>
-
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
@@ -285,16 +398,31 @@ const Dashboard: React.FC = () => {
                 </CardContent>
               </Card>
             </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="md:col-span-2"
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle>Latest Orders</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <LatestOrderTable orders={orders.slice(0, 10)} />
+                </CardContent>
+              </Card>
+            </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.8 }}
-              className="md:col-span-4"
+              transition={{ duration: 0.5, delay: 0.5 }}
+              className="md:col-span-2"
             >
               <Card>
                 <CardHeader>
-                  <CardTitle>Sales by Category</CardTitle>
+                  <CardTitle>Products by Category</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Pie data={categoryData} />

@@ -33,7 +33,7 @@ import {
 import { Link } from "react-router-dom";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
@@ -119,7 +119,6 @@ const Reports: React.FC = () => {
     const labels = filteredOrders.map((order: any) =>
       new Date(order.createdAt).toLocaleDateString()
     );
-    // Get the total revenue by summing up the price of each product in each order
     const data = filteredOrders.map((order: any) =>
       order.products.reduce(
         (total: number, product: any) => total + product.price,
@@ -127,13 +126,10 @@ const Reports: React.FC = () => {
       )
     );
 
-    // Calculate total revenue
     const totalRevenue = data.reduce(
       (sum: number, value: number) => sum + value,
       0
     );
-
-    // Calculate average order value (handle case of empty data)
     const averageOrderValue = data.length > 0 ? totalRevenue / data.length : 0;
 
     return {
@@ -151,55 +147,46 @@ const Reports: React.FC = () => {
   };
 
   const generateProductsReport = async (): Promise<ReportData> => {
-    const orders = await fetchOrders(); // Fetch orders instead of products directly
-
-    // Create a map to hold the sales data for each product
+    const orders = await fetchOrders();
+    const products = await fetchProducts();
+    console.log("Products:", products);
     const productSalesMap = new Map();
 
-    // Iterate through orders and update sales data for each product
     orders.forEach((order: any) => {
       order.products.forEach((product: any) => {
         const totalProductSales = product.price * product.quantity;
-
-        // If the product already exists in the map, add the sales; otherwise, initialize it
-        if (productSalesMap.has(product.productId.toString())) {
+        if (productSalesMap.has(product.productId)) {
           productSalesMap.set(
-            product.productId.toString(),
-            productSalesMap.get(product.productId.toString()) +
-              totalProductSales
+            product.productId,
+            productSalesMap.get(product.productId) + totalProductSales
           );
         } else {
-          productSalesMap.set(product.productId.toString(), totalProductSales);
+          productSalesMap.set(product.productId, totalProductSales);
         }
       });
     });
 
-    // Convert the sales map to an array and sort by sales
-    const sortedProducts = Array.from(productSalesMap.entries()).map(
-      ([productId, sales]) => ({ productId, sales })
-    );
-
-    sortedProducts.sort((a: any, b: any) => b.sales - a.sales);
-
-    // Slice the top 10 selling products
+    const sortedProducts = Array.from(productSalesMap.entries())
+      .map(([productId, sales]) => ({ productId, sales }))
+      .sort((a: any, b: any) => b.sales - a.sales);
+    console.log("Sorted Products:", sortedProducts);
     const topSellingProducts = sortedProducts.slice(0, 10);
 
-    // Create labels and data arrays for chart rendering
     const labels = topSellingProducts.map((product: any) => {
-      const productInfo = product.find(
-        (p: any) => p._id.toString() === product.productId
-      );
-      return productInfo ? productInfo.name : "Unknown Product"; // Replace with actual product name
+      console.log("Product ID:", product.productId);
+      console.log("Products:", products);
+      const productData = products.find((p: any) => p.id === products._id);
+      console.log("Product Data:", productData);
+      return productData?.name || `Product ${product.productId}`;
     });
     const data = topSellingProducts.map((product: any) => product.sales);
-
-    // Return report data
+    console.log("Labels:", labels, labels[0]);
     return {
       labels,
       data,
       insights: [
-        { label: "Total Products", value: product.length.toString() },
-        { label: "Top Selling Product", value: labels[0] },
+        { label: "Total Products", value: products.length.toString() },
+        { label: "Top Selling Product", value: labels[0] || "N/A" },
         {
           label: "Total Sales",
           value: data
@@ -342,7 +329,6 @@ const Reports: React.FC = () => {
             }}
           />
         );
-
       default:
         return null;
     }

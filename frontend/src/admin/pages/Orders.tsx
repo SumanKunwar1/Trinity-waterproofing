@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchOrdersAsync,
@@ -10,36 +10,11 @@ import {
 } from "../store/ordersSlice";
 import { AppDispatch, RootState } from "../store/store";
 import {
-  ColumnDef,
-  useReactTable,
-  flexRender,
-  getCoreRowModel,
-  getPaginationRowModel,
-  SortingState,
-  getSortedRowModel,
-} from "@tanstack/react-table";
-import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
 } from "../components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../../components/ui/table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "../components/ui/pagination";
 import { Badge } from "../components/ui/badge";
 import {
   DropdownMenu,
@@ -63,6 +38,13 @@ import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
+import Table from "../components/ui/table";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../components/ui/tabs";
 
 type Order = {
   _id: string;
@@ -103,116 +85,6 @@ const getStatusBadge = (status: string) => {
   );
 };
 
-function DataTable({
-  columns,
-  data,
-}: {
-  columns: ColumnDef<Order, any>[];
-  data: Order[];
-}) {
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "createdAt", desc: true },
-  ]);
-
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    state: {
-      sorting,
-    },
-    onSortingChange: setSorting,
-    initialState: {
-      pagination: {
-        pageSize: 10,
-      },
-    },
-  });
-
-  return (
-    <div className="space-y-4">
-      <div className="rounded-md border bg-white">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} className="font-semibold">
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  className="hover:bg-gray-50 transition-colors"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center text-gray-500"
-                >
-                  No orders found.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <div className="flex items-center justify-center space-x-2">
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-              />
-            </PaginationItem>
-            {Array.from({ length: table.getPageCount() }, (_, i) => (
-              <PaginationItem key={i}>
-                <PaginationLink
-                  onClick={() => table.setPageIndex(i)}
-                  isActive={table.getState().pagination.pageIndex === i}
-                >
-                  {i + 1}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-            <PaginationItem>
-              <PaginationNext
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
-    </div>
-  );
-}
-
 function Orders() {
   const dispatch = useDispatch<AppDispatch>();
   const { orders, status, error } = useSelector(
@@ -223,6 +95,9 @@ function Orders() {
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
+  const [customerFilter, setCustomerFilter] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
     dispatch(fetchOrdersAsync());
@@ -297,55 +172,53 @@ function Orders() {
     }
   };
 
-  const columns: ColumnDef<Order>[] = [
-    {
-      accessorKey: "_id",
-      header: "Order ID",
-      cell: ({ row }) => (
-        <span className="font-medium">{row.getValue("_id")}</span>
-      ),
-    },
-    {
-      accessorKey: "userId",
-      header: "Customer",
-      cell: ({ row }) => (
-        <div>
-          <div className="font-medium">{row.original.userId.fullName}</div>
-          <div className="text-sm text-gray-500 capitalize">
-            {row.original.userId.role}
+  const columns = useMemo(
+    () => [
+      {
+        header: "Order ID",
+        accessor: "_id",
+        cell: (item: Order) => <span className="font-medium">{item._id}</span>,
+      },
+      {
+        header: "Customer",
+        accessor: "userId.fullName",
+        filterable: true,
+        cell: (item: Order) => (
+          <div>
+            <div className="font-medium">{item.userId.fullName}</div>
+            <div className="text-sm text-gray-500 capitalize">
+              {item.userId.role}
+            </div>
           </div>
-        </div>
-      ),
-    },
-    {
-      accessorKey: "createdAt",
-      header: "Date",
-      cell: ({ row }) => {
-        return format(new Date(row.getValue("createdAt")), "MMM dd, yyyy");
+        ),
       },
-    },
-    {
-      accessorKey: "status",
-      header: "Status",
-      cell: ({ row }) => getStatusBadge(row.getValue("status")),
-    },
-    {
-      accessorKey: "subtotal",
-      header: "Total",
-      cell: ({ row }) => {
-        const amount = row.getValue<number>("subtotal");
-        const formatted = new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "NPR",
-        }).format(amount);
-        return <div className="text-right font-medium">{formatted}</div>;
+      {
+        header: "Date",
+        accessor: "createdAt",
+        filterable: true,
+        cell: (item: Order) => format(new Date(item.createdAt), "MMM dd, yyyy"),
       },
-    },
-    {
-      id: "actions",
-      cell: ({ row }) => {
-        const order = row.original;
-        return (
+      {
+        header: "Status",
+        accessor: "status",
+        cell: (item: Order) => getStatusBadge(item.status),
+      },
+      {
+        header: "Total",
+        accessor: "subtotal",
+        cell: (item: Order) => (
+          <div className="text-right font-medium">
+            {new Intl.NumberFormat("en-US", {
+              style: "currency",
+              currency: "NPR",
+            }).format(item.subtotal)}
+          </div>
+        ),
+      },
+      {
+        header: "Actions",
+        accessor: "actions",
+        cell: (item: Order) => (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
@@ -367,23 +240,23 @@ function Orders() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuItem
-                onClick={() => handleStatusChange(order._id, "order-confirmed")}
+                onClick={() => handleStatusChange(item._id, "order-confirmed")}
               >
                 Mark as Confirmed
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => handleMarkOrderShipped(order._id)}
+                onClick={() => handleMarkOrderShipped(item._id)}
               >
                 Mark as Shipped
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => handleMarkOrderDelivered(order._id)}
+                onClick={() => handleMarkOrderDelivered(item._id)}
               >
                 Mark as Delivered
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => {
-                  setSelectedOrder(order);
+                  setSelectedOrder(item);
                   setIsCancelDialogOpen(true);
                 }}
                 className="text-red-600"
@@ -392,7 +265,7 @@ function Orders() {
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => {
-                  setSelectedOrder(order);
+                  setSelectedOrder(item);
                   setIsDeleteDialogOpen(true);
                 }}
                 className="text-red-600"
@@ -401,10 +274,27 @@ function Orders() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        );
+        ),
       },
-    },
-  ];
+    ],
+    []
+  );
+
+  const filteredOrders = useMemo(() => {
+    return orders.filter((order) => {
+      const matchesCustomer =
+        !customerFilter ||
+        order.userId.fullName
+          .toLowerCase()
+          .includes(customerFilter.toLowerCase());
+      const matchesDate =
+        !dateFilter ||
+        format(new Date(order.createdAt), "yyyy-MM-dd") === dateFilter;
+      const matchesStatus =
+        statusFilter === "all" || order.status === statusFilter;
+      return matchesCustomer && matchesDate && matchesStatus;
+    });
+  }, [orders, customerFilter, dateFilter, statusFilter]);
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
@@ -427,7 +317,35 @@ function Orders() {
                   <CardTitle className="text-2xl font-bold">Orders</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <DataTable columns={columns} data={orders} />
+                  <div className="space-y-4">
+                    <Tabs
+                      value={statusFilter}
+                      onValueChange={setStatusFilter}
+                      className="w-full"
+                    >
+                      <TabsList>
+                        <TabsTrigger value="all">All</TabsTrigger>
+                        <TabsTrigger value="order-requested">
+                          Requested
+                        </TabsTrigger>
+                        <TabsTrigger value="order-confirmed">
+                          Confirmed
+                        </TabsTrigger>
+                        <TabsTrigger value="order-shipped">Shipped</TabsTrigger>
+                        <TabsTrigger value="order-delivered">
+                          Delivered
+                        </TabsTrigger>
+                        <TabsTrigger value="order-cancelled">
+                          Cancelled
+                        </TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                    <Table
+                      columns={columns}
+                      data={filteredOrders}
+                      onRowClick={(item) => console.log("Clicked row:", item)}
+                    />
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
