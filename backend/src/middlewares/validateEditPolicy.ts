@@ -14,7 +14,11 @@ const validateEditPolicy = (
     description: Joi.string().optional().messages({
       "string.base": "Description must be a string",
     }),
-  });
+  })
+    .min(1)
+    .messages({
+      "object.min": "At least one field must be provided to update the prolicy",
+    });
 
   console.log(req.body);
 

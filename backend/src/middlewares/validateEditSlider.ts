@@ -34,6 +34,11 @@ const validateEditSlider = (
     })
     .messages({
       "object.xor": "You cannot provide both 'image' and 'video'.",
+    })
+    .min(1)
+    .messages({
+      "object.min":
+        "At least one field must be provided to update the product image",
     });
 
   console.log(req.body);

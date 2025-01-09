@@ -33,7 +33,11 @@ const validateEditTeam = (
     linkedin: Joi.string().optional().messages({
       "string.base": "LinkedIn must be a string",
     }),
-  });
+  })
+    .min(1)
+    .messages({
+      "object.min": "At least one field must be provided to update the Team",
+    });
 
   console.log("validateEditTeam", req.body, { abortEarly: false });
   const { error } = schema.validate(req.body);

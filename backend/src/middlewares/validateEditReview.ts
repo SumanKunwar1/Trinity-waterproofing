@@ -32,7 +32,11 @@ const validateEditReview = (
         "array.base": "Images must be an array",
         "array.max": "You can upload a maximum of 5 images",
       }),
-  });
+  })
+    .min(1)
+    .messages({
+      "object.min": "At least one field must be provided to update the review",
+    });
 
   const { error } = schema.validate(req.body, { abortEarly: false });
   if (error) {

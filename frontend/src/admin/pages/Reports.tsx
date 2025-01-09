@@ -152,44 +152,141 @@ const Reports: React.FC = () => {
     const products = await fetchProducts();
     const productSalesMap = new Map();
 
-    orders.forEach((order: any) => {
+    console.log("Initial orders:", JSON.stringify(orders, null, 2));
+    console.log("Initial products:", JSON.stringify(products, null, 2));
+    console.log(
+      "productSalesMap before processing orders:",
+      Array.from(productSalesMap.entries())
+    );
+
+    // Iterate over each order
+    orders.forEach((order: any, orderIndex: number) => {
       const orderDate = new Date(order.createdAt);
+      console.log(`\nProcessing Order ${orderIndex + 1}:`);
+      console.log(`Order Date: ${orderDate.toISOString()}`);
+
+      // Filter by selectedDate if needed
       if (
         selectedDate &&
         orderDate.toDateString() !== selectedDate.toDateString()
       ) {
-        return;
+        console.log(
+          `Order ${
+            orderIndex + 1
+          } does not match the selected date, skipping...`
+        );
+        return; // Skip this order if the date doesn't match
       }
-      order.products.forEach((product: any) => {
+
+      // Iterate over each product in the order
+      order.products.forEach((product: any, productIndex: number) => {
         const totalProductSales = product.price * product.quantity;
-        const productId = product.productId;
+        const productId = product.productId._id; // Use `productId._id` consistently as the key
+
+        console.log(
+          `\nProcessing Product ${productIndex + 1} in Order ${orderIndex + 1}:`
+        );
+        console.log(`Product ID: ${productId}`);
+        console.log(`Product Price: ${product.price}`);
+        console.log(`Product Quantity: ${product.quantity}`);
+        console.log(
+          `Total Sales for this product in the current order: ${totalProductSales}`
+        );
+
+        // Check if the product already exists in the map
         if (productSalesMap.has(productId)) {
-          productSalesMap.set(productId, {
-            sales: productSalesMap.get(productId).sales + totalProductSales,
-            lastDate: orderDate,
-          });
+          const existingProductData = productSalesMap.get(productId);
+          console.log(`Product ${productId} already exists in the map.`);
+          console.log(
+            `Existing Data:`,
+            JSON.stringify(existingProductData, null, 2)
+          );
+
+          // Update sales and last sale date
+          existingProductData.sales += totalProductSales;
+          existingProductData.lastDate = orderDate;
+
+          console.log(
+            `Updated Data:`,
+            JSON.stringify(existingProductData, null, 2)
+          );
         } else {
-          productSalesMap.set(productId, {
+          console.log(
+            `Product ${productId} does not exist in the map, adding new entry.`
+          );
+          // If the product doesn't exist, add it to the map with initial values
+          const newEntry = {
             sales: totalProductSales,
             lastDate: orderDate,
-          });
+          };
+          productSalesMap.set(productId, newEntry); // Store using `productId` as key
+          console.log(
+            `New Entry for Product ${productId}:`,
+            JSON.stringify(newEntry, null, 2)
+          );
         }
       });
+
+      console.log(
+        `productSalesMap after processing Order ${orderIndex + 1}:`,
+        Array.from(productSalesMap.entries())
+      );
     });
 
+    console.log(
+      "\nFinal productSalesMap after processing all orders:",
+      Array.from(productSalesMap.entries())
+    );
+
+    // Sort the products by sales in descending order
     const sortedProducts = Array.from(productSalesMap.entries())
       .map(([productId, data]) => ({ productId, ...data }))
       .sort((a: any, b: any) => b.sales - a.sales);
 
-    const topSellingProducts = sortedProducts.slice(0, 10);
+    console.log(
+      "\nSorted Products by Sales (Descending):",
+      JSON.stringify(sortedProducts, null, 2)
+    );
 
+    // Get the top 10 selling products
+    const topSellingProducts = sortedProducts.slice(0, 10);
+    console.log(
+      "\nTop 10 Selling Products:",
+      JSON.stringify(topSellingProducts, null, 2)
+    );
+
+    // Map labels and data for the report
     const labels = topSellingProducts.map((product: any) => {
-      const productData = products.find((p: any) => p.id === product._id);
-      return `${productData?.name || `Product ${product.productId}`} (${
+      const productData = products.find(
+        (p: any) => p._id === product.productId
+      ); // Ensure matching properties
+      const label = `${productData?.name || `Product ${product.productId}`} (${
         product.lastDate.toISOString().split("T")[0]
       })`;
+      console.log(`Label for Product ${product.productId}: ${label}`);
+      return label;
     });
-    const data = topSellingProducts.map((product: any) => product.sales);
+
+    const data = topSellingProducts.map((product: any) => {
+      console.log(`Sales for Product ${product.productId}: ${product.sales}`);
+      return product.sales;
+    });
+
+    console.log(
+      "\nLabels for Top Selling Products:",
+      JSON.stringify(labels, null, 2)
+    );
+    console.log(
+      "Sales Data for Top Selling Products:",
+      JSON.stringify(data, null, 2)
+    );
+
+    // Prepare insights
+    const totalSales = data.reduce(
+      (sum: number, value: number) => sum + value,
+      0
+    );
+    console.log("\nTotal Sales for Top Selling Products:", totalSales);
 
     return {
       labels,
@@ -199,9 +296,7 @@ const Reports: React.FC = () => {
         { label: "Top Selling Product", value: labels[0] || "N/A" },
         {
           label: "Total Sales",
-          value: `Rs ${data
-            .reduce((sum: number, value: number) => sum + value, 0)
-            .toFixed(2)}`,
+          value: `Rs ${totalSales.toFixed(2)}`,
         },
       ],
     };
