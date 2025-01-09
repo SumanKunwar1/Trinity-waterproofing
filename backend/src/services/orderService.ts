@@ -24,7 +24,17 @@ export class OrderService {
         console.log("User not found.");
         throw httpMessages.NOT_FOUND("User");
       }
-      console.log("User found:", user);
+      console.log("User found:", user, "now onto the address of id", addressId);
+
+      const address = user.addressBook.find(
+        (addr) => addr._id.toString() === addressId.toString()
+      );
+
+      if (!address) {
+        console.log("Address not found.");
+        throw httpMessages.NOT_FOUND("Address");
+      }
+      console.log("Address found:", address);
 
       let subtotal = 0;
       const validatedProducts = [];
@@ -115,7 +125,7 @@ export class OrderService {
           price: item.price,
         })),
         userId: user._id,
-        addressId,
+        address: address,
         subtotal,
         status: OrderStatus.ORDER_REQUESTED,
       });

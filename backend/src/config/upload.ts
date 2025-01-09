@@ -1,6 +1,7 @@
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { httpMessages } from "../middlewares";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -25,38 +26,43 @@ const fileFilter = (req: any, file: any, cb: any) => {
   console.log("Received file:", file);
 
   if (file.fieldname === "productImage" || file.fieldname === "image") {
-    // Restrict to JPEG, PNG, JPG only
     if (allowedImageTypes.includes(file.mimetype)) {
       console.log(`Allowed file type: ${file.mimetype}`);
       cb(null, true);
     } else {
       console.error(
-        `Invalid file type: ${file.mimetype}. Allowed types are JPEG, PNG, JPG.`
+        `Invalid file type for ${file.fieldname}: ${file.mimetype}`
       );
       cb(
-        new Error(
-          `Invalid file type for ${file.fieldname}. Allowed types are JPEG, PNG, JPG.`
+        new multer.MulterError(
+          "LIMIT_UNEXPECTED_FILE",
+          `${file.fieldname}: Invalid file type. Allowed types are JPEG, PNG, JPG.`
         )
       );
     }
   } else if (file.fieldname === "video") {
-    // Restrict to MP4, AVI, MOV only
     if (allowedVideoTypes.includes(file.mimetype)) {
       console.log(`Allowed video file type: ${file.mimetype}`);
       cb(null, true);
     } else {
       console.error(
-        `Invalid video file type: ${file.mimetype}. Allowed types are MP4, AVI, MOV.`
+        `Invalid video file type for ${file.fieldname}: ${file.mimetype}`
       );
       cb(
-        new Error(
-          `Invalid file type for ${file.fieldname}. Allowed types are MP4, AVI, MOV.`
+        new multer.MulterError(
+          "LIMIT_UNEXPECTED_FILE",
+          `${file.fieldname}: Invalid video file type. Allowed types are MP4, AVI, MOV, QUICKTIME`
         )
       );
     }
   } else {
-    console.error(`Unexpected field name ${file.fieldname}.`);
-    cb(new Error(`Unexpected field name ${file.fieldname}.`));
+    console.error(`Unexpected field name ${file.fieldname}`);
+    cb(
+      new multer.MulterError(
+        "LIMIT_UNEXPECTED_FILE",
+        `Unexpected field name ${file.fieldname}.`
+      )
+    );
   }
 };
 
@@ -163,7 +169,7 @@ export const parseColorsMiddleware = (req: any, res: any, next: Function) => {
     try {
       req.body.colors = JSON.parse(req.body.colors);
     } catch (error) {
-      return res.status(400).json({ error: "Invalid JSON format for colors" });
+      return next(httpMessages.BAD_REQUEST("Invalid JSON format for colors"));
     }
   }
   next();

@@ -191,30 +191,30 @@ export class ReviewService {
     }
   }
 
-  public async updateReviewById(
-    reviewId: string,
-    updatedData: Partial<IReview>
-  ) {
-    try {
-      const review = await Review.findById(reviewId);
+  // public async updateReviewById(
+  //   reviewId: string,
+  //   updatedData: Partial<IReview>
+  // ) {
+  //   try {
+  //     const review = await Review.findById(reviewId);
 
-      if (!review) {
-        throw httpMessages.NOT_FOUND("review");
-      }
+  //     if (!review) {
+  //       throw httpMessages.NOT_FOUND("review");
+  //     }
 
-      const { content, rating, image } = updatedData;
-      if (content) review.content = content;
-      if (rating) review.rating = rating;
-      if (image) {
-        if (review.image) {
-          deleteImages(review.image);
-        }
-        review.image = image;
-      }
-      await review.save();
-      return review;
-    } catch (error) {
-      throw error;
-    }
-  }
+  //     const { content, rating, image } = updatedData;
+  //     if (content) review.content = content;
+  //     if (rating) review.rating = rating;
+  //     if (image) {
+  //       if (review.image) {
+  //         deleteImages(review.image);
+  //       }
+  //       review.image = image;
+  //     }
+  //     await review.save();
+  //     return review;
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
 }

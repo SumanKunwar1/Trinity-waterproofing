@@ -82,25 +82,25 @@ export class ReviewController {
     }
   }
 
-  public async updateReviewById(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
-    try {
-      const reviewId = req.params.reviewId;
-      const updatedData: Partial<IReview> = req.body;
-      const result = await this.reviewService.updateReviewById(
-        reviewId,
-        updatedData
-      );
-      res.locals.responseData = result;
-      next();
-    } catch (error: any) {
-      if (req.body.image) {
-        deleteImages(req.body.image);
-      }
-      next(error);
-    }
-  }
+  // public async updateReviewById(
+  //   req: Request,
+  //   res: Response,
+  //   next: NextFunction
+  // ): Promise<void> {
+  //   try {
+  //     const reviewId = req.params.reviewId;
+  //     const updatedData: Partial<IReview> = req.body;
+  //     const result = await this.reviewService.updateReviewById(
+  //       reviewId,
+  //       updatedData
+  //     );
+  //     res.locals.responseData = result;
+  //     next();
+  //   } catch (error: any) {
+  //     if (req.body.image) {
+  //       deleteImages(req.body.image);
+  //     }
+  //     next(error);
+  //   }
+  // }
 }

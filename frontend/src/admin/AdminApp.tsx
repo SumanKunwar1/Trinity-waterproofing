@@ -30,12 +30,13 @@ import Newsletters from "./pages/Newsletters";
 import AdminGallery from "./pages/Gallery";
 import { AuthProvider } from "../context/AuthContext";
 import Enquiries from "./pages/Enquiry";
+import { SocketProvider } from "../context/SocketContext";
 
 function AdminApp() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <Provider store={store}>
+      <Provider store={store}>
+        <SocketProvider>
           <Routes>
             {/* Private routes (protected by PrivateRoute) */}
             <Route
@@ -143,22 +144,6 @@ function AdminApp() {
               }
             />
             <Route
-              path="/admin/enquiries"
-              element={
-                <PrivateRoute>
-                  <Enquiries />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/admin/gallery"
-              element={
-                <PrivateRoute>
-                  <AdminGallery />
-                </PrivateRoute>
-              }
-            />
-            <Route
               path="/admin/reports"
               element={
                 <PrivateRoute>
@@ -239,9 +224,9 @@ function AdminApp() {
               }
             />
           </Routes>
-        </Provider>
-        <ToastContainer />
-      </AuthProvider>
+        </SocketProvider>
+      </Provider>
+      <ToastContainer />
     </ErrorBoundary>
   );
 }
