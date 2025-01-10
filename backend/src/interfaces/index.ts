@@ -16,3 +16,4 @@ export { INewsLetter } from "./INewsLetter";
 export { IAbout } from "./ITabAbout";
 export { IService } from "./IService";
 export { IPolicy } from "./IPolicy";
+export { IPrivacyPolicy } from "./IPrivacyPolicy";

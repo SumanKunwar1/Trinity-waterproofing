@@ -29,3 +29,4 @@ export { GalleryService } from "./galleryService";
 export { MetaInfoService } from "./metaInfoService";
 export { ReturnPolicyService } from "./returnPolicyService";
 export { ShippingPolicyService } from "./shippingPolicyReturn";
+export { PrivacyPolicyService } from "./privacyPolicyService";
