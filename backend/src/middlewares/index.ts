@@ -45,3 +45,4 @@ export { validateAbout } from "./validateAbout";
 export { validateEditAbout } from "./validateEditAbout";
 export { validatePolicy } from "./validatePolicy";
 export { validateEditPolicy } from "./validateEditPolicy";
+export { validatePrivacyPolicy } from "./validatePrivacyPolicy";

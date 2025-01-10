@@ -22,6 +22,7 @@ import serviceRoutes from "./serviceRoutes";
 import metaInfoRoutes from "./metaInfoRoutes";
 import returnPolicyRoutes from "./returnPolicyRoutes";
 import shipingPolicyRoutes from "./shippingPolicyRoutes";
+import privacyPolicyRoutes from "./privacyPolicyRoutes";
 
 const router = Router();
 
@@ -48,5 +49,6 @@ router.use("/service", serviceRoutes);
 router.use("/metainfo", metaInfoRoutes);
 router.use("/return-policy", returnPolicyRoutes);
 router.use("/shipping-policy", shipingPolicyRoutes);
+router.use("/privacy-policy", privacyPolicyRoutes);
 
 export default router;
