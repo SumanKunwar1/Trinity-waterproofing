@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import { FaPlus, FaTimes } from "react-icons/fa";
@@ -56,9 +56,7 @@ interface ProductFormData {
 const ProductForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
-  //const isEditingImages = location.pathname.includes("edit-product-images"); // Removed
-
+  const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
@@ -79,14 +77,23 @@ const ProductForm: React.FC = () => {
   const [showColorPicker, setShowColorPicker] = useState(false);
 
   useEffect(() => {
-    fetchBrands();
-    fetchSubCategories();
-    if (id) {
-      fetchProduct(id);
-    }
+    const initializeForm = async () => {
+      try {
+        await Promise.all([fetchBrands(), fetchSubCategories()]);
+        if (id) {
+          await fetchProduct(id);
+        }
+      } catch (error) {
+        console.error("Error initializing form:", error);
+        toast.error("Failed to initialize form");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeForm();
   }, [id]);
 
-  // Fetch functions remain the same...
   const fetchBrands = async () => {
     try {
       const response = await fetch("/api/brand", {
@@ -98,7 +105,8 @@ const ProductForm: React.FC = () => {
       const data = await response.json();
       setBrands(data);
     } catch (error) {
-      toast.error("Failed to fetch brands");
+      console.error("Error fetching brands:", error);
+      throw error;
     }
   };
 
@@ -113,7 +121,8 @@ const ProductForm: React.FC = () => {
       const data = await response.json();
       setSubCategories(data);
     } catch (error) {
-      toast.error("Failed to fetch subcategories");
+      console.error("Error fetching subcategories:", error);
+      throw error;
     }
   };
 
@@ -127,8 +136,10 @@ const ProductForm: React.FC = () => {
       if (!response.ok) throw new Error("Failed to fetch product");
       const productData = await response.json();
 
-      // Ensure colors are properly formatted when fetching existing product
-      const featuresString = productData.features.join("\n");
+      const featuresString = Array.isArray(productData.features)
+        ? productData.features.join("\n")
+        : productData.features;
+
       const formattedColors = Array.isArray(productData.colors)
         ? productData.colors.map((color: any) => ({
             name: color.name || "",
@@ -137,21 +148,34 @@ const ProductForm: React.FC = () => {
         : [];
 
       setFormData({
-        ...productData,
-        colors: formattedColors,
-        features: featuresString,
+        name: productData.name || "",
+        description: productData.description || "",
+        retailPrice: Number(productData.retailPrice) || 0,
+        wholeSalePrice: Number(productData.wholeSalePrice) || 0,
         productImage: null,
         image: [],
+        features: featuresString || "",
+        brand: productData.brand || "",
+        colors: formattedColors,
+        inStock: Number(productData.inStock) || 0,
+        subCategory: productData.subCategory || "",
       });
     } catch (error) {
-      toast.error("Failed to fetch product");
+      console.error("Error fetching product:", error);
+      throw error;
     }
   };
 
-  // Handle input changes
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const numericFields = ["retailPrice", "wholeSalePrice", "inStock"];
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: numericFields.includes(name) ? Number(value) : value,
+    }));
   };
 
   const handleSelectChange = (name: string, value: string) => {
@@ -162,34 +186,6 @@ const ProductForm: React.FC = () => {
     setFormData((prev) => ({ ...prev, features: value }));
   };
 
-  const handleColorInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setColorInput(e.target.value);
-  };
-
-  const addColor = (color: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      colors: [...prev.colors, { name: color, hex: color }],
-    }));
-    setShowColorPicker(false);
-  };
-
-  const removeColor = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      colors: prev.colors.filter((_, i) => i !== index),
-    }));
-  };
-
-  const openColorPicker = () => {
-    setShowColorPicker(true);
-  };
-
-  const closeColorPicker = () => {
-    setShowColorPicker(false);
-  };
-
-  // Handle image changes
   const handleImageChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     isMainImage: boolean
@@ -207,51 +203,102 @@ const ProductForm: React.FC = () => {
     }
   };
 
-  // Form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const productFormData = new FormData();
-
-    if (formData.colors.length > 0) {
-      productFormData.append("colors", JSON.stringify(formData.colors));
-    }
-
-    Object.entries(formData).forEach(([key, value]) => {
-      if (key === "colors") return;
-
-      if (key === "productImage" && value instanceof File) {
-        productFormData.append(key, value);
-      } else if (key === "image" && Array.isArray(value)) {
-        value.forEach((image) => {
-          if (image instanceof File) {
-            productFormData.append("image", image);
-          }
-        });
-      } else if (value !== null && value !== undefined) {
-        productFormData.append(key, String(value));
-      }
-    });
+    setLoading(true);
 
     try {
       const url = id ? `/api/product/${id}` : "/api/product";
       const method = id ? "PATCH" : "POST";
-      console.log(url, method, productFormData);
-      const response = await fetch(url, {
-        method,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-        body: productFormData,
-      });
-      console.log(response, response.data);
-      if (!response.ok) throw new Error("Failed to submit product");
+
+      // Prepare the request body based on the method (PATCH or POST)
+      if (method === "PATCH") {
+        // For PATCH request, we send the data as JSON
+        const requestBody = {
+          name: formData.name,
+          description: formData.description,
+          retailPrice: formData.retailPrice,
+          wholeSalePrice: formData.wholeSalePrice,
+          inStock: formData.inStock,
+          brand: formData.brand,
+          subCategory: formData.subCategory,
+          features: formData.features,
+          colors: formData.colors, // No need to stringify for JSON
+        };
+
+        // Log the request body for debugging
+        console.log("Request Body for PATCH:", requestBody);
+
+        const response = await fetch(url, {
+          method,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            "Content-Type": "application/json", // Send as JSON for PATCH
+          },
+          body: JSON.stringify(requestBody), // Convert to JSON string
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to update product");
+        }
+      } else {
+        // For POST request, we need to send the data as FormData
+        const productFormData = new FormData();
+
+        // Add basic fields
+        productFormData.append("name", formData.name);
+        productFormData.append("description", formData.description);
+        productFormData.append("retailPrice", formData.retailPrice.toString());
+        productFormData.append(
+          "wholeSalePrice",
+          formData.wholeSalePrice.toString()
+        );
+        productFormData.append("inStock", formData.inStock.toString());
+        productFormData.append("brand", formData.brand);
+        productFormData.append("subCategory", formData.subCategory);
+        productFormData.append("features", formData.features);
+        productFormData.append("colors", JSON.stringify(formData.colors)); // JSON.stringify for FormData
+
+        // Only append images for new product creation (POST)
+        if (formData.productImage) {
+          productFormData.append("productImage", formData.productImage);
+        }
+
+        formData.image.forEach((file, index) => {
+          productFormData.append(`image`, file);
+        });
+
+        // Log FormData contents for debugging
+        for (let pair of productFormData.entries()) {
+          console.log("data in productFormData", pair[0], pair[1]);
+        }
+
+        const response = await fetch(url, {
+          method,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+          body: productFormData, // Send FormData for POST
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to create product");
+        }
+      }
 
       toast.success(
         id ? "Product updated successfully" : "Product created successfully"
       );
       navigate("/admin/products");
     } catch (error) {
-      toast.error(id ? "Failed to update product" : "Failed to create product");
+      console.error("Error submitting product:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to submit product"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -259,7 +306,14 @@ const ProductForm: React.FC = () => {
     setSidebarOpen((prev) => !prev);
   };
 
-  // Rest of the component remains the same...
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex bg-gray-100">
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
@@ -289,6 +343,7 @@ const ProductForm: React.FC = () => {
                       required
                     />
                   </div>
+
                   <div>
                     <Label htmlFor="description">Description</Label>
                     <Input
@@ -299,6 +354,7 @@ const ProductForm: React.FC = () => {
                       required
                     />
                   </div>
+
                   <div>
                     <Label htmlFor="retailPrice">Retail Price</Label>
                     <Input
@@ -310,6 +366,7 @@ const ProductForm: React.FC = () => {
                       required
                     />
                   </div>
+
                   <div>
                     <Label htmlFor="wholeSalePrice">Wholesale Price</Label>
                     <Input
@@ -321,6 +378,7 @@ const ProductForm: React.FC = () => {
                       required
                     />
                   </div>
+
                   <div>
                     <Label htmlFor="brand">Brand</Label>
                     <Select
@@ -342,6 +400,7 @@ const ProductForm: React.FC = () => {
                       </SelectContent>
                     </Select>
                   </div>
+
                   <div>
                     <Label htmlFor="subCategory">Subcategory</Label>
                     <Select
@@ -366,6 +425,7 @@ const ProductForm: React.FC = () => {
                       </SelectContent>
                     </Select>
                   </div>
+
                   <div>
                     <Label htmlFor="inStock">In Stock</Label>
                     <Input
@@ -377,66 +437,52 @@ const ProductForm: React.FC = () => {
                       required
                     />
                   </div>
+
                   {!id && (
                     <>
                       <div>
-                        <Label htmlFor="productImage">Main Product Image</Label>
+                        <Label>Main Product Image</Label>
                         <Input
-                          id="productImage"
-                          name="productImage"
                           type="file"
                           onChange={(e) => handleImageChange(e, true)}
                           accept="image/*"
+                          required
                         />
-                        {formData.productImage && (
-                          <img
-                            src={URL.createObjectURL(formData.productImage)}
-                            alt="Product preview"
-                            className="mt-2 w-32 h-32 object-cover"
-                          />
-                        )}
                       </div>
+
                       <div>
-                        <Label htmlFor="image">Additional Images</Label>
+                        <Label>Additional Images</Label>
                         <Input
-                          id="image"
-                          name="image"
                           type="file"
                           onChange={(e) => handleImageChange(e, false)}
                           accept="image/*"
                           multiple
+                          className="mt-4"
                         />
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {formData.image.map((image, index) => (
-                            <img
-                              key={index}
-                              src={URL.createObjectURL(image)}
-                              alt={`Product image ${index + 1}`}
-                              className="w-24 h-24 object-cover"
-                            />
-                          ))}
-                        </div>
                       </div>
                     </>
                   )}
+
                   <div>
-                    <Label htmlFor="features">Features</Label>
-                    <Editor
-                      value={formData.features}
-                      onChange={handleFeaturesChange}
-                    />
+                    <Label>Features</Label>
+                    <div className="mt-2">
+                      <Editor
+                        value={formData.features}
+                        onChange={handleFeaturesChange}
+                      />
+                    </div>
                   </div>
-                  {/* Colors section */}
+
                   <div>
                     <Label>Colors</Label>
                     <div className="flex items-center gap-2 mt-2">
                       <Button
                         type="button"
-                        onClick={openColorPicker}
+                        onClick={() => setShowColorPicker(true)}
                         size="sm"
                         variant="secondary"
                       >
-                        <FaPlus /> Add Color
+                        <FaPlus className="mr-2" /> Add Color
                       </Button>
                     </div>
                     <div className="mt-2 space-y-2">
@@ -449,7 +495,14 @@ const ProductForm: React.FC = () => {
                           <span>{color.name}</span>
                           <Button
                             type="button"
-                            onClick={() => removeColor(index)}
+                            onClick={() => {
+                              setFormData((prev) => ({
+                                ...prev,
+                                colors: prev.colors.filter(
+                                  (_, i) => i !== index
+                                ),
+                              }));
+                            }}
                             size="sm"
                             variant="destructive"
                           >
@@ -464,27 +517,52 @@ const ProductForm: React.FC = () => {
                           color={colorInput}
                           onChange={setColorInput}
                         />
-                        <Button
-                          type="button"
-                          onClick={() => addColor(colorInput)}
+                        <Input
+                          type="text"
+                          placeholder="Color name"
+                          value={colorInput}
+                          onChange={(e) => setColorInput(e.target.value)}
                           className="mt-2"
-                        >
-                          Add Color
-                        </Button>
-                        <Button
-                          type="button"
-                          onClick={closeColorPicker}
-                          className="mt-2 ml-2"
-                          variant="outline"
-                        >
-                          Cancel
-                        </Button>
+                        />
+                        <div className="mt-2 space-x-2">
+                          <Button
+                            type="button"
+                            onClick={() => {
+                              if (colorInput) {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  colors: [
+                                    ...prev.colors,
+                                    { name: colorInput, hex: colorInput },
+                                  ],
+                                }));
+                                setColorInput("");
+                                setShowColorPicker(false);
+                              }
+                            }}
+                          >
+                            Add Color
+                          </Button>
+                          <Button
+                            type="button"
+                            onClick={() => setShowColorPicker(false)}
+                            variant="outline"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </div>
 
-                  <Button type="submit">
-                    {id ? "Update Product" : "Create Product"}
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? (
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    ) : id ? (
+                      "Update Product"
+                    ) : (
+                      "Create Product"
+                    )}
                   </Button>
                 </form>
               </CardContent>

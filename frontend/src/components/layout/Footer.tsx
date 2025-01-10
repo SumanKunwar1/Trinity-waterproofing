@@ -117,23 +117,26 @@ const Footer: React.FC = () => {
           <div>
             <h3 className="text-white text-lg font-semibold mb-4">Support</h3>
             <ul className="space-y-2">
-              {["faq", "shipping", "return-policy", "privacy-policy"].map(
-                (link) => (
-                  <li key={link}>
-                    <Link
-                      to={`/${link}`}
-                      className="hover:text-white transition-colors"
-                    >
-                      {link
-                        .split("-")
-                        .map(
-                          (word) => word.charAt(0).toUpperCase() + word.slice(1)
-                        )
-                        .join(" ")}
-                    </Link>
-                  </li>
-                )
-              )}
+              {[
+                "faq",
+                "shipping-policy",
+                "return-policy",
+                "privacy-policy",
+              ].map((link) => (
+                <li key={link}>
+                  <Link
+                    to={`/${link}`}
+                    className="hover:text-white transition-colors"
+                  >
+                    {link
+                      .split("-")
+                      .map(
+                        (word) => word.charAt(0).toUpperCase() + word.slice(1)
+                      )
+                      .join(" ")}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 

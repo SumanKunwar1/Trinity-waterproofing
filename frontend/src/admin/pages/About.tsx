@@ -12,7 +12,7 @@ import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 import ContentForm from "../components/ContentForm";
 import TabList from "../components/TabList";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 interface IAbout {
@@ -49,6 +49,16 @@ const AdminAbout: React.FC = () => {
     setSidebarOpen((prev) => !prev);
   };
 
+  // Error handling utility
+  const handleError = async (response: Response, fallbackMessage: string) => {
+    try {
+      const errorData = await response.json();
+      throw new Error(errorData.message || fallbackMessage);
+    } catch {
+      throw new Error(fallbackMessage);
+    }
+  };
+
   // Fetch About, cores, and Tabs separately
   useEffect(() => {
     fetchAbout();
@@ -59,15 +69,16 @@ const AdminAbout: React.FC = () => {
   const fetchAbout = async () => {
     try {
       const response = await fetch("/api/about");
-      if (!response.ok) {
-        throw new Error("Failed to fetch about data");
-      }
+      if (!response.ok)
+        await handleError(response, "Failed to fetch about data");
+
       const data = await response.json();
       setAbout((prevState) => ({
         ...prevState,
-        ...data, // Merge the about data with the previous state
+        ...data,
       }));
-    } catch (error) {
+    } catch (error: any) {
+      toast.error(error.message);
       console.error("Error fetching about data:", error);
     }
   };
@@ -75,15 +86,16 @@ const AdminAbout: React.FC = () => {
   const fetchCore = async () => {
     try {
       const response = await fetch("/api/about/cores");
-      if (!response.ok) {
-        throw new Error("Failed to fetch cores values");
-      }
+      if (!response.ok)
+        await handleError(response, "Failed to fetch cores values");
+
       const data = await response.json();
       setAbout((prevState) => ({
         ...prevState,
-        cores: data || [], // Ensure cores is always an array
+        cores: data || [],
       }));
-    } catch (error) {
+    } catch (error: any) {
+      toast.error(error.message);
       console.error("Error fetching cores values:", error);
     }
   };
@@ -91,15 +103,15 @@ const AdminAbout: React.FC = () => {
   const fetchTabs = async () => {
     try {
       const response = await fetch("/api/about/tabs");
-      if (!response.ok) {
-        throw new Error("Failed to fetch tabs");
-      }
+      if (!response.ok) await handleError(response, "Failed to fetch tabs");
+
       const data = await response.json();
       setAbout((prevState) => ({
         ...prevState,
-        tabs: data || [], // Ensure tabs is always an array
+        tabs: data || [],
       }));
-    } catch (error) {
+    } catch (error: any) {
+      toast.error(error.message);
       console.error("Error fetching tabs:", error);
     }
   };
@@ -160,7 +172,7 @@ const AdminAbout: React.FC = () => {
                 </CardContent>
               </Card>
 
-              {/* cores Values Card */}
+              {/* Core Values Card */}
               <Card className="mb-6">
                 <CardHeader>
                   <div className="flex justify-between items-center">
@@ -177,7 +189,7 @@ const AdminAbout: React.FC = () => {
                   {about && about.cores && about.cores.length > 0 ? (
                     <TabList
                       tabs={about.cores}
-                      onEdit={(cores) => openForm("cores", cores)}
+                      onEdit={(core) => openForm("cores", core)}
                       onDelete={fetchCore}
                       type="cores"
                     />

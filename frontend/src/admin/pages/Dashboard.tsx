@@ -74,7 +74,31 @@ interface IUser {
 interface ICategory {
   _id: string;
   name: string;
+  subCategories: {
+    products: any[];
+  }[];
 }
+
+// Function to generate dynamic colors
+const generateColors = (count: number) => {
+  const baseColors = [
+    { h: 0, s: 70, l: 60 }, // Red
+    { h: 210, s: 70, l: 60 }, // Blue
+    { h: 60, s: 70, l: 60 }, // Yellow
+    { h: 120, s: 70, l: 60 }, // Green
+    { h: 280, s: 70, l: 60 }, // Purple
+    { h: 30, s: 70, l: 60 }, // Orange
+  ];
+
+  const colors = [];
+  for (let i = 0; i < count; i++) {
+    const baseColor = baseColors[i % baseColors.length];
+    // Adjust lightness slightly for variety when we need more colors than base colors
+    const lightness = baseColor.l + Math.floor(i / baseColors.length) * 10;
+    colors.push(`hsla(${baseColor.h}, ${baseColor.s}%, ${lightness}%, 0.6)`);
+  }
+  return colors;
+};
 
 const Dashboard: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -140,6 +164,7 @@ const Dashboard: React.FC = () => {
       toast.error(errorMessage);
     }
   };
+  console.log("Categories:", categories);
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
@@ -244,35 +269,24 @@ const Dashboard: React.FC = () => {
       },
     ],
   };
-  console.log("Categories:", categories);
+
   const categoryData = {
     labels: categories.map((category) => category.name),
     datasets: [
       {
         data: categories.map((category) => {
-          // Find all products in the subcategories of the category
           const subCategoryProducts = category.subCategories.reduce(
             (total, subCategory) => total + subCategory.products.length,
             0
           );
-
           return subCategoryProducts;
         }),
-        backgroundColor: [
-          "rgba(255, 99, 132, 0.6)",
-          "rgba(54, 162, 235, 0.6)",
-          "rgba(255, 206, 86, 0.6)",
-          "rgba(75, 192, 192, 0.6)",
-          "rgba(153, 102, 255, 0.6)",
-          "rgba(200, 10, 100, 0.6)",
-          "rgba(175, 200, 192, 0.6)",
-          "rgba(153, 200, 255, 0.6)",
-        ],
+        backgroundColor: generateColors(categories.length),
+        borderWidth: 1,
+        borderColor: "#fff",
       },
     ],
   };
-
-  console.log("Category Data:", categoryData);
 
   return (
     <div className="flex bg-gray-100">
@@ -370,6 +384,7 @@ const Dashboard: React.FC = () => {
                 </CardContent>
               </Card>
             </motion.div>
+
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
@@ -401,6 +416,7 @@ const Dashboard: React.FC = () => {
                 </CardContent>
               </Card>
             </motion.div>
+
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}

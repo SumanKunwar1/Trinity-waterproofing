@@ -77,7 +77,7 @@ function App() {
                       path="/return-policy"
                       element={<ReturnPolicyPage />}
                     />
-                    <Route path="/shipping" element={<ShippingPage />} />
+                    <Route path="/shipping-policy" element={<ShippingPage />} />
                     <Route path="/faq" element={<FAQPage />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/contact" element={<Contact />} />

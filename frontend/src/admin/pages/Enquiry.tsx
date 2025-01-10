@@ -47,6 +47,7 @@ const Enquiries: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
@@ -66,13 +67,16 @@ const Enquiries: React.FC = () => {
           },
         }
       );
-      if (!response.ok) throw new Error("Failed to fetch enquiries");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch enquiries");
+      }
 
       const data = await response.json();
       setEnquiries(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching enquiries:", error);
-      toast.error("Failed to fetch enquiries");
+      toast.error(error.message || "Failed to fetch enquiries");
     } finally {
       setIsLoading(false);
     }
@@ -108,9 +112,9 @@ const Enquiries: React.FC = () => {
       } else {
         fetchEnquiries(); // Refetch to update the list and total count
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting enquiry:", error);
-      toast.error("Failed to delete enquiry");
+      toast.error(error.message || "Failed to delete enquiry");
     }
   };
 

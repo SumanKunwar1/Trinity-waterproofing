@@ -1,18 +1,20 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from "express";
 
 function handleResponse(req: Request, res: Response, next: NextFunction): void {
   console.log(`✌ ${req.originalUrl} ✌`);
 
-  const results = res.locals.responseData
-  console.log('Sending response:', results); 
+  const results = res.locals.responseData;
+  // console.log('Sending response:', results);
 
   if (results === undefined) {
-    res.status(404).json({ error: 'Data not found' });  
+    res.status(404).json({ error: "Data not found" });
     return;
   }
 
   if (results.error) {
-    res.status(results.error.statusCode || 400).json({ error: results.error.message });  
+    res
+      .status(results.error.statusCode || 400)
+      .json({ error: results.error.message });
     return;
   }
 

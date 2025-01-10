@@ -17,6 +17,7 @@ import Help from "./pages/Help";
 import About from "./pages/About";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ReturnPolicy from "./pages/ReturnPolicy";
+import ShippingPolicy from "./pages/ShippingPolicy";
 import Sliders from "./pages/Sliders";
 import GenerateReport from "./pages/GenerateReport";
 import ProductForm from "./pages/ProductForm";
@@ -221,6 +222,14 @@ function AdminApp() {
                 element={
                   <PrivateRoute>
                     <ReturnPolicy />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/admin/shipping-policy"
+                element={
+                  <PrivateRoute>
+                    <ShippingPolicy />
                   </PrivateRoute>
                 }
               />

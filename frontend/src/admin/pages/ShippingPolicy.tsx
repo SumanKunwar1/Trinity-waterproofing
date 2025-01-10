@@ -33,12 +33,12 @@ import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 
 // Validation schema
-const policySchema = yup.object().shape({
+const shippingPolicySchema = yup.object().shape({
   title: yup.string().required("Title is required"),
   description: yup.string().required("Description is required"),
 });
 
-const ReturnPolicy = () => {
+const ShippingPolicy = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [policies, setPolicies] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -51,12 +51,16 @@ const ReturnPolicy = () => {
     setValue,
     formState: { errors },
   } = useForm({
-    resolver: yupResolver(policySchema),
+    resolver: yupResolver(shippingPolicySchema),
   });
 
   const fetchPolicies = async () => {
     try {
-      const response = await fetch("/api/return-policy");
+      const response = await fetch("/api/shipping-policy", {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -64,7 +68,7 @@ const ReturnPolicy = () => {
       }
 
       const data = await response.json();
-      console.log("Policies:", data);
+      console.log("Shipping Policies:", data);
       setPolicies(data || []);
     } catch (error: any) {
       toast.error(error.message || "Failed to fetch policies");
@@ -79,8 +83,8 @@ const ReturnPolicy = () => {
   const onSubmit = async (formData: any) => {
     const requestBody = JSON.stringify(formData);
     const url = editingPolicy
-      ? `/api/return-policy/${editingPolicy._id}`
-      : "/api/return-policy";
+      ? `/api/shipping-policy/${editingPolicy._id}`
+      : "/api/shipping-policy";
 
     try {
       const response = await fetch(url, {
@@ -113,7 +117,7 @@ const ReturnPolicy = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      const response = await fetch(`/api/return-policy/${id}`, {
+      const response = await fetch(`/api/shipping-policy/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${authToken}`,
@@ -157,7 +161,7 @@ const ReturnPolicy = () => {
           <Topbar toggleSidebar={() => setSidebarOpen(!isSidebarOpen)} />
           <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
             <div className="flex justify-between items-center mb-6">
-              <h1 className="text-2xl font-bold">Return Policies</h1>
+              <h1 className="text-2xl font-bold">Shipping Policies</h1>
               <Button
                 onClick={handleCreateNew}
                 className="flex items-center gap-2"
@@ -266,4 +270,4 @@ const ReturnPolicy = () => {
   );
 };
 
-export default ReturnPolicy;
+export default ShippingPolicy;

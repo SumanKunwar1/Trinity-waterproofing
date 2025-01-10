@@ -45,15 +45,19 @@ const EditProductImages: React.FC = () => {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
       });
-      if (!response.ok) throw new Error("Failed to fetch product images");
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch product images");
+      }
+
       const productData = await response.json();
-      console.log(productData, productData.productImage, productData.image);
       setProductImages({
         productImage: productData.productImage,
         image: productData.image,
       });
-    } catch (error) {
-      toast.error("Failed to fetch product images");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to fetch product images");
     }
   };
 
@@ -109,12 +113,15 @@ const EditProductImages: React.FC = () => {
         body: formData,
       });
 
-      if (!response.ok) throw new Error("Failed to update product images");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update product image");
+      }
 
       toast.success("Product images updated successfully");
       navigate("/admin/products");
-    } catch (error) {
-      toast.error("Failed to update product images");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update product images");
     }
   };
 

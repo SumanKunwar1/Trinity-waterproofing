@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Card,
@@ -8,8 +8,13 @@ import {
 } from "../components/ui/card";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ReturnPolicyPage: React.FC = () => {
+  const [policies, setPolicies] = useState([]);
+  const [loading, setLoading] = useState(false);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -30,8 +35,30 @@ const ReturnPolicyPage: React.FC = () => {
     },
   };
 
+  const fetchPolicies = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/return-policy");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch policies");
+      }
+      const data = await response.json();
+      setPolicies(data || []);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to fetch return policies");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPolicies();
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen">
+      <ToastContainer />
       <Header />
       <main className="flex-grow">
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-16">
@@ -47,63 +74,32 @@ const ReturnPolicyPage: React.FC = () => {
             >
               Return Policy
             </motion.h1>
-            <div className="grid gap-8 md:grid-cols-2">
-              <motion.div variants={itemVariants}>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>30-Day Return Policy</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      We offer a 30-day return policy for most items. Products
-                      must be unopened and in their original packaging to be
-                      eligible for a return.
-                    </p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-              <motion.div variants={itemVariants}>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Refund Process</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Once we receive your return, we will inspect the item and
-                      process your refund within 5-7 business days. Refunds will
-                      be issued to the original payment method.
-                    </p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-              <motion.div variants={itemVariants}>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Exceptions</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Some items, such as custom-mixed products or bulk orders,
-                      may not be eligible for return. Please contact our
-                      customer support team for more information.
-                    </p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-              <motion.div variants={itemVariants}>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Shipping Costs</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Customers are responsible for return shipping costs unless
-                      the return is due to our error or a defective product.
-                    </p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </div>
+            {loading ? (
+              <p className="text-gray-600 dark:text-gray-400 text-center">
+                Loading policies...
+              </p>
+            ) : policies.length > 0 ? (
+              <div className="grid gap-8 md:grid-cols-2">
+                {policies.map((policy: any) => (
+                  <motion.div key={policy._id} variants={itemVariants}>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>{policy.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-gray-600 dark:text-gray-400">
+                          {policy.description}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-600 dark:text-gray-400 text-center">
+                No policies found.
+              </p>
+            )}
           </motion.div>
         </div>
       </main>

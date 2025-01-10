@@ -9,7 +9,7 @@ const validateProductImage = (
   next: NextFunction
 ): void => {
   const schema = Joi.object({
-    productImage: Joi.string().required().messages({
+    productImage: Joi.string().optional().messages({
       "string.base": "Product Image must be a valid URL",
       "any.required": "Product Image is required",
     }),

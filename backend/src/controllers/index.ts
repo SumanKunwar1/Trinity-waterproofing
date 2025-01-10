@@ -25,4 +25,4 @@ export { GalleryController } from "./galleryController";
 export { AboutController } from "./aboutController";
 export { MetaInfoController } from "./metaInfoController";
 export { ReturnPolicyController } from "./returnPolicyController";
-export { ShippingPolicyController } from "./shippingPolicyController,";
+export { ShippingPolicyController } from "./shippingPolicyController";

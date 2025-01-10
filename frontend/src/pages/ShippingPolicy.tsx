@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Card,
@@ -8,8 +8,13 @@ import {
 } from "../components/ui/card";
 import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ShippingPage: React.FC = () => {
+  const [policies, setPolicies] = useState([]);
+  const [loading, setLoading] = useState(false);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -30,8 +35,32 @@ const ShippingPage: React.FC = () => {
     },
   };
 
+  const fetchPolicies = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/shipping-policy");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || "Failed to fetch shipping policies"
+        );
+      }
+      const data = await response.json();
+      setPolicies(data || []);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to fetch shipping policies");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPolicies();
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen">
+      <ToastContainer />
       <Header />
       <main className="flex-grow">
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-16">
@@ -47,63 +76,32 @@ const ShippingPage: React.FC = () => {
             >
               Shipping Information
             </motion.h1>
-            <div className="grid gap-8 md:grid-cols-2">
-              <motion.div variants={itemVariants}>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Domestic Shipping</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      We offer free standard shipping on orders over $100. For
-                      orders under $100, a flat rate of $10 applies. Expedited
-                      shipping options are available at checkout.
-                    </p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-              <motion.div variants={itemVariants}>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>International Shipping</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      International shipping rates vary by destination. Please
-                      check the shipping calculator at checkout for accurate
-                      rates.
-                    </p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-              <motion.div variants={itemVariants}>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Shipping Times</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Standard shipping typically takes 3-5 business days.
-                      Expedited shipping options can deliver within 1-2 business
-                      days.
-                    </p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-              <motion.div variants={itemVariants}>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Tracking Your Order</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Once your order ships, you'll receive a confirmation email
-                      with tracking information.
-                    </p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </div>
+            {loading ? (
+              <p className="text-gray-600 dark:text-gray-400 text-center">
+                Loading policies...
+              </p>
+            ) : policies.length > 0 ? (
+              <div className="grid gap-8 md:grid-cols-2">
+                {policies.map((policy: any) => (
+                  <motion.div key={policy._id} variants={itemVariants}>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>{policy.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-gray-600 dark:text-gray-400">
+                          {policy.description}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-600 dark:text-gray-400 text-center">
+                No policies found.
+              </p>
+            )}
           </motion.div>
         </div>
       </main>

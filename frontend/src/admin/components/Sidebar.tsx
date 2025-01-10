@@ -15,7 +15,7 @@ import {
   FaInfoCircle,
   FaShieldAlt,
   FaExchangeAlt,
-  FaLightbulb,
+  FaShippingFast,
   FaSignOutAlt,
   FaNewspaper,
 } from "react-icons/fa";
@@ -65,6 +65,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       icon: FaExchangeAlt,
       text: "Return Policy",
       link: "/admin/return-policy",
+    },
+    {
+      icon: FaShippingFast,
+      text: "Shipping Policy",
+      link: "/admin/shipping-policy",
     },
     {
       icon: FaFileAlt,
