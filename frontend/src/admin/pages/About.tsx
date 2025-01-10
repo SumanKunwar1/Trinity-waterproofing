@@ -69,8 +69,10 @@ const AdminAbout: React.FC = () => {
   const fetchAbout = async () => {
     try {
       const response = await fetch("/api/about");
-      if (!response.ok)
-        await handleError(response, "Failed to fetch about data");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch about data");
+      }
 
       const data = await response.json();
       setAbout((prevState) => ({
@@ -86,9 +88,10 @@ const AdminAbout: React.FC = () => {
   const fetchCore = async () => {
     try {
       const response = await fetch("/api/about/cores");
-      if (!response.ok)
-        await handleError(response, "Failed to fetch cores values");
-
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch cores values");
+      }
       const data = await response.json();
       setAbout((prevState) => ({
         ...prevState,
@@ -103,8 +106,10 @@ const AdminAbout: React.FC = () => {
   const fetchTabs = async () => {
     try {
       const response = await fetch("/api/about/tabs");
-      if (!response.ok) await handleError(response, "Failed to fetch tabs");
-
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch tabs");
+      }
       const data = await response.json();
       setAbout((prevState) => ({
         ...prevState,

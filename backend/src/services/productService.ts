@@ -30,40 +30,111 @@ export class ProductService {
 
   public async editProductImages(
     productId: string,
-    productData: { productImage: string; image: string[] }
+    productData: {
+      productImage: string;
+      image: string[];
+      existingImages: string[];
+    }
   ) {
     try {
-      const { productImage, image } = productData;
+      const { productImage, image: newImages, existingImages } = productData;
+
+      // Log the input data
+      console.log("Received Product Data:", productData);
+
+      // Extract file names from the existingImages URLs
+      const existingImageFileNames = existingImages
+        .map((url) => {
+          if (url) {
+            const parts = url.split("/");
+            return parts[parts.length - 1]; // Extract file name from URL
+          }
+          return ""; // Return empty string if URL is invalid
+        })
+        .filter(Boolean); // Remove any empty strings from the list
+
+      console.log("Existing Image File Names:", existingImageFileNames);
 
       const existingProduct = await Product.findById(productId);
       if (!existingProduct) {
+        console.log(`Product with ID: ${productId} not found`);
         throw httpMessages.NOT_FOUND(`Product with ID: ${productId}`);
       }
 
+      console.log("Found existing product:", existingProduct);
+
       const filesToDelete: string[] = [];
 
+      // Check if the productImage is different from existing images
       if (existingProduct.productImage) {
-        filesToDelete.push(existingProduct.productImage);
+        if (productImage) {
+          // Ensure productImage is a valid string
+          const productImageFileName = productImage.split("/").pop();
+          console.log(
+            "Existing product main image file name:",
+            existingProduct.productImage
+          );
+          console.log("New product image file name:", productImageFileName);
+          filesToDelete.push(existingProduct.productImage);
+          console.log(`Added ${existingProduct.productImage} to delete list`);
+        }
       }
 
+      // Check if the additional images need to be deleted
       if (existingProduct.image && existingProduct.image.length > 0) {
-        filesToDelete.push(...existingProduct.image);
+        existingProduct.image.forEach((existingImage) => {
+          if (existingImage) {
+            // Ensure existingImage is a valid string
+            const imageFileName = existingImage.split("/").pop();
+            console.log("Existing additional image file name:", existingImage);
+            console.log("New image file name:", imageFileName);
+
+            if (
+              imageFileName &&
+              !existingImageFileNames.includes(imageFileName)
+            ) {
+              // Add to delete list and remove from existing images
+              filesToDelete.push(existingImage);
+              const indexToRemove =
+                existingProduct.image.indexOf(existingImage);
+              if (indexToRemove !== -1) {
+                existingProduct.image.splice(indexToRemove, 1); // Remove from existing images array
+                console.log(
+                  `Removed ${existingImage} from existing images list`
+                );
+              }
+              console.log(`Added ${existingImage} to delete list`);
+            }
+          }
+        });
+      }
+      // Log the files to delete before deleting
+      console.log("Files to delete:", filesToDelete);
+
+      // Delete only the files that are not in the existingImages list
+      if (filesToDelete.length > 0) {
+        console.log("Deleting files:", filesToDelete);
+        await deleteImages(filesToDelete);
       }
 
-      await deleteImages(filesToDelete);
-
+      // Update the product image
       if (productImage) {
+        console.log("Updating product image:", productImage);
         existingProduct.productImage = productImage;
       }
 
-      if (image && image.length > 0) {
-        existingProduct.image = image;
+      // Update the additional images
+      if (newImages && newImages.length > 0) {
+        console.log("Appending new images:", newImages);
+        existingProduct.image.push(...newImages); // Append new images
       }
 
       await existingProduct.save();
 
+      console.log("Updated product:", existingProduct);
       return existingProduct;
     } catch (error) {
+      console.error("Error occurred while editing product images:", error);
       throw error;
     }
   }

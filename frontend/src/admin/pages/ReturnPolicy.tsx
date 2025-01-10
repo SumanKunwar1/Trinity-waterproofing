@@ -60,7 +60,7 @@ const ReturnPolicy = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to fetch policies");
+        throw new Error(errorData.error || "Failed to fetch policies");
       }
 
       const data = await response.json();
@@ -94,7 +94,7 @@ const ReturnPolicy = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to update policy");
+        throw new Error(errorData.error || "Failed to update policy");
       }
 
       const successMessage = editingPolicy
@@ -122,7 +122,7 @@ const ReturnPolicy = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to delete policy");
+        throw new Error(errorData.error || "Failed to delete policy");
       }
 
       toast.success("Policy deleted successfully");

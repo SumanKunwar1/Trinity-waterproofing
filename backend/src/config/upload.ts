@@ -117,6 +117,11 @@ export const appendSliderDataToBody = (req: any, res: any, next: Function) => {
 };
 
 export const appendFileDataToBody = (req: any, res: any, next: Function) => {
+  console.log(
+    "product image to append in here:",
+    req.files["productImage"] && req.files["productImage"].length
+  );
+  console.log(req.files["image"]);
   if (req.files["productImage"] && req.files["productImage"].length > 0) {
     const productImageFile = req.files["productImage"][0];
     console.log("Added product image to body:", productImageFile.filename); // Log the image file added
@@ -170,6 +175,23 @@ export const parseColorsMiddleware = (req: any, res: any, next: Function) => {
       req.body.colors = JSON.parse(req.body.colors);
     } catch (error) {
       return next(httpMessages.BAD_REQUEST("Invalid JSON format for colors"));
+    }
+  }
+  next();
+};
+
+export const parseExistingImageMiddleware = (
+  req: any,
+  res: any,
+  next: Function
+) => {
+  if (req.body.existingImages && typeof req.body.existingImages === "string") {
+    try {
+      req.body.existingImages = JSON.parse(req.body.existingImages);
+    } catch (error) {
+      return next(
+        httpMessages.BAD_REQUEST("Invalid JSON format for existingImages")
+      );
     }
   }
   next();

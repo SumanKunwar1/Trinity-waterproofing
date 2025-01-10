@@ -48,7 +48,7 @@ const EditProductImages: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to fetch product images");
+        throw new Error(errorData.error || "Failed to fetch product images");
       }
 
       const productData = await response.json();
@@ -60,7 +60,7 @@ const EditProductImages: React.FC = () => {
       toast.error(error.message || "Failed to fetch product images");
     }
   };
-
+  console.log("productImage before", productImages);
   const handleImageChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     isMainImage: boolean
@@ -103,6 +103,9 @@ const EditProductImages: React.FC = () => {
         formData.append("image", image);
       });
     }
+    formData.append("existingImages", JSON.stringify(productImages.image));
+
+    console.log("Images remaining", productImages.image);
 
     try {
       const response = await fetch(`/api/product/image/${id}`, {
@@ -115,7 +118,7 @@ const EditProductImages: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to update product image");
+        throw new Error(errorData.error || "Failed to update product image");
       }
 
       toast.success("Product images updated successfully");

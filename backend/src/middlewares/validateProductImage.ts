@@ -16,8 +16,13 @@ const validateProductImage = (
     image: Joi.array().items(Joi.string()).optional().messages({
       "array.base": "Images must be an array of valid filename",
     }),
+    existingImages: Joi.array().items(Joi.string()).optional().messages({
+      "array.base": "ExistingImages must be an array of valid filename",
+    }),
   });
-  console.log(req.body);
+  console.log("edit product imaege", req.body);
+  console.log("productImage?", req.body.productImage);
+  console.log("imaege?", req.body.image);
   const { error } = schema.validate(req.body, { abortEarly: false });
   if (error) {
     const errors = error.details.map((err) => ({

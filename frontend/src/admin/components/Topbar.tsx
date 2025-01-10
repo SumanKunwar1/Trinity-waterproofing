@@ -83,7 +83,8 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to change password");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to change password");
       }
 
       toast({
@@ -92,10 +93,11 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
       });
       setIsChangePasswordDialogOpen(false);
       resetForm();
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to change password. Please try again.",
+        description:
+          error.message || "Failed to change password. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -124,7 +126,8 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update profile");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update profile");
       }
 
       toast({
@@ -136,10 +139,11 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
       localStorage.setItem("userEmail", JSON.stringify(values.email));
       localStorage.setItem("userNumber", JSON.stringify(values.phone));
       resetForm();
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to update profile. Please try again.",
+        description:
+          error.message || "Failed to update profile. Please try again.",
         variant: "destructive",
       });
     } finally {

@@ -91,6 +91,7 @@ const Categories: React.FC = () => {
   const fetchCategories = async () => {
     try {
       const response = await axios.get("/api/category");
+
       setCategories(response.data);
     } catch (error: any) {
       // Extract error message from the Axios error object

@@ -75,11 +75,14 @@ const Settings: React.FC = () => {
   const fetchCompanyDetails = async () => {
     try {
       const response = await fetch("/api/company-detail");
-      if (!response.ok) throw new Error("Failed to fetch company details");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to fetch company details");
+      }
       const data = await response.json();
       setCompanyDetails(data);
-    } catch (error) {
-      toast.info("No Company details available at the moment");
+    } catch (error: any) {
+      toast.info(error.message || "No Company details available at the moment");
       console.error(error);
     }
   };
@@ -101,10 +104,10 @@ const Settings: React.FC = () => {
         body: JSON.stringify(values),
       });
 
-      if (!response.ok)
-        throw new Error(
-          `Failed to ${isEditing ? "update" : "add"} company details`
-        );
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update company details");
+      }
 
       const data = await response.json();
       console.log("Data:", data);
@@ -113,8 +116,12 @@ const Settings: React.FC = () => {
       toast.success(
         `Company details ${isEditing ? "updated" : "added"} successfully`
       );
-    } catch (error) {
-      toast.error(`Error ${isEditing ? "updating" : "adding"} company details`);
+    } catch (error: any) {
+      toast.error(
+        `${error.message} || Error ${
+          isEditing ? "updating" : "adding"
+        } company details`
+      );
       console.error(error);
     }
   };

@@ -1,146 +1,234 @@
-import React, { useMemo } from "react";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import React, { useRef } from "react";
+import { Editor } from "@tinymce/tinymce-react";
+import { toast } from "react-toastify";
 
-interface EditorProps {
+interface TinyMCEEditorProps {
   value: string;
   onChange: (content: string) => void;
+  height?: number;
 }
 
-const Editor: React.FC<EditorProps> = ({ value, onChange }) => {
-  // Custom image handler for resizable images
-  const imageHandler = () => {
-    const input = document.createElement("input");
-    input.setAttribute("type", "file");
-    input.setAttribute("accept", "image/*");
-    input.click();
+const TinyMCEEditor: React.FC<TinyMCEEditorProps> = ({
+  value,
+  onChange,
+  height = 500,
+}) => {
+  const editorRef = useRef<any>(null);
+  const baseURL = window.location.origin + "/api/image";
 
-    input.onchange = async () => {
-      const file = input.files?.[0];
-      if (file) {
-        try {
-          // In a real application, you would upload the file to your server here
-          // and get back the URL. For now, we'll use a local URL
-          const url = URL.createObjectURL(file);
+  // Modified handleImageUpload to use Base64 encoding
+  const handleImageUpload = async (blobInfo: any) => {
+    return new Promise<string>((resolve, reject) => {
+      try {
+        const reader = new FileReader();
 
-          const quill = (ReactQuill as any)
-            .findDOMNode(this)
-            ?.querySelector(".ql-editor");
-          const range = (ReactQuill as any).getEditor().getSelection(true);
+        reader.onloadend = () => {
+          const base64Data = reader.result as string; // The Base64 encoded string
+          // Include the width and height for proper rendering
+          const imgTag = `${base64Data}`;
+          resolve(imgTag);
+        };
 
-          // Insert the image with custom class for resizing
-          (ReactQuill as any)
-            .getEditor()
-            .insertEmbed(range.index, "image", url);
-          (ReactQuill as any)
-            .getEditor()
-            .insertText(range.index + 1, "\n", "user");
-          (ReactQuill as any)
-            .getEditor()
-            .setSelection(range.index + 2, "silent");
+        reader.onerror = (error) => {
+          reject("Failed to upload image");
+          toast.error("Failed to upload image");
+        };
 
-          // Add resize handles to the image
-          setTimeout(() => {
-            const img = quill?.querySelector('img[src="' + url + '"]');
-            if (img) {
-              img.className = "resizable-image";
-              img.setAttribute("draggable", "true");
-            }
-          }, 0);
-        } catch (error) {
-          console.error("Error uploading image:", error);
-        }
+        // Read the file as a data URL (Base64 encoding)
+        reader.readAsDataURL(blobInfo.blob());
+      } catch (error) {
+        reject("Image upload failed");
+        toast.error("Failed to upload image");
       }
-    };
+    });
   };
 
-  const modules = useMemo(
-    () => ({
-      toolbar: {
-        container: [
-          [{ header: [1, 2, 3, 4, 5, 6, false] }],
-          [{ font: [] }],
-          ["bold", "italic", "underline", "strike"],
-          ["blockquote", "code-block"],
-          [
-            { list: "ordered" },
-            { list: "bullet" },
-            { indent: "-1" },
-            { indent: "+1" },
-          ],
-          [{ align: [] }],
-          ["link", "image", "video"],
-          [{ color: [] }, { background: [] }],
-          ["clean"],
-        ],
-        handlers: {
-          image: imageHandler,
-        },
-      },
-      clipboard: {
-        matchVisual: false,
-      },
-    }),
-    []
-  );
-
-  const formats = [
-    "header",
-    "font",
-    "bold",
-    "italic",
-    "underline",
-    "strike",
-    "blockquote",
-    "code-block",
-    "list",
-    "bullet",
-    "indent",
-    "align",
-    "link",
-    "image",
-    "video",
-    "color",
-    "background",
-  ];
-
   return (
-    <div className="editor-container">
-      <ReactQuill
-        theme="snow"
-        value={value}
-        onChange={onChange}
-        modules={modules}
-        formats={formats}
-        className="editor-input"
-      />
-      <style>{`
-        .editor-container {
-          height: 400px;
-        }
-        .editor-input {
-          height: 350px;
-        }
-        :global(.ql-editor img.resizable-image) {
-          cursor: move;
-          display: inline-block;
-          max-width: 100%;
-          height: auto;
-          resize: both;
-          overflow: hidden;
-          min-width: 50px;
-          min-height: 50px;
-          border: 1px solid transparent;
-        }
-        :global(.ql-editor img.resizable-image:hover) {
-          border: 1px solid #ccc;
-        }
-        :global(.ql-editor) {
-          min-height: 300px;
-        }
-      `}</style>
-    </div>
+    <Editor
+      apiKey="uhfeug0xkj84104hiv9as3vx780dego6oo7ohr6l654yxih5"
+      onInit={(evt, editor) => (editorRef.current = editor)}
+      value={value}
+      onEditorChange={onChange}
+      init={{
+        height,
+        menubar: true,
+        plugins: [
+          "advlist",
+          "autolink",
+          "lists",
+          "link",
+          "image",
+          "charmap",
+          "preview",
+          "anchor",
+          "searchreplace",
+          "visualblocks",
+          "code",
+          "fullscreen",
+          "insertdatetime",
+          "media",
+          "table",
+          "code",
+          "help",
+          "wordcount",
+          "codesample",
+          "emoticons",
+          "template",
+          "paste",
+          "textpattern",
+          "imagetools",
+          "quickbars",
+          "noneditable",
+          "pagebreak",
+          "print",
+          "save",
+          "directionality",
+          "visualchars",
+          "nonbreaking",
+        ],
+        toolbar1:
+          "undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent",
+        toolbar2:
+          "forecolor backcolor removeformat | insertfile image media template link anchor codesample | pagebreak code | fullscreen preview print save",
+        toolbar3:
+          "emoticons charmap | searchreplace | visualblocks visualchars | help",
+
+        content_style: `
+          body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 1rem;
+          }
+          img { 
+            max-width: 100%;
+            height: auto;
+          }
+        `,
+
+        // Configuring various features
+        fontsize_formats:
+          "8pt 10pt 12pt 14pt 16pt 18pt 24pt 36pt 48pt 60pt 72pt",
+        codesample_languages: [
+          { text: "HTML/XML", value: "markup" },
+          { text: "JavaScript", value: "javascript" },
+          { text: "CSS", value: "css" },
+          { text: "PHP", value: "php" },
+          { text: "Python", value: "python" },
+          { text: "Java", value: "java" },
+          { text: "C", value: "c" },
+          { text: "C++", value: "cpp" },
+          { text: "C#", value: "c#" },
+          { text: "Ruby", value: "ruby" },
+          { text: "Go", value: "go" },
+          { text: "Rust", value: "rust" },
+          { text: "Swift", value: "swift" },
+          { text: "Kotlin", value: "kotlin" },
+          { text: "TypeScript", value: "typescript" },
+          { text: "SQL", value: "sql" },
+          { text: "JSON", value: "json" },
+          { text: "YAML", value: "yaml" },
+          { text: "XML", value: "xml" },
+          { text: "Markdown", value: "markdown" },
+          { text: "Plain Text", value: "plain" },
+        ],
+
+        // Image handling configuration
+        images_upload_handler: handleImageUpload,
+        image_advtab: true,
+        image_caption: true,
+        automatic_uploads: true,
+        file_picker_types: "image",
+        // Add image-related configurations
+        image_prepend_url: baseURL, // Prepend this URL to image paths
+        images_upload_url: "../../../../UPLOADS", // Backend endpoint to handle image uploads
+        images_upload_base_path: "../../../../UPLOADS", // Base path for uploaded images
+
+        // Template configuration
+        templates: [
+          {
+            title: "Sample Template 1",
+            description: "A basic template",
+            content:
+              '<div class="template-1"><h2>Heading</h2><p>Content goes here...</p></div>',
+          },
+          {
+            title: "Sample Template 2",
+            description: "Another template",
+            content:
+              '<div class="template-2"><h3>Section Title</h3><ul><li>Item 1</li><li>Item 2</li></ul></div>',
+          },
+        ],
+
+        // Additional configurations
+        quickbars_selection_toolbar:
+          "bold italic underline | quicklink h2 h3 blockquote table image media",
+        quickbars_insert_toolbar:
+          "quickimage quicktable media | quicklink h1 h2 h3",
+        contextmenu: "link image table configurepermanentpen permanentpen",
+        paste_data_images: true,
+        smart_paste: true,
+        browser_spellcheck: true,
+        resize: true,
+        statusbar: true,
+        branding: false,
+        promotion: false,
+
+        // Style formats
+        style_formats: [
+          {
+            title: "Headers",
+            items: [
+              { title: "Header 1", format: "h1" },
+              { title: "Header 2", format: "h2" },
+              { title: "Header 3", format: "h3" },
+              { title: "Header 4", format: "h4" },
+              { title: "Header 5", format: "h5" },
+              { title: "Header 6", format: "h6" },
+            ],
+          },
+          {
+            title: "Inline",
+            items: [
+              { title: "Bold", format: "bold" },
+              { title: "Italic", format: "italic" },
+              { title: "Underline", format: "underline" },
+              { title: "Strikethrough", format: "strikethrough" },
+              { title: "Superscript", format: "superscript" },
+              { title: "Subscript", format: "subscript" },
+              { title: "Code", format: "code" },
+            ],
+          },
+          {
+            title: "Blocks",
+            items: [
+              { title: "Paragraph", format: "p" },
+              { title: "Blockquote", format: "blockquote" },
+              { title: "Div", format: "div" },
+              { title: "Pre", format: "pre" },
+            ],
+          },
+        ],
+
+        // Setup callback for additional customization
+        setup: (editor) => {
+          // Add custom button for word count
+          editor.ui.registry.addButton("customwordcount", {
+            text: "Word Count",
+            onAction: () => {
+              const wordCount = editor.plugins.wordcount.getCount();
+              toast.info(`Word count: ${wordCount}`);
+            },
+          });
+
+          // Add custom keyboard shortcuts
+          editor.addShortcut("meta+shift+c", "Open code view", () => {
+            editor.execCommand("mceCodeEditor");
+          });
+        },
+      }}
+    />
   );
 };
 
-export default Editor;
+export default TinyMCEEditor;

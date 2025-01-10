@@ -14,6 +14,7 @@ import {
   uploadMiddleware,
   appendFileDataToBody,
   parseColorsMiddleware,
+  parseExistingImageMiddleware,
 } from "../config/upload";
 
 const router = Router();
@@ -37,6 +38,7 @@ router.patch(
   isAuthorized("admin"),
   uploadMiddleware,
   appendFileDataToBody,
+  parseExistingImageMiddleware,
   validateProductImage,
   productController.editProductImages.bind(productController),
   handleResponse

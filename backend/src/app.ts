@@ -15,8 +15,8 @@ declare global {
   }
 }
 // Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "50mb" })); // Increase the limit to 50mb for JSON payloads
+app.use(express.urlencoded({ extended: true, limit: "50mb" })); // Increase the limit to 50mb for URL-encoded payloads
 
 app.use(cors());
 // Route handlers

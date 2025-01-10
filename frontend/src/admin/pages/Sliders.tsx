@@ -123,12 +123,15 @@ const Sliders: React.FC = () => {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
       });
-      if (!response.ok) throw new Error("Failed to fetch sliders");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to fetch sliders");
+      }
       const data = await response.json();
       console.log("sliderData", data);
       setSliders(data);
-    } catch (error) {
-      console.error("Error fetching sliders:", error);
+    } catch (error: any) {
+      console.error(error.message || "Error fetching sliders:", error);
       toast.info("No sliders available at the moment");
     } finally {
       setIsLoading(false);
@@ -189,7 +192,10 @@ const Sliders: React.FC = () => {
         body: formDataToSend,
       });
 
-      if (!response.ok) throw new Error("Failed to save slider");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to save slider");
+      }
 
       toast.success(
         editingSlider
@@ -206,8 +212,8 @@ const Sliders: React.FC = () => {
         mediaFile: null,
         isvisible: false,
       });
-    } catch (error) {
-      console.error("Error saving slider:", error);
+    } catch (error: any) {
+      console.error(error.message || "Error saving slider:", error);
       toast.error("Failed to save slider");
     }
   };
@@ -231,12 +237,15 @@ const Sliders: React.FC = () => {
         },
       });
 
-      if (!response.ok) throw new Error("Failed to delete slider");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete slider");
+      }
 
       toast.success("Slider deleted successfully");
       fetchSliders();
-    } catch (error) {
-      console.error("Error deleting slider:", error);
+    } catch (error: any) {
+      console.error(error.message || "Error deleting slider");
       toast.error("Failed to delete slider");
     }
   };
@@ -257,7 +266,10 @@ const Sliders: React.FC = () => {
         body: formDataToSend,
       });
 
-      if (!response.ok) throw new Error("Failed to toggle visibility");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to toggle visibility");
+      }
 
       // Display the success message based on visibility state
       const newVisibility = !currentVisibility;
@@ -268,8 +280,8 @@ const Sliders: React.FC = () => {
       }
 
       fetchSliders(); // Refresh the list of sliders
-    } catch (error) {
-      console.error("Error toggling visibility:", error);
+    } catch (error: any) {
+      console.error(error.message || "Error toggling visibility");
       toast.error("Failed to toggle visibility");
     }
   };

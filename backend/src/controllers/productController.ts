@@ -34,7 +34,7 @@ export class ProductController {
   ): Promise<void> {
     try {
       const productId: string = req.params.productId;
-      const productData: IProduct = req.body;
+      const productData = req.body;
       const result = await this.productService.editProductImages(
         productId,
         productData

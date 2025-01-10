@@ -44,12 +44,14 @@ const ContentForm: React.FC<ContentFormProps> = ({
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         });
-        if (response.ok) {
-          const data = await response.json();
-          setAboutContent(data);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to fetch about content");
         }
-      } catch (error) {
-        console.error("Error fetching about content:", error);
+        const data = await response.json();
+        setAboutContent(data);
+      } catch (error: any) {
+        console.error(error.message || "Error fetching about content:", error);
       }
     };
 
@@ -98,7 +100,8 @@ const ContentForm: React.FC<ContentFormProps> = ({
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to save ${type}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to save content");
       }
 
       toast.success(
@@ -111,9 +114,8 @@ const ContentForm: React.FC<ContentFormProps> = ({
             } created successfully`
       );
       onSubmit();
-    } catch (error) {
-      console.error(`Error saving ${type}:`, error);
-      toast.error(`Error saving ${type}`);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to save content");
     }
   };
 

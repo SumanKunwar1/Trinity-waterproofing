@@ -11,6 +11,7 @@ function handleError(
     const message = err.message || "File upload error";
     console.error("Multer error:", err);
     res.status(400).json({ error: message });
+    return;
   }
 
   const statusCode = err.statusCode || 500;

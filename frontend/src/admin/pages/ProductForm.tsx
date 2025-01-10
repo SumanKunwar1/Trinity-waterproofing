@@ -21,8 +21,8 @@ import {
 } from "../components/ui/select";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
-import Editor from "../components/Editor";
 import { HexColorPicker } from "react-colorful";
+import TinyMCEEditor from "../components/Editor";
 
 interface Color {
   name: string;
@@ -101,10 +101,13 @@ const ProductForm: React.FC = () => {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
       });
-      if (!response.ok) throw new Error("Failed to fetch brands");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to fetch brands");
+      }
       const data = await response.json();
       setBrands(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching brands:", error);
       throw error;
     }
@@ -133,7 +136,10 @@ const ProductForm: React.FC = () => {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
       });
-      if (!response.ok) throw new Error("Failed to fetch product");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to fetch product");
+      }
       const productData = await response.json();
 
       const featuresString = Array.isArray(productData.features)
@@ -160,8 +166,8 @@ const ProductForm: React.FC = () => {
         inStock: Number(productData.inStock) || 0,
         subCategory: productData.subCategory || "",
       });
-    } catch (error) {
-      console.error("Error fetching product:", error);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to fetch product");
       throw error;
     }
   };
@@ -183,6 +189,7 @@ const ProductForm: React.FC = () => {
   };
 
   const handleFeaturesChange = (value: string) => {
+    console.log("features value:", value);
     setFormData((prev) => ({ ...prev, features: value }));
   };
 
@@ -240,7 +247,7 @@ const ProductForm: React.FC = () => {
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to update product");
+          throw new Error(errorData.error || "Failed to update product");
         }
       } else {
         // For POST request, we need to send the data as FormData
@@ -283,8 +290,10 @@ const ProductForm: React.FC = () => {
         });
 
         if (!response.ok) {
+          console.log("the response is not okay", response);
           const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to create product");
+          console.log("we got the error", errorData);
+          throw new Error(errorData.error || "Failed to create product");
         }
       }
 
@@ -466,9 +475,10 @@ const ProductForm: React.FC = () => {
                   <div>
                     <Label>Features</Label>
                     <div className="mt-2">
-                      <Editor
+                      <TinyMCEEditor
                         value={formData.features}
                         onChange={handleFeaturesChange}
+                        height={600}
                       />
                     </div>
                   </div>
