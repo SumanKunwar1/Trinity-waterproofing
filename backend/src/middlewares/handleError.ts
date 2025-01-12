@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { DeleteFileFromFiles } from "../config/deleteImages";
 import multer from "multer";
 
 function handleError(
@@ -7,9 +8,11 @@ function handleError(
   res: Response,
   next: NextFunction
 ): void {
+  console.log(`Error while ✌ ${req.originalUrl} ✌`);
   if (err instanceof multer.MulterError) {
-    const message = err.message || "File upload error";
-    console.error("Multer error:", err);
+    const message = err.field || "File upload error";
+    console.log("multer errror", message);
+    DeleteFileFromFiles(req);
     res.status(400).json({ error: message });
     return;
   }

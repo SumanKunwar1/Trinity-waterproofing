@@ -82,6 +82,7 @@ const validateProduct = (
       field: err.context?.key,
       message: err.message,
     }));
+    console.log("error in va;idatopn", errors);
 
     deleteProductImages(req);
 
