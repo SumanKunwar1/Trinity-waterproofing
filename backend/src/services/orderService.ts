@@ -53,8 +53,14 @@ export class OrderService {
 
         const price =
           userRole.toLowerCase() === "b2b"
-            ? product.wholeSalePrice
-            : product.retailPrice;
+            ? product.wholeSaleDiscountedPrice &&
+              product.wholeSaleDiscountedPrice > 0
+              ? product.wholeSaleDiscountedPrice
+              : product.wholeSalePrice // Use discounted wholesale price only if it's greater than 0
+            : product.retailDiscountedPrice && product.retailDiscountedPrice > 0
+            ? product.retailDiscountedPrice
+            : product.retailPrice; // Use discounted retail price only if it's greater than 0
+
         console.log(
           `Price for product '${product.name}' determined as: ${price}`
         );

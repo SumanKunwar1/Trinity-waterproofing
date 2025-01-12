@@ -2,7 +2,6 @@ import { Product, SubCategory, Brand, WishList, Cart } from "../models";
 import { IProduct, IEditableProduct } from "../interfaces";
 import { httpMessages } from "../middlewares";
 import { deleteImages } from "../config/deleteImages";
-import { Types } from "mongoose";
 
 export class ProductService {
   public async createProduct(productData: IProduct) {
@@ -159,6 +158,8 @@ export class ProductService {
         brand,
         inStock,
         subCategory,
+        retailDiscountedPrice,
+        wholeSaleDiscountedPrice,
       } = productData;
 
       // Handle brand validation if provided
@@ -201,6 +202,11 @@ export class ProductService {
       if (name) existingProduct.name = name;
       if (description) existingProduct.description = description;
       if (wholeSalePrice) existingProduct.wholeSalePrice = wholeSalePrice;
+      if (wholeSalePrice) existingProduct.wholeSalePrice = wholeSalePrice;
+      if (wholeSaleDiscountedPrice)
+        existingProduct.wholeSaleDiscountedPrice = wholeSaleDiscountedPrice;
+      if (retailDiscountedPrice)
+        existingProduct.retailDiscountedPrice = retailDiscountedPrice;
       if (retailPrice) existingProduct.retailPrice = retailPrice;
       if (colors) existingProduct.colors = colors;
       if (features) existingProduct.features = features;

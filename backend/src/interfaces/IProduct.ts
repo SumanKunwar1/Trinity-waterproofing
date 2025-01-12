@@ -17,6 +17,8 @@ interface IProduct {
   description: string;
   wholeSalePrice: number;
   retailPrice: number;
+  retailDiscountedPrice?: number;
+  wholeSaleDiscountedPrice?: number;
   productImage: string;
   image: string[];
   subCategory: Types.ObjectId;
@@ -31,6 +33,8 @@ export interface IEditableProduct {
   description?: string;
   wholeSalePrice?: number;
   retailPrice?: number;
+  retailDiscountedPrice?: number;
+  wholeSaleDiscountedPrice?: number;
   colors?: { name: string; hex: string }[];
   features?: string;
   brand?: Types.ObjectId;

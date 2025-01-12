@@ -27,13 +27,22 @@ const validateProduct = (
     description: Joi.string().optional().messages({
       "string.base": "Description must be a string",
     }),
-    wholeSalePrice: Joi.number().required().messages({
-      "number.base": "Variant wholesale price must be a number",
+    wholeSalePrice: Joi.number().min(0).required().messages({
+      "number.base":
+        "Variant wholesale price must be a positive number or zero",
       "any.required": "Variant wholesale price is required",
     }),
-    retailPrice: Joi.number().required().messages({
-      "number.base": "Variant retail price must be a number",
+    retailPrice: Joi.number().min(0).required().messages({
+      "number.base": "Variant retail price must be a positive number or zero",
       "any.required": "Variant retail price is required",
+    }),
+    retailDiscountedPrice: Joi.number().min(0).optional().messages({
+      "number.base":
+        "Retail discounted price must be a positive number or zero",
+    }),
+    wholeSaleDiscountedPrice: Joi.number().min(0).optional().messages({
+      "number.base":
+        "Wholesale discounted price must be a positive number or zero",
     }),
     productImage: Joi.string().required().messages({
       "string.base": "Product Image must be a valid URL",
@@ -56,8 +65,8 @@ const validateProduct = (
       "string.base": "Brand must be a string",
       "any.required": "Brand is required",
     }),
-    inStock: Joi.number().required().messages({
-      "number.base": "InStock must be a number",
+    inStock: Joi.number().min(0).required().messages({
+      "number.base": "InStock must be a positive number or zero",
       "any.required": "InStock is required",
     }),
     subCategory: Joi.string()
