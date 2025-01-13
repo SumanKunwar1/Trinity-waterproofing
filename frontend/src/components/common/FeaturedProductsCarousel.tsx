@@ -1,29 +1,35 @@
-import React, { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import ProductCard from "../common/ProductCard";
+import { useState, useEffect } from "react";
+import useEmblaCarousel from "embla-carousel-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+import { toast } from "../../hooks/use-toast";
 import axios from "axios";
-import { toast } from "react-toastify";
-const FeaturedProductsCarousel: React.FC = () => {
+import ProductCard from "./ProductCard";
+
+interface Product {
+  _id: string;
+  name: string;
+  description: string;
+  price: number;
+  productImage: string;
+  category: string;
+  inStock: boolean;
+  rating: number;
+  reviews: number;
+}
+
+const FeaturedProductsCarousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const carouselRef = useRef<HTMLDivElement>(null);
-
-  // Responsive breakpoints
-  const getResponsiveSlidesPerView = () => {
-    const width = window.innerWidth;
-    if (width >= 1024) return 4;
-    if (width >= 640) return 2;
-    if (width >= 480) return 2;
-    return 1;
-  };
-
-  const [slidesPerView, setSlidesPerView] = useState(
-    getResponsiveSlidesPerView()
-  );
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    loop: true,
+    align: "start",
+    skipSnaps: false,
+    dragFree: false,
+  });
 
   const isLoggedIn = !!localStorage.getItem("authToken");
   const unParsedUserId = localStorage.getItem("userId");
@@ -37,7 +43,6 @@ const FeaturedProductsCarousel: React.FC = () => {
     }
   }
 
-  // Fetch featured products from the API
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       try {
@@ -57,7 +62,11 @@ const FeaturedProductsCarousel: React.FC = () => {
         const errorMessage =
           err.response?.data?.error || "Failed to fetch featured products.";
         setError(errorMessage);
-        toast.error(errorMessage); // Display error to the user
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: errorMessage,
+        });
       } finally {
         setLoading(false);
       }
@@ -66,112 +75,95 @@ const FeaturedProductsCarousel: React.FC = () => {
     fetchFeaturedProducts();
   }, [isLoggedIn, userId]);
 
-  // Handle window resize
+  // Embla carousel setup
   useEffect(() => {
-    const handleResize = () => {
-      setSlidesPerView(getResponsiveSlidesPerView());
+    if (!emblaApi) return;
+
+    const onSelect = () => {
+      setCurrentSlide(emblaApi.selectedScrollSnap());
     };
 
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    emblaApi.on("select", onSelect);
+    return () => {
+      emblaApi.off("select", onSelect);
+    };
+  }, [emblaApi]);
 
-  // Auto-scroll functionality (one direction only)
+  // Auto-scroll
   useEffect(() => {
-    const interval = setInterval(() => {
-      handleNextSlide();
+    if (!emblaApi) return;
+
+    const autoplay = setInterval(() => {
+      emblaApi.scrollNext();
     }, 3000);
 
-    return () => clearInterval(interval);
-  }, [currentSlide, slidesPerView, featuredProducts.length]);
-
-  const handleNextSlide = () => {
-    setCurrentSlide((prev) =>
-      (prev + 1) * slidesPerView >= featuredProducts.length ? 0 : prev + 1
-    );
-  };
-
-  const handlePrevSlide = () => {
-    setCurrentSlide((prev) =>
-      prev === 0
-        ? Math.floor((featuredProducts.length - 1) / slidesPerView)
-        : prev - 1
-    );
-  };
-
-  // Calculate total number of slides
-  const totalSlides = Math.ceil(featuredProducts.length / slidesPerView);
+    return () => clearInterval(autoplay);
+  }, [emblaApi]);
 
   if (loading) {
-    return <p>Loading featured products...</p>;
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+      </div>
+    );
   }
 
   if (error) {
-    return <p>{error}</p>;
+    return <div className="text-center py-8 text-red-500">{error}</div>;
   }
 
-  if (featuredProducts.length === 0) {
-    return <p>No featured products available.</p>;
+  if (!featuredProducts.length) {
+    return (
+      <div className="text-center py-8">No featured products available</div>
+    );
   }
 
   return (
-    <div className="relative w-full pb-6">
-      {/* Carousel Container */}
-      <div className="overflow-hidden relative">
-        <div
-          ref={carouselRef}
-          className="flex transition-transform duration-500 ease-in-out"
-          style={{
-            transform: `translateX(-${currentSlide * (100 / slidesPerView)}%)`,
-          }}
-        >
+    <div className="relative w-full max-w-6xl mx-auto px-4">
+      <div className="overflow-hidden" ref={emblaRef}>
+        <div className="flex">
           {featuredProducts.map((product) => (
             <div
               key={product._id}
-              className="flex-shrink-0"
-              style={{ width: `${100 / slidesPerView}%` }}
+              className="flex-[0_0_100%] min-w-0 sm:flex-[0_0_50%] lg:flex-[0_0_25%] pl-4"
             >
-              <motion.div
-                className="p-2"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <ProductCard product={product} />
-              </motion.div>
+              <ProductCard product={product} />
             </div>
           ))}
         </div>
       </div>
 
-      {/* Navigation Controls */}
-      <div className="flex justify-center items-center mt-4 space-x-4">
-        {/* Previous Button */}
+      {/* Navigation */}
+      <div className="flex items-center justify-center gap-4 mt-4">
         <button
-          onClick={handlePrevSlide}
-          className="bg-gray-200 p-2 rounded-full hover:bg-gray-300 transition-colors"
+          onClick={() => emblaApi?.scrollPrev()}
+          className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+          aria-label="Previous slide"
         >
-          <FaChevronLeft />
+          <ChevronLeft className="w-5 h-5" />
         </button>
 
-        {/* Pagination Dots */}
-        <div className="flex space-x-2">
-          {Array.from({ length: totalSlides }).map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`h-2 w-2 rounded-full ${
-                currentSlide === index ? "bg-blue-600" : "bg-gray-300"
-              }`}
-            />
-          ))}
+        <div className="flex gap-2">
+          {Array.from({ length: Math.ceil(featuredProducts.length / 4) }).map(
+            (_, idx) => (
+              <button
+                key={idx}
+                onClick={() => emblaApi?.scrollTo(idx)}
+                className={`w-2 h-2 rounded-full transition-colors ${
+                  idx === currentSlide ? "bg-primary" : "bg-gray-300"
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            )
+          )}
         </div>
 
-        {/* Next Button */}
         <button
-          onClick={handleNextSlide}
-          className="bg-gray-200 p-2 rounded-full hover:bg-gray-300 transition-colors"
+          onClick={() => emblaApi?.scrollNext()}
+          className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+          aria-label="Next slide"
         >
-          <FaChevronRight />
+          <ChevronRight className="w-5 h-5" />
         </button>
       </div>
     </div>

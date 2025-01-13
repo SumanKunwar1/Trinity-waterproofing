@@ -21,11 +21,18 @@ const schema = Joi.object({
   description: Joi.string().optional().messages({
     "string.base": "Description must be a string",
   }),
-  wholeSalePrice: Joi.number().optional().messages({
-    "number.base": "Variant wholesale price must be a number",
+  wholeSalePrice: Joi.number().min(0).optional().messages({
+    "number.base": "Variant wholesale price must be a positive number or zero",
   }),
-  retailPrice: Joi.number().optional().messages({
-    "number.base": "Variant retail price must be a number",
+  retailPrice: Joi.number().min(0).optional().messages({
+    "number.base": "Variant retail price must be a positive number or zero",
+  }),
+  retailDiscountedPrice: Joi.number().min(0).optional().messages({
+    "number.base": "Retail discounted price must be a positive number or zero",
+  }),
+  wholeSaleDiscountedPrice: Joi.number().min(0).optional().messages({
+    "number.base":
+      "Wholesale discounted price must be a positive number or zero",
   }),
   colors: Joi.array().items(colorSchema).optional().messages({
     "array.base":
@@ -37,8 +44,8 @@ const schema = Joi.object({
   brand: Joi.string().optional().messages({
     "string.base": "Brand must be a string",
   }),
-  inStock: Joi.number().optional().messages({
-    "number.base": "InStock must be a number",
+  inStock: Joi.number().min(0).optional().messages({
+    "number.base": "InStock must be a positive number or zero",
   }),
   subCategory: Joi.string()
     .pattern(/^[a-f\d]{24}$/i)

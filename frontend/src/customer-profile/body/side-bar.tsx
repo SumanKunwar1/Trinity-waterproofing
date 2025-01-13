@@ -123,7 +123,7 @@ export const SideBar = memo(() => {
 
   return (
     <motion.section
-      className="w-full bg-[#293855] text-white flex flex-col items-center py-6 h-screen"
+      className="w-full  bg-[#293855] text-white flex flex-col items-center py-6 h-screen overflow-auto"
       initial={{ x: -250 }}
       animate={{ x: 0 }}
       exit={{ x: -250 }}

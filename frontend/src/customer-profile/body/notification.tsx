@@ -1,7 +1,19 @@
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
 import { Button } from "../../components/ui/button";
+import { Card, CardContent } from "../../components/ui/card";
+import { Badge } from "../../components/ui/badge";
+import { Separator } from "../../components/ui/separator";
+import { ScrollArea } from "../../components/ui/scroll-area";
 import { io, Socket } from "socket.io-client";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  FaBell,
+  FaCheckCircle,
+  FaTrash,
+  FaExclamationCircle,
+  FaInfoCircle,
+} from "react-icons/fa";
 
 interface Notification {
   _id: string;
@@ -56,12 +68,16 @@ const CustomerNotifications: React.FC = () => {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      const response = await fetch(`/api/notification/${notificationId}/read`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
+      const userId = JSON.parse(localStorage.getItem("userId") || "");
+      const response = await fetch(
+        `/api/notification/${notificationId}/read/${userId}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
       if (!response.ok) throw new Error("Failed to mark notification as read");
       setNotifications((prev) =>
         prev.map((n) => (n._id === notificationId ? { ...n, read: true } : n))
@@ -74,18 +90,62 @@ const CustomerNotifications: React.FC = () => {
 
   const deleteNotification = async (notificationId: string) => {
     try {
-      const response = await fetch(`/api/notification/${notificationId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
+      const userId = JSON.parse(localStorage.getItem("userId") || "");
+      const response = await fetch(
+        `/api/notification/${notificationId}/${userId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
       if (!response.ok) throw new Error("Failed to delete notification");
       setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
       toast.success("Notification deleted");
     } catch (error) {
       console.error("Error deleting notification:", error);
       toast.error("Failed to delete notification");
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      const userId = JSON.parse(localStorage.getItem("userId") || "");
+      const response = await fetch(`/api/notification/${userId}/read-all`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
+      if (!response.ok)
+        throw new Error("Failed to mark all notifications as read");
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      toast.success("All notifications marked as read");
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+      toast.error("Failed to mark all notifications as read");
+    }
+  };
+
+  const clearAllNotifications = async () => {
+    try {
+      const userId = JSON.parse(localStorage.getItem("userId") || "");
+      const response = await fetch(
+        `/api/notification/${userId}/user/clear-all`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
+      if (!response.ok) throw new Error("Failed to clear all notifications");
+      setNotifications([]);
+      toast.success("All notifications cleared");
+    } catch (error) {
+      console.error("Error clearing all notifications:", error);
+      toast.error("Failed to clear all notifications");
     }
   };
 
@@ -97,51 +157,104 @@ const CustomerNotifications: React.FC = () => {
     }
   };
 
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case "success":
+        return <FaCheckCircle className="text-green-500" />;
+      case "error":
+        return <FaExclamationCircle className="text-red-500" />;
+      case "warning":
+        return <FaExclamationCircle className="text-yellow-500" />;
+      case "info":
+      default:
+        return <FaInfoCircle className="text-blue-500" />;
+    }
+  };
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-4">Notifications</h1>
-      {notifications.length === 0 ? (
-        <p>No notifications</p>
-      ) : (
-        <div className="space-y-4">
-          {notifications.map((notification) => (
-            <div
-              key={notification._id}
-              className={`p-4 rounded-lg shadow ${
-                notification.read ? "bg-gray-100" : "bg-white"
-              }`}
-            >
-              <p
-                className={`mb-2 ${
-                  notification.read ? "text-gray-600" : "text-black"
-                }`}
-              >
-                {notification.message}
-              </p>
-              <div className="flex justify-end space-x-2">
-                {!notification.read && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => markAsRead(notification._id)}
-                  >
-                    Mark as Read
-                  </Button>
-                )}
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => deleteNotification(notification._id)}
-                >
-                  Delete
-                </Button>
-              </div>
-            </div>
-          ))}
+    <Card className="w-full max-w-4xl mx-auto">
+      <CardContent className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold flex items-center">
+            <FaBell className="mr-2 text-primary" />
+            Notifications
+          </h1>
+          <div className="space-x-2">
+            <Button variant="outline" onClick={markAllAsRead}>
+              Mark All as Read
+            </Button>
+            <Button variant="destructive" onClick={clearAllNotifications}>
+              Clear All
+            </Button>
+          </div>
         </div>
-      )}
+        <Separator className="my-4" />
+        {notifications.length === 0 ? (
+          <p className="text-center text-gray-500 my-8">No notifications</p>
+        ) : (
+          <ScrollArea className="h-[600px] pr-4">
+            <AnimatePresence>
+              {notifications.map((notification) => (
+                <motion.div
+                  key={notification._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Card
+                    className={`mb-4 ${
+                      notification.read ? "bg-gray-50" : "bg-white"
+                    }`}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start">
+                        <div className="flex-shrink-0 mr-4">
+                          {getNotificationIcon(notification.type)}
+                        </div>
+                        <div className="flex-grow">
+                          <p
+                            className={`mb-2 ${
+                              notification.read ? "text-gray-600" : "text-black"
+                            }`}
+                          >
+                            {notification.message}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {new Date(notification.createdAt).toLocaleString()}
+                          </p>
+                        </div>
+                        <div className="flex-shrink-0 ml-4 space-x-2">
+                          {!notification.read && (
+                            <Badge
+                              variant="secondary"
+                              className="cursor-pointer"
+                              onClick={() => markAsRead(notification._id)}
+                            >
+                              Mark as Read
+                            </Badge>
+                          )}
+                          <Badge
+                            variant="destructive"
+                            className="cursor-pointer"
+                            onClick={() => deleteNotification(notification._id)}
+                          >
+                            <Button variant="outline" size="sm">
+                              <FaTrash className="mr-1" /> Delete
+                            </Button>
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </ScrollArea>
+        )}
+      </CardContent>
       <audio ref={audioRef} src="/notification-sound.mp3" />
-    </div>
+    </Card>
   );
 };
 

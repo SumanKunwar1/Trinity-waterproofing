@@ -46,6 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     },
     { icon: MdReviews, text: "Reviews", link: "/admin/reviews" },
     { icon: FaUsers, text: "Users", link: "/admin/users" },
+    { icon: FaUsers, text: "Teams", link: "/admin/admin-team" },
     { icon: FaNewspaper, text: "Newsletters", link: "/admin/newsletter" },
     { icon: FaQuestionCircle, text: "Enquiries", link: "/admin/enquiries" },
     { icon: GrGallery, text: "Gallery", link: "/admin/gallery" },

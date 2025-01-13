@@ -3,34 +3,19 @@ import { IPrivacyPolicy } from "../interfaces";
 import { httpMessages } from "../middlewares";
 
 export class PrivacyPolicyService {
-  public async createPolicy(policyData: IPrivacyPolicy) {
+  public async createOrUpdatePolicy(policyData: IPrivacyPolicy) {
     try {
-      const { content } = policyData;
+      const existingPolicy = await PrivacyPolicy.findOne();
 
-      const isPolicyPresent = await PrivacyPolicy.findOne({ content });
-      if (isPolicyPresent) {
-        throw httpMessages.ALREADY_PRESENT("Privacy Policy");
+      if (existingPolicy) {
+        existingPolicy.content = policyData.content;
+        await existingPolicy.save();
+        return existingPolicy; // Returning the updated policy
+      } else {
+        const newPolicy = new PrivacyPolicy(policyData);
+        await newPolicy.save();
+        return newPolicy;
       }
-
-      const newPolicy = new PrivacyPolicy(policyData);
-      await newPolicy.save();
-      return newPolicy;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  public async getAllPolicies() {
-    try {
-      const policies = await PrivacyPolicy.find().sort({
-        version: -1,
-        createdAt: -1,
-      });
-      if (!policies || policies.length === 0) {
-        return [];
-      }
-
-      return policies;
     } catch (error) {
       throw error;
     }
@@ -47,22 +32,6 @@ export class PrivacyPolicyService {
       }
 
       return latestPolicy;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  public async deletePolicyById(privacyPolicyId: string) {
-    try {
-      const policy = await PrivacyPolicy.findById(privacyPolicyId);
-
-      if (!policy) {
-        throw httpMessages.NOT_FOUND("Privacy Policy");
-      }
-
-      await PrivacyPolicy.deleteOne({ _id: privacyPolicyId });
-
-      return policy;
     } catch (error) {
       throw error;
     }

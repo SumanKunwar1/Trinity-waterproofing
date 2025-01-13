@@ -41,9 +41,7 @@ const ShippingPage: React.FC = () => {
       const response = await fetch("/api/shipping-policy");
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(
-          errorData.message || "Failed to fetch shipping policies"
-        );
+        throw new Error(errorData.error || "Failed to fetch shipping policies");
       }
       const data = await response.json();
       setPolicies(data || []);

@@ -11,34 +11,18 @@ import {
 const router = Router();
 const privacyPolicyController = new PrivacyPolicyController();
 
-router.post(
+router.put(
   "/",
   isAuthenticated,
   isAuthorized("admin"),
   validatePrivacyPolicy,
-  privacyPolicyController.createPolicy.bind(privacyPolicyController),
-  handleResponse
-);
-
-router.get(
-  "/latest",
-  privacyPolicyController.getLatestPolicy.bind(privacyPolicyController),
+  privacyPolicyController.createOrUpdatePolicy.bind(privacyPolicyController),
   handleResponse
 );
 
 router.get(
   "/",
-  isAuthenticated,
-  isAuthorized("admin"),
-  privacyPolicyController.getAllPolicies.bind(privacyPolicyController),
-  handleResponse
-);
-
-router.delete(
-  "/:privacyPolicyId",
-  isAuthenticated,
-  isAuthorized("admin"),
-  privacyPolicyController.deletePolicy.bind(privacyPolicyController),
+  privacyPolicyController.getLatestPolicy.bind(privacyPolicyController),
   handleResponse
 );
 

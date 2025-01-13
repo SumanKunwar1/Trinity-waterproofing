@@ -1,9 +1,32 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
+import { getLatestPrivacyPolicy } from "../admin/utils/privacyPolicy";
+import Loader from "../components/common/Loader";
 
 const PrivacyPolicyPage: React.FC = () => {
+  const [policyContent, setPolicyContent] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchPrivacyPolicy();
+  }, []);
+
+  const fetchPrivacyPolicy = async () => {
+    try {
+      setIsLoading(true);
+      const policy = await getLatestPrivacyPolicy();
+      setPolicyContent(policy.content);
+    } catch (err) {
+      console.error("Error fetching privacy policy:", err);
+      setError("Failed to load privacy policy. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -45,54 +68,17 @@ const PrivacyPolicyPage: React.FC = () => {
               className="prose dark:prose-invert max-w-none"
               variants={itemVariants}
             >
-              <p className="text-lg mb-6">
-                At WaterproofStore, we are committed to protecting your privacy.
-                This Privacy Policy explains how we collect, use, and safeguard
-                your personal information.
-              </p>
-              <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mt-8 mb-4">
-                Information We Collect
-              </h2>
-              <p className="text-lg mb-6">
-                We collect information you provide directly to us, such as when
-                you create an account, make a purchase, or contact our customer
-                support.
-              </p>
-              <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mt-8 mb-4">
-                How We Use Your Information
-              </h2>
-              <p className="text-lg mb-6">
-                We use your information to process orders, provide customer
-                support, and improve our services. We may also use your
-                information to send you promotional emails about our products
-                and services.
-              </p>
-              <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mt-8 mb-4">
-                Information Sharing and Disclosure
-              </h2>
-              <p className="text-lg mb-6">
-                We do not sell or rent your personal information to third
-                parties. We may share your information with service providers
-                who assist us in operating our website and conducting our
-                business.
-              </p>
-              <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mt-8 mb-4">
-                Security
-              </h2>
-              <p className="text-lg mb-6">
-                We implement a variety of security measures to maintain the
-                safety of your personal information when you place an order or
-                enter, submit, or access your personal information.
-              </p>
-              <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mt-8 mb-4">
-                Changes to This Privacy Policy
-              </h2>
-              <p className="text-lg mb-6">
-                We may update this privacy policy from time to time. We will
-                notify you of any changes by posting the new Privacy Policy on
-                this page. We encourage you to review this Privacy Policy
-                periodically for any updates or modifications.
-              </p>
+              {isLoading ? (
+                <Loader />
+              ) : error ? (
+                <p className="text-red-500 text-lg">{error}</p>
+              ) : policyContent ? (
+                <div dangerouslySetInnerHTML={{ __html: policyContent }} />
+              ) : (
+                <p className="text-lg mb-6">
+                  No privacy policy has been added yet.
+                </p>
+              )}
             </motion.div>
           </motion.div>
         </div>

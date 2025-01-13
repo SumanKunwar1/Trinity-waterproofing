@@ -35,8 +35,6 @@ interface Category {
   _id: string;
   name: string;
   description: string;
-  created_at: string;
-  updated_at: string;
 }
 
 interface Subcategory {
@@ -44,8 +42,6 @@ interface Subcategory {
   name: string;
   description: string;
   categoryId: string;
-  created_at: string;
-  updated_at: string;
 }
 
 const categorySchema = Yup.object().shape({
@@ -91,10 +87,8 @@ const Categories: React.FC = () => {
   const fetchCategories = async () => {
     try {
       const response = await axios.get("/api/category");
-
       setCategories(response.data);
     } catch (error: any) {
-      // Extract error message from the Axios error object
       const errorMessage =
         error.response?.data?.error ||
         error.message ||
@@ -108,7 +102,6 @@ const Categories: React.FC = () => {
       const response = await axios.get("/api/subcategory");
       setSubcategories(response.data);
     } catch (error: any) {
-      // Extract error message from the Axios error object
       const errorMessage =
         error.response?.data?.error ||
         error.message ||
@@ -117,20 +110,38 @@ const Categories: React.FC = () => {
     }
   };
 
+  const sanitizeData = (data: any) => {
+    const sanitized = { ...data };
+    delete sanitized._id;
+    delete sanitized.createdAt;
+    delete sanitized.updatedAt;
+    delete sanitized.category;
+    delete sanitized.subCategory;
+    delete sanitized.subCategories;
+    delete sanitized.product;
+    delete sanitized.__v;
+    return sanitized;
+  };
+
   const handleCategorySubmit = async (
-    values: Omit<Category, "_id" | "created_at" | "updated_at">,
+    values: Omit<Category, "_id">,
     { resetForm }: any
   ) => {
     try {
+      const sanitizedValues = sanitizeData(values);
       if (editingCategory) {
-        await axios.patch(`/api/category/${editingCategory._id}`, values, {
-          headers: {
-            Authorization: `Bearer ${getAuthToken()}`,
-          },
-        });
+        await axios.patch(
+          `/api/category/${editingCategory._id}`,
+          sanitizedValues,
+          {
+            headers: {
+              Authorization: `Bearer ${getAuthToken()}`,
+            },
+          }
+        );
         toast.success("Category updated successfully");
       } else {
-        await axios.post("/api/category", values, {
+        await axios.post("/api/category", sanitizedValues, {
           headers: {
             Authorization: `Bearer ${getAuthToken()}`,
           },
@@ -151,14 +162,15 @@ const Categories: React.FC = () => {
   };
 
   const handleSubcategorySubmit = async (
-    values: Omit<Subcategory, "_id" | "created_at" | "updated_at">,
+    values: Omit<Subcategory, "_id">,
     { resetForm }: any
   ) => {
     try {
+      const sanitizedValues = sanitizeData(values);
       if (editingSubcategory) {
         await axios.patch(
           `/api/subcategory/${editingSubcategory._id}`,
-          values,
+          sanitizedValues,
           {
             headers: {
               Authorization: `Bearer ${getAuthToken()}`,
@@ -167,7 +179,7 @@ const Categories: React.FC = () => {
         );
         toast.success("Subcategory updated successfully");
       } else {
-        await axios.post("/api/subcategory", values, {
+        await axios.post("/api/subcategory", sanitizedValues, {
           headers: {
             Authorization: `Bearer ${getAuthToken()}`,
           },
@@ -241,7 +253,7 @@ const Categories: React.FC = () => {
     setIsDeleteSubcategoryDialogOpen(false);
     setSubcategoryToDelete(null);
   };
-  console.log("Categories in page:", categories);
+
   return (
     <div>
       <div className="flex bg-gray-100">
@@ -321,7 +333,7 @@ const Categories: React.FC = () => {
                         </div>
                         <Table
                           columns={[
-                            { header: "Name", accessor: "name" },
+                            { header: "Category Name", accessor: "name" },
                             { header: "Description", accessor: "description" },
                             { header: "Actions", accessor: "actions" },
                           ]}
@@ -351,7 +363,7 @@ const Categories: React.FC = () => {
                               </div>
                             ),
                           }))}
-                          itemsPerPage={5}
+                          itemsPerPage={10}
                         />
                       </TabsContent>
 
@@ -417,7 +429,7 @@ const Categories: React.FC = () => {
                         </div>
                         <Table
                           columns={[
-                            { header: "Name", accessor: "name" },
+                            { header: "Subcategory Name", accessor: "name" },
                             { header: "Category", accessor: "category" },
                             { header: "Description", accessor: "description" },
                             { header: "Actions", accessor: "actions" },
@@ -425,7 +437,8 @@ const Categories: React.FC = () => {
                           data={subcategories.map((subcategory) => ({
                             ...subcategory,
                             category: categories.find(
-                              (c) => c._id === subcategory.categoryId
+                              (category) =>
+                                category._id === subcategory.category // Use subcategory.category to match with category._id
                             )?.name,
                             actions: (
                               <div className="flex space-x-2">
@@ -451,7 +464,7 @@ const Categories: React.FC = () => {
                               </div>
                             ),
                           }))}
-                          itemsPerPage={5}
+                          itemsPerPage={10}
                         />
                       </TabsContent>
                     </Tabs>

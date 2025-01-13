@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { ChevronDown } from "lucide-react";
 import { Category } from "../../types/category";
+
 interface ProductDropdownProps {
   isOpen: boolean;
   onClose: () => void;
@@ -15,8 +17,11 @@ export const ProductDropdown: React.FC<ProductDropdownProps> = ({
 }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+  const [hoveredSubCategory, setHoveredSubCategory] = useState<string | null>(
+    null
+  );
 
-  // Fetch categories with subcategories and products
   const fetchCategories = async () => {
     try {
       const response = await axios.get("/api/category");
@@ -24,7 +29,7 @@ export const ProductDropdown: React.FC<ProductDropdownProps> = ({
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.error || "Failed to fetch categories.";
-      toast.error(errorMessage); // Display error message to the user
+      toast.error(errorMessage);
     }
   };
 
@@ -39,18 +44,6 @@ export const ProductDropdown: React.FC<ProductDropdownProps> = ({
 
     fetchData();
   }, [isOpen]);
-
-  // Debugging: Console log categories, subcategories, and products
-  console.log("Mapped categories with looped products:");
-  categories.forEach((category) => {
-    console.log(`Category: ${category.name}`);
-    category.subCategories.forEach((sub) => {
-      console.log(`  SubCategory: ${sub.name}`);
-      sub.products.forEach((prod) => {
-        console.log(`    Product: ${prod.name}`);
-      });
-    });
-  });
 
   if (!isOpen) return null;
 
@@ -68,42 +61,90 @@ export const ProductDropdown: React.FC<ProductDropdownProps> = ({
             &times;
           </button>
         </div>
+
         {loading && <p>Loading...</p>}
+
         {!loading && categories.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {categories.map((category) => (
-              <div key={category._id} className="mb-6">
-                <h3 className="text-xl text-brand font-semibold mb-4">
-                  {category.name}
-                </h3>
-                {category.subCategories.length > 0 ? (
-                  category.subCategories.map((sub) => (
-                    <div key={sub._id} className="ml-4">
-                      <h4 className="text-lg text-gray-700 mb-2">{sub.name}</h4>
-                      {sub.products.length > 0 ? (
-                        <ul className="space-y-2">
-                          {sub.products.map((product) => (
-                            <li key={product._id}>
-                              <Link
-                                to={`/product/${product._id}`}
-                                className="text-gray-800 hover:text-secondary transition-all duration-300 block py-2"
-                                onClick={() => onClose()}
+              <div
+                key={category._id}
+                className="relative"
+                onMouseEnter={() => setHoveredCategory(category._id)}
+                onMouseLeave={() => setHoveredCategory(null)}
+              >
+                <div className="flex items-center justify-between p-2 hover:bg-gray-100 rounded-md cursor-pointer group">
+                  <h3 className="text-xl text-brand font-semibold">
+                    {category.name}
+                  </h3>
+                  <ChevronDown
+                    className={`w-5 h-5 transition-transform duration-200 ${
+                      hoveredCategory === category._id ? "rotate-180" : ""
+                    }`}
+                  />
+                </div>
+
+                <AnimatePresence>
+                  {hoveredCategory === category._id && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute left-0 top-full w-full bg-white shadow-lg rounded-md mt-1 z-10"
+                    >
+                      {category.subCategories.map((sub) => (
+                        <div
+                          key={sub._id}
+                          className="relative"
+                          onMouseEnter={() => setHoveredSubCategory(sub._id)}
+                          onMouseLeave={() => setHoveredSubCategory(null)}
+                        >
+                          <div className="p-3 hover:bg-gray-50 cursor-pointer flex items-center justify-between">
+                            <span className="text-gray-700">{sub.name}</span>
+                            <ChevronDown
+                              className={`w-4 h-4 transition-transform duration-200 ${
+                                hoveredSubCategory === sub._id
+                                  ? "rotate-180"
+                                  : ""
+                              }`}
+                            />
+                          </div>
+
+                          {/* Adjust this part: instead of absolute, the product dropdown will expand */}
+                          <AnimatePresence>
+                            {hoveredSubCategory === sub._id && (
+                              <motion.div
+                                initial={{ opacity: 0, y: -5 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -5 }}
+                                className="w-full bg-white shadow-lg rounded-md mt-1 z-10"
                               >
-                                {product.name}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-gray-500 ml-4">
-                          No products available.
-                        </p>
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-gray-500">No subcategories available.</p>
-                )}
+                                {sub.products.length > 0 ? (
+                                  <div className="py-2">
+                                    {sub.products.map((product) => (
+                                      <Link
+                                        key={product._id}
+                                        to={`/product/${product._id}`}
+                                        onClick={onClose}
+                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                      >
+                                        {product.name}
+                                      </Link>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="p-4 text-sm text-gray-500">
+                                    No products available
+                                  </div>
+                                )}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             ))}
           </div>

@@ -64,28 +64,32 @@ const BrandSection: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <FeaturedProductsHeader title="Associated Brands" />
-      <div className="flex items-center justify-center w-full my-8">
+      <div className="flex items-center justify-center w-full my-8 relative">
         {/* Previous Button */}
         {currentIndex > 0 && (
           <button
             onClick={prevSlide}
-            className="p-2 text-gray-500 hover:text-gray-900"
+            className="absolute left-0 z-10 p-2 text-gray-500 hover:text-gray-900 bg-white rounded-full shadow-lg"
           >
             <FaChevronLeft size={24} />
           </button>
         )}
 
         {/* Scrollable Brand Logos */}
-        <div className="flex overflow-hidden w-full justify-center items-center">
+        <div className="flex overflow-hidden w-full justify-center items-center space-x-6">
           {brands
             .slice(currentIndex, currentIndex + itemsPerPage)
             .map((brand, index) => (
-              <img
+              <div
                 key={index}
-                src={brand.image}
-                alt={`Brand ${brand.name}`}
-                className="h-32 w-32 object-contain mx-4 space-x-3"
-              />
+                className="flex justify-center items-center h-40 w-40 md:h-48 md:w-48 relative transition-transform duration-300 transform hover:scale-110"
+              >
+                <img
+                  src={brand.image}
+                  alt={`Brand ${brand.name}`}
+                  className="h-full w-full object-cover rounded-md mix-blend-color-burn"
+                />
+              </div>
             ))}
         </div>
 
@@ -93,7 +97,7 @@ const BrandSection: React.FC = () => {
         {currentIndex + itemsPerPage < brands.length && (
           <button
             onClick={nextSlide}
-            className="p-2 text-gray-500 hover:text-gray-900"
+            className="absolute right-0 z-10 p-2 text-gray-500 hover:text-gray-900 bg-white rounded-full shadow-lg"
           >
             <FaChevronRight size={24} />
           </button>

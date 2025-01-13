@@ -3,5 +3,6 @@ export interface Review {
   name: string;
   content: string;
   rating: number;
+  image: string[];
   date: string;
 }

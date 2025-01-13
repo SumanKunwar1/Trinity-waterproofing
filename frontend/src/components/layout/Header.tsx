@@ -10,6 +10,9 @@ import { navigationItems } from "../../constants/navigation";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
 import ProductDropdown from "./ProductDropdown";
+// Import Sentry
+import * as Sentry from "@sentry/react";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +30,28 @@ import { Avatar, AvatarFallback } from "../ui/avatar";
 import Loader from "../common/Loader";
 import { User } from "../../types/user";
 import { useLogout } from "../../utils/authUtils";
+import { toast } from "react-toastify";
+
+interface IProduct {
+  _id: string;
+  name: string;
+  createdAt: string;
+  type: "product";
+}
+
+interface ICategory {
+  _id: string;
+  name: string;
+  type: "category";
+}
+
+interface ISubcategory {
+  _id: string;
+  name: string;
+  type: "subcategory";
+}
+
+type SearchResult = IProduct | ICategory | ISubcategory;
 
 const Header: React.FC = () => {
   const { cart, isLoading: cartLoading } = useCart();
@@ -36,6 +61,11 @@ const Header: React.FC = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [isProductDropdownOpen, setIsProductDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [categories, setCategories] = useState<ICategory[]>([]);
+  const [products, setProducts] = useState<IProduct[]>([]);
+  const [subcategories, setSubcategories] = useState<ISubcategory[]>([]);
 
   const navigate = useNavigate();
   const handleLogout = useLogout();
@@ -45,8 +75,134 @@ const Header: React.FC = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1000);
+    fetchCategories();
+    fetchProducts();
+    fetchSubcategories();
     return () => clearTimeout(timer);
   }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch("/api/category");
+
+      // Check if response is successful
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        throw new Error(errorResponse.error || "Failed to fetch categories");
+      }
+
+      // Parse the JSON response
+      const data = await response.json();
+
+      // Process the fetched data
+      setCategories(
+        data.map((category: ICategory) => ({
+          ...category,
+          type: "category",
+        }))
+      );
+    } catch (error: any) {
+      Sentry.captureException(error);
+      const errorMessage = "Failed to fetch categories.";
+      toast.error(error.message || errorMessage);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch("/api/product", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
+
+      // Check if response is successful
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        throw new Error(errorResponse.error || "Failed to fetch products");
+      }
+
+      // Parse the JSON response
+      const data = await response.json();
+
+      // Sort the products by createdAt
+      const sortedProducts = data
+        .map((product: IProduct) => ({ ...product, type: "product" }))
+        .sort(
+          (a: IProduct, b: IProduct) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+      // Set the products in state
+      setProducts(sortedProducts);
+    } catch (error: any) {
+      Sentry.captureException(error);
+      toast.error(error.message || "Failed to fetch products");
+    }
+  };
+
+  const fetchSubcategories = async () => {
+    try {
+      const response = await fetch("/api/subcategory");
+
+      // Check if response is successful
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        throw new Error(errorResponse.error || "Failed to fetch subcategories");
+      }
+
+      // Parse the JSON response
+      const data = await response.json();
+
+      // Process the fetched subcategories
+      setSubcategories(
+        data.map((subcategory: ISubcategory) => ({
+          ...subcategory,
+          type: "subcategory",
+        }))
+      );
+    } catch (error: any) {
+      Sentry.captureException(error);
+      toast.error(error.message || "Failed to fetch subcategories");
+    }
+  };
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    if (term.length > 0) {
+      const results = [
+        ...products.filter((p) =>
+          p.name.toLowerCase().includes(term.toLowerCase())
+        ),
+        ...categories.filter((c) =>
+          c.name.toLowerCase().includes(term.toLowerCase())
+        ),
+        ...subcategories.filter((s) =>
+          s.name.toLowerCase().includes(term.toLowerCase())
+        ),
+      ];
+      setSearchResults(results);
+    } else {
+      setSearchResults([]);
+    }
+  };
+
+  const handleSearchResultClick = (item: SearchResult) => {
+    setIsSearchOpen(false);
+    setSearchTerm("");
+    setSearchResults([]);
+    switch (item.type) {
+      case "product":
+        navigate(`/product/${item._id}`);
+        break;
+      case "category":
+        navigate(`/products/${item._id}`);
+        break;
+      case "subcategory":
+        navigate(`/products/${item._id}`);
+        break;
+    }
+  };
 
   const getInitials = (name?: string) => {
     if (!name || name.trim() === "") return "N/A";
@@ -92,36 +248,40 @@ const Header: React.FC = () => {
           <div className="flex items-center space-x-4">
             {/* Desktop Navigation */}
             <nav className="hidden gap-4 md:flex">
-              {navigationItems.map((item) =>
-                item.title === "Products" ? (
-                  <HoverCard
-                    key={item.id}
-                    open={isHovered}
-                    onOpenChange={setIsHovered}
-                  >
-                    <HoverCardTrigger>
-                      <button className="text-white font-semibold hover:text-secondary flex items-center">
-                        {item.title}
-                        <FaChevronDown className="ml-1" />
-                      </button>
-                    </HoverCardTrigger>
-                    <HoverCardContent className="border-0 shadow-lg rounded-md w-screen">
-                      <ProductDropdown
-                        isOpen={isHovered}
-                        onClose={() => setIsHovered(false)}
-                      />
-                    </HoverCardContent>
-                  </HoverCard>
-                ) : (
-                  <Link
-                    key={item.id}
-                    to={item.path}
-                    className="text-white font-semibold hover:text-secondary transition-colors"
-                  >
-                    {item.title}
-                  </Link>
-                )
-              )}
+              <Link to="/products" className="gap-4 md:flex">
+                {navigationItems.map((item) =>
+                  item.title === "Products" ? (
+                    <HoverCard
+                      key={item.id}
+                      open={isHovered}
+                      onOpenChange={setIsHovered}
+                      openDelay={0}
+                      closeDelay={300}
+                    >
+                      <HoverCardTrigger>
+                        <button className="text-white font-semibold hover:text-secondary flex items-center">
+                          {item.title}
+                          <FaChevronDown className="ml-1" />
+                        </button>
+                      </HoverCardTrigger>
+                      <HoverCardContent className="border-0 shadow-lg rounded-md w-screen">
+                        <ProductDropdown
+                          isOpen={isHovered}
+                          onClose={() => setIsHovered(false)}
+                        />
+                      </HoverCardContent>
+                    </HoverCard>
+                  ) : (
+                    <Link
+                      key={item.id}
+                      to={item.path}
+                      className="text-white font-semibold hover:text-secondary transition-colors"
+                    >
+                      {item.title}
+                    </Link>
+                  )
+                )}
+              </Link>
             </nav>
 
             {/* Right Section - Icons */}
@@ -284,7 +444,9 @@ const Header: React.FC = () => {
                     <div className="relative w-full max-w-md">
                       <input
                         type="text"
-                        placeholder="Search products..."
+                        placeholder="Search products, categories, or subcategories..."
+                        value={searchTerm}
+                        onChange={(e) => handleSearch(e.target.value)}
                         className="w-full py-2 pl-3 pr-10 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                       <button
@@ -301,6 +463,22 @@ const Header: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Search results */}
+      {isSearchOpen && searchResults.length > 0 && (
+        <div className="absolute top-full left-0 w-full bg-white shadow-md rounded-b-md max-h-96 overflow-y-auto">
+          {searchResults.map((item) => (
+            <div
+              key={item._id}
+              className="p-2 hover:bg-gray-100 cursor-pointer flex items-center"
+              onClick={() => handleSearchResultClick(item)}
+            >
+              <span className="mr-2 text-xs text-gray-500">{item.type}</span>
+              <span>{item.name}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Mobile Navigation Menu */}
       <AnimatePresence>

@@ -176,19 +176,39 @@ const GenerateReport: React.FC = () => {
     const pageHeight = doc.internal.pageSize.height;
     const margin = 10;
 
-    doc.setFontSize(18);
+    // Add the company logo
+    const logoUrl = "/assets/logo.png"; // Update with your logo's path or base64
+    const logoWidth = 30; // Width of the logo in mm
+    const logoHeight = 30; // Height of the logo in mm
+    const logoX = (pageWidth - logoWidth) / 2; // Center the logo horizontally
+    const logoY = margin; // Position the logo slightly below the top margin
+
+    doc.addImage(logoUrl, "PNG", logoX, logoY, logoWidth, logoHeight);
+
+    // Add company name
+    const companyName = "Trinity Waterproofing"; // Update with your company name
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    const companyNameWidth = doc.getTextWidth(companyName);
+    const companyNameX = (pageWidth - companyNameWidth) / 2; // Center the company name
+    doc.text(companyName, companyNameX, logoY + logoHeight + 5); // Position name below the logo
+
+    // Title of the report
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "normal");
     doc.text(
       `${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report`,
       margin,
-      margin + 10
+      margin + 30
     );
 
-    doc.setFontSize(12);
+    // Add date range if available
+    doc.setFontSize(10);
     if (dateRange.from && dateRange.to) {
       doc.text(
         `Date Range: ${dateRange.from.toDateString()} - ${dateRange.to.toDateString()}`,
         margin,
-        margin + 20
+        margin + 40
       );
     }
 
@@ -201,7 +221,7 @@ const GenerateReport: React.FC = () => {
     doc.autoTable({
       head: [headers],
       body: rows,
-      startY: margin + 30,
+      startY: margin + 50,
       margin: { left: margin, right: margin },
       columnStyles: headers.reduce((acc, _, index) => {
         acc[index] = {

@@ -35,7 +35,6 @@ import {
   PaginationLink,
   PaginationPrevious,
   PaginationNext,
-  PaginationEllipsis,
 } from "../components/ui/pagination";
 
 interface User {
@@ -90,18 +89,17 @@ const Users: React.FC = () => {
         },
       });
       if (!response.ok) {
-        // Parse the error response to get the API's structured error
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to fetch users"); // Use API error message if available
+        const errorMessage = errorData?.error || "Failed to fetch users";
+        throw new Error(errorMessage);
       }
 
-      // Parse and use the successful response
       const data = await response.json();
       setUsers(data);
       setFilteredUsers(data);
     } catch (error: any) {
       console.error("Error fetching users:", error);
-      toast.error(error.message); // Display the error message in a toast notification
+      toast.error(error.message || "An unexpected error occurred!");
     }
   };
 
@@ -146,9 +144,9 @@ const Users: React.FC = () => {
         body: JSON.stringify(values),
       });
       if (!response.ok) {
-        // Parse the error response to get the API's structured error
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to add user"); // Use API error message if available
+        const errorMessage = errorData?.error || "Failed to add user";
+        throw new Error(errorMessage);
       }
       const newUser = await response.json();
       setUsers([...users, newUser]);
@@ -158,7 +156,7 @@ const Users: React.FC = () => {
       resetForm();
     } catch (error: any) {
       console.error("Error submitting user:", error);
-      toast.error(error.message);
+      toast.error(error.message || "An unexpected error occurred!");
     }
   };
 
@@ -170,11 +168,10 @@ const Users: React.FC = () => {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
       });
-      console.log(response);
       if (!response.ok) {
-        // Parse the error response to get the API's structured error
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to delete user"); // Use API error message if available
+        const errorMessage = errorData?.error || "Failed to delete user";
+        throw new Error(errorMessage);
       }
       const updatedUsers = users.filter((u) => u._id !== id);
       setUsers(updatedUsers);
@@ -182,7 +179,7 @@ const Users: React.FC = () => {
       toast.success("User deleted successfully");
     } catch (error: any) {
       console.error("Error deleting user:", error);
-      toast.error(error.message);
+      toast.error(error.message || "An unexpected error occurred!");
     }
   };
 
@@ -206,7 +203,6 @@ const Users: React.FC = () => {
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
-  console.log("Current Users", currentUsers);
 
   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
 

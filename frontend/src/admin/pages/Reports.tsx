@@ -510,17 +510,27 @@ const Reports: React.FC = () => {
     if (!reportData) return;
 
     const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+    const margin = 10;
+    // Add the company logo
+    const logoUrl = "/assets/logo.png"; // Update with your logo's path or base64
+    const logoWidth = 30; // Width of the logo in mm
+    const logoHeight = 30; // Height of the logo in mm
+    const logoX = (pageWidth - logoWidth) / 2; // Center the logo horizontally
+    const logoY = margin; // Position the logo at the top
 
-    // Add company logo
-    const logo = new Image();
-    logo.src = "/assets/logo.png";
-    doc.addImage(logo, "PNG", 14, 10, 30, 30);
+    doc.addImage(logoUrl, "PNG", logoX, logoY, logoWidth, logoHeight);
 
-    // Add company name and date
-    doc.setFontSize(20);
-    doc.text("Trinity Waterproofing", 50, 25);
+    // Add company name
+    const companyName = "Trinity Waterproofing"; // Update with your company name
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    const companyNameWidth = doc.getTextWidth(companyName);
+    const companyNameX = (pageWidth - companyNameWidth) / 2; // Center the company name
+    doc.text(companyName, companyNameX, logoY + logoHeight + 5); // Position name below the logo
     doc.setFontSize(12);
-    doc.text(new Date().toLocaleDateString(), 14, 45);
+    doc.text("Date: " + new Date().toLocaleDateString(), 14, 54);
 
     // Rest of the report content starting lower on the page
     doc.text(

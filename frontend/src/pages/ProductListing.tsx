@@ -11,6 +11,7 @@ import Loader from "../components/common/Loader";
 import { IProduct } from "../types/product";
 import { Category } from "../types/category";
 import { SubCategory } from "../types/subCategory";
+import { Input } from "../components/ui/input";
 const ITEMS_PER_PAGE = 9;
 
 const ProductListing: React.FC = () => {
@@ -47,7 +48,11 @@ const ProductListing: React.FC = () => {
 
         let productsRes;
         if (isLoggedIn && userId) {
-          productsRes = await axios.get(`/api/product/user/${userId}`);
+          productsRes = await axios.get(`/api/product/user/${userId}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          });
         } else {
           productsRes = await axios.get("/api/product");
         }
@@ -194,13 +199,6 @@ const ProductListing: React.FC = () => {
           <h1 className="text-3xl font-bold mb-8">Our Products</h1>
           <div className="flex flex-col md:flex-row">
             <div className="w-full md:w-1/4 mb-8 md:mb-0">
-              <input
-                type="text"
-                placeholder="Search products..."
-                className="p-2 border rounded w-full mb-4"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
               <ProductFilter
                 onFilter={handleFilter}
                 categories={categories}

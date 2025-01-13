@@ -66,9 +66,9 @@ export const ReturnAndCancel = () => {
 
   // Filter orders by valid statuses, status filter, and the search term
   const filteredOrders = orders
-    .filter((order) => validStatuses.includes(order.status))
+    .filter((order: any) => validStatuses.includes(order.status))
     .filter(
-      (order) =>
+      (order: any) =>
         (statusFilter === "" || order.status === statusFilter) &&
         (order._id.toLowerCase().includes(filter.toLowerCase()) ||
           order.status.toLowerCase().includes(filter.toLowerCase()) ||
@@ -131,7 +131,7 @@ export const ReturnAndCancel = () => {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
-            {filteredOrders.map((order) => (
+            {filteredOrders.map((order: any) => (
               <Card
                 key={order._id}
                 className="bg-white shadow-md hover:shadow-lg transition-shadow duration-300"
@@ -150,6 +150,18 @@ export const ReturnAndCancel = () => {
                         <p className="text-sm text-gray-500">
                           {new Date(order.createdAt).toLocaleDateString()}
                         </p>
+                        <div className="flex mt-2">
+                          <span>
+                            <strong>Product:</strong>
+                          </span>
+                          <ul className=" pl-5">
+                            {order?.products.map((product: Product) => (
+                              <li key={product.productId._id}>
+                                {product.productId.name}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       </div>
                     </div>
                     <div className="text-right">

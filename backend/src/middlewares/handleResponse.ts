@@ -4,7 +4,7 @@ function handleResponse(req: Request, res: Response, next: NextFunction): void {
   console.log(`✌ ${req.originalUrl} ✌`);
 
   const results = res.locals.responseData;
-  // console.log('Sending response:', results);
+  // console.log("Sending response:", results);
 
   if (results === undefined) {
     res.status(404).json({ error: "Data not found" });

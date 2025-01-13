@@ -32,6 +32,8 @@ import { AuthProvider } from "../context/AuthContext";
 import Enquiries from "./pages/Enquiry";
 import { SocketProvider } from "../context/SocketContext";
 import ServicePage from "./pages/Services";
+import PrivacyPolicyForm from "./pages/PrivacyPolicyForm";
+import TeamPage from "./pages/Team";
 
 function AdminApp() {
   return (
@@ -186,6 +188,14 @@ function AdminApp() {
                 }
               />
               <Route
+                path="/admin/admin-team"
+                element={
+                  <PrivateRoute>
+                    <TeamPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
                 path="/admin/help"
                 element={
                   <PrivateRoute>
@@ -214,6 +224,14 @@ function AdminApp() {
                 element={
                   <PrivateRoute>
                     <PrivacyPolicy />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/admin/privacy-policy-form"
+                element={
+                  <PrivateRoute>
+                    <PrivacyPolicyForm />
                   </PrivateRoute>
                 }
               />

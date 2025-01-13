@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import { FaEye, FaTrash, FaEllipsisV } from "react-icons/fa";
 import {
   Card,
@@ -37,38 +37,30 @@ interface Enquiry {
   createdAt: string;
 }
 
-interface EnquiriesResponse {
-  enquiries: Enquiry[];
-  totalPages: number;
-  currentPage: number;
-}
-
 const ITEMS_PER_PAGE = 10;
 
 const Enquiries: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const [enquiriesData, setEnquiriesData] = useState<EnquiriesResponse>({
-    enquiries: [],
-    totalPages: 0,
-    currentPage: 1,
-  });
+  const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [viewingEnquiry, setViewingEnquiry] = useState<Enquiry | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
 
   useEffect(() => {
-    fetchEnquiries(enquiriesData.currentPage);
-  }, [enquiriesData.currentPage]);
+    fetchEnquiries();
+  }, [currentPage]);
 
-  const fetchEnquiries = async (page: number) => {
+  const fetchEnquiries = async () => {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `/api/enquiry?page=${page}&limit=${ITEMS_PER_PAGE}`,
+        `/api/enquiry?page=${currentPage}&limit=${ITEMS_PER_PAGE}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
@@ -76,19 +68,19 @@ const Enquiries: React.FC = () => {
         }
       );
       if (!response.ok) {
-        throw new Error("Failed to fetch enquiries");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to fetch enquiries");
       }
 
-      const data: EnquiriesResponse = await response.json();
-      setEnquiriesData(data);
-    } catch (error) {
+      const data = await response.json();
+      setEnquiries(data);
+    } catch (error: any) {
       console.error("Error fetching enquiries:", error);
-      toast.error("Failed to fetch enquiries");
+      toast.error(error.message || "Failed to fetch enquiries");
     } finally {
       setIsLoading(false);
     }
   };
-  console.log("Enquiries", enquiriesData);
 
   const handleView = (enquiry: Enquiry) => {
     setViewingEnquiry(enquiry);
@@ -105,19 +97,38 @@ const Enquiries: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to delete enquiry");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete enquiry");
       }
 
       toast.success("Enquiry deleted successfully");
-      fetchEnquiries(enquiriesData.currentPage);
-    } catch (error) {
+      setEnquiries((prevEnquiries) =>
+        prevEnquiries.filter((enquiry) => enquiry._id !== id)
+      );
+
+      // If the current page is empty after deletion, go to the previous page
+      if (enquiries.length === 1 && currentPage > 1) {
+        setCurrentPage((prevPage) => prevPage - 1);
+      } else {
+        fetchEnquiries(); // Refetch to update the list and total count
+      }
+    } catch (error: any) {
       console.error("Error deleting enquiry:", error);
-      toast.error("Failed to delete enquiry");
+      toast.error(error.message || "Failed to delete enquiry");
     }
   };
-  console.log("Viewing Enquiry", viewingEnquiry);
+
+  // const indexOfLastEnquiry = currentPage * itemsPerPage;
+  // const indexOfFirstEnquiry = indexOfLastEnquiry - itemsPerPage;
+  // const currentEnquiry = enquiries.slice(
+  //   indexOfFirstEnquiry,
+  //   indexOfLastEnquiry
+  // );
+
+  const totalPages = Math.ceil(enquiries.length / itemsPerPage);
+
   const handlePageChange = (page: number) => {
-    setEnquiriesData((prev) => ({ ...prev, currentPage: page }));
+    setCurrentPage(page);
   };
 
   const columns = [
@@ -164,6 +175,7 @@ const Enquiries: React.FC = () => {
 
   return (
     <div>
+      <ToastContainer />
       <div className="flex bg-gray-100">
         <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         <div className="flex-1 flex flex-col overflow-hidden">
@@ -185,41 +197,29 @@ const Enquiries: React.FC = () => {
                     <div>Loading...</div>
                   ) : (
                     <>
-                      <Table data={enquiriesData.enquiries} columns={columns} />
+                      <Table data={enquiries} columns={columns} />
                       <Pagination className="mt-4">
                         <PaginationContent>
                           <PaginationItem>
                             <PaginationPrevious
-                              onClick={() =>
-                                handlePageChange(enquiriesData.currentPage - 1)
-                              }
-                              disabled={enquiriesData.currentPage === 1}
+                              onClick={() => handlePageChange(currentPage - 1)}
+                              disabled={currentPage === 1}
                             />
                           </PaginationItem>
-                          {Array.from(
-                            { length: enquiriesData.totalPages },
-                            (_, index) => (
-                              <PaginationItem key={index}>
-                                <PaginationLink
-                                  isActive={
-                                    index + 1 === enquiriesData.currentPage
-                                  }
-                                  onClick={() => handlePageChange(index + 1)}
-                                >
-                                  {index + 1}
-                                </PaginationLink>
-                              </PaginationItem>
-                            )
-                          )}
+                          {Array.from({ length: totalPages }, (_, index) => (
+                            <PaginationItem key={index}>
+                              <PaginationLink
+                                isActive={index + 1 === currentPage}
+                                onClick={() => handlePageChange(index + 1)}
+                              >
+                                {index + 1}
+                              </PaginationLink>
+                            </PaginationItem>
+                          ))}
                           <PaginationItem>
                             <PaginationNext
-                              onClick={() =>
-                                handlePageChange(enquiriesData.currentPage + 1)
-                              }
-                              disabled={
-                                enquiriesData.currentPage ===
-                                enquiriesData.totalPages
-                              }
+                              onClick={() => handlePageChange(currentPage + 1)}
+                              disabled={currentPage === totalPages}
                             />
                           </PaginationItem>
                         </PaginationContent>

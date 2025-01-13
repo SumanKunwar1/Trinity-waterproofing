@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchOrdersAsync,
@@ -48,6 +48,9 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "../components/ui/pagination";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import QRCode from "qrcode";
 
 type Order = {
   _id: string;
@@ -70,7 +73,7 @@ type Order = {
   status: string;
   createdAt: string;
   reason: string | null;
-  paymentMethod: string | null; // Added paymentMethod field
+  paymentMethod: string | null;
 };
 
 const getStatusBadge = (status: string) => {
@@ -107,7 +110,7 @@ function Orders() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isViewMoreDialogOpen, setIsViewMoreDialogOpen] = useState(false); // Added state for View More dialog
+  const [isViewMoreDialogOpen, setIsViewMoreDialogOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [customerFilter, setCustomerFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
@@ -186,6 +189,88 @@ function Orders() {
           : "Failed to mark order as delivered"
       );
     }
+  };
+
+  const generateQRCode = async (text: string): Promise<string> => {
+    try {
+      return await QRCode.toDataURL(text);
+    } catch (err) {
+      console.error("Error generating QR code:", err);
+      return "";
+    }
+  };
+
+  const generatePDF = async (order: Order) => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // Add company logo
+    doc.addImage("/assets/logo.png", "PNG", 10, 10, 30, 30);
+
+    // Add company name and report details
+    doc.setFontSize(18);
+    doc.text("Trinity Waterproofing", pageWidth / 2, 20, { align: "center" });
+    doc.setFontSize(12);
+    doc.text(
+      `Order Report - Generated on ${format(new Date(), "MMM dd, yyyy HH:mm")}`,
+      pageWidth / 2,
+      30,
+      { align: "center" }
+    );
+
+    // Add order details
+    doc.setFontSize(14);
+    doc.text("Order Details", 10, 50);
+    doc.setFontSize(10);
+    doc.text(`Order ID: ${order._id}`, 10, 60);
+    doc.text(`Customer: ${order.userId.fullName}`, 10, 70);
+    doc.text(
+      `Order Date: ${format(new Date(order.createdAt), "MMM dd, yyyy")}`,
+      10,
+      80
+    );
+    doc.text(`Status: ${order.status}`, 10, 90);
+    doc.text(`Payment Method: ${order.paymentMethod || "N/A"}`, 10, 100);
+
+    // Add address
+    doc.text("Shipping Address:", 10, 110);
+    const address = [
+      order.address.street,
+      order.address.city,
+      order.address.province,
+      order.address.district,
+      order.address.postalCode,
+      order.address.country,
+    ]
+      .filter(Boolean)
+      .join(", ");
+    doc.text(address, 10, 120);
+
+    // Add products table
+    doc.autoTable({
+      startY: 130,
+      head: [["Product", "Quantity", "Price", "Total"]],
+      body: order.products.map((product: any) => [
+        product.productId.name,
+        product.quantity,
+        `NPR ${product.price.toFixed(2)}`,
+        `NPR ${(product.quantity * product.price).toFixed(2)}`,
+      ]),
+      foot: [["", "", "Subtotal:", `NPR ${order.subtotal.toFixed(2)}`]],
+    });
+
+    // Add QR code
+    const qrCodeData = await generateQRCode(
+      JSON.stringify({
+        orderId: order._id,
+        customer: order.userId.fullName,
+        total: order.subtotal,
+      })
+    );
+    doc.addImage(qrCodeData, "PNG", pageWidth - 50, 10, 40, 40);
+
+    // Save the PDF
+    doc.save(`Order_${order._id}.pdf`);
   };
 
   const columns = useMemo(
@@ -298,9 +383,15 @@ function Orders() {
                   setSelectedOrder(item);
                   setIsDeleteDialogOpen(true);
                 }}
-                className="text-red-600 ext-red-600"
+                className="text-red-600 border-b border-gray-300"
               >
                 Delete Order
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => generatePDF(item)}
+                className="text-blue-600"
+              >
+                Download Report
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -381,11 +472,7 @@ function Orders() {
                         </TabsTrigger>
                       </TabsList>
                     </Tabs>
-                    <Table
-                      columns={columns}
-                      data={paginatedOrders}
-                      onRowClick={(item) => console.log("Clicked row:", item)}
-                    />
+                    <Table columns={columns} data={paginatedOrders} />
                     <Pagination>
                       <PaginationContent>
                         <PaginationItem>

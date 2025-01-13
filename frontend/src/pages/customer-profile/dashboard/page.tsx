@@ -9,7 +9,7 @@ export const DashboardPage = () => {
       <Header />
       <main className="flex-grow">
         <div className="flex w-full h-screen m-8">
-          <div className="w-[25%]">
+          <div className="w-[25%] overflow-auto h-full">
             <SideBar />
           </div>
           <div className="w-[75%] overflow-auto">

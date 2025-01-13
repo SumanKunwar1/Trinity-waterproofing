@@ -19,7 +19,6 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const [price, setPrice] = useState(product.retailPrice);
   const { addToCart } = useCart();
   const colors = product.colors || [];
   const isLoggedIn = !!localStorage.getItem("authToken");
@@ -73,7 +72,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
         return;
       }
 
-      addToCart(product._id, quantity, price, selectedColor);
+      addToCart(product._id, quantity, displayedPrice, selectedColor);
       toast.success(`${product.name} added to cart successfully!`);
     } else {
       toast.error("Not enough stock available");
@@ -109,8 +108,12 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
     : 0;
 
   const userRole = localStorage.getItem("userRole");
-  const displayedPrice =
-    userRole === "b2b" ? product.wholeSalePrice : product.retailPrice;
+  const isB2B = userRole === "b2b";
+  const regularPrice = isB2B ? product.wholeSalePrice : product.retailPrice;
+  const discountedPrice = isB2B
+    ? product.wholeSaleDiscountedPrice
+    : product.retailDiscountedPrice;
+  const displayedPrice = discountedPrice || regularPrice;
 
   return (
     <div>
@@ -133,9 +136,23 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
         </button>
       </div>
 
-      <p className="text-2xl font-semibold text-blue-600 mb-2">
-        Rs {displayedPrice.toFixed(2)}
-      </p>
+      <div className="mb-2">
+        {discountedPrice ? (
+          <div className="flex items-center">
+            <span className="text-2xl font-semibold text-blue-600 mr-2">
+              Rs {discountedPrice.toFixed(2)}
+            </span>
+            <span className="text-lg text-gray-500 line-through">
+              Rs {regularPrice.toFixed(2)}
+            </span>
+          </div>
+        ) : (
+          <span className="text-2xl font-semibold text-blue-600">
+            Rs {regularPrice.toFixed(2)}
+          </span>
+        )}
+      </div>
+
       <p className="text-gray-600 mb-2">{product.description}</p>
       <p className="text-gray-500 mb-2">In Stock: {product.inStock}</p>
 

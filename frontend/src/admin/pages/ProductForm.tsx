@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { motion } from "framer-motion";
 import { FaPlus, FaTimes } from "react-icons/fa";
+import * as Yup from "yup";
+import { Formik, Form, Field, ErrorMessage } from "formik";
 import {
   Card,
   CardHeader,
@@ -44,6 +47,8 @@ interface ProductFormData {
   description: string;
   retailPrice: number;
   wholeSalePrice: number;
+  retailDiscountedPrice: number;
+  wholeSaleDiscountedPrice: number;
   productImage: File | null;
   image: File[];
   features: string;
@@ -53,6 +58,37 @@ interface ProductFormData {
   subCategory: string;
 }
 
+const validationSchema = Yup.object().shape({
+  name: Yup.string().required("Name is required"),
+  description: Yup.string().required("Description is required"),
+  retailPrice: Yup.number()
+    .min(0, "Retail price must be at least 0")
+    .required("Retail price is required"),
+  wholeSalePrice: Yup.number()
+    .min(0, "Wholesale price must be at least 0")
+    .required("Wholesale price is required"),
+  retailDiscountedPrice: Yup.number().min(
+    0,
+    "Retail discounted price must be at least 0"
+  ),
+  wholeSaleDiscountedPrice: Yup.number().min(
+    0,
+    "Wholesale discounted price must be at least 0"
+  ),
+  inStock: Yup.number()
+    .min(0, "Stock cannot be negative")
+    .required("Stock is required"),
+  brand: Yup.string().required("Brand is required"),
+  subCategory: Yup.string().required("Subcategory is required"),
+  features: Yup.string().required("Features are required"),
+  colors: Yup.array().of(
+    Yup.object().shape({
+      name: Yup.string().required("Color name is required"),
+      hex: Yup.string().required("Color hex is required"),
+    })
+  ),
+});
+
 const ProductForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -60,11 +96,13 @@ const ProductForm: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
-  const [formData, setFormData] = useState<ProductFormData>({
+  const [initialFormData, setInitialFormData] = useState<ProductFormData>({
     name: "",
     description: "",
     retailPrice: 0,
     wholeSalePrice: 0,
+    retailDiscountedPrice: 0,
+    wholeSaleDiscountedPrice: 0,
     productImage: null,
     image: [],
     features: "",
@@ -153,11 +191,14 @@ const ProductForm: React.FC = () => {
           }))
         : [];
 
-      setFormData({
+      setInitialFormData({
         name: productData.name || "",
         description: productData.description || "",
         retailPrice: Number(productData.retailPrice) || 0,
         wholeSalePrice: Number(productData.wholeSalePrice) || 0,
+        retailDiscountedPrice: Number(productData.retailDiscountedPrice) || 0,
+        wholeSaleDiscountedPrice:
+          Number(productData.wholeSaleDiscountedPrice) || 0,
         productImage: null,
         image: [],
         features: featuresString || "",
@@ -172,77 +213,40 @@ const ProductForm: React.FC = () => {
     }
   };
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  const handleSubmit = async (
+    values: ProductFormData,
+    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }
   ) => {
-    const { name, value } = e.target;
-    const numericFields = ["retailPrice", "wholeSalePrice", "inStock"];
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: numericFields.includes(name) ? Number(value) : value,
-    }));
-  };
-
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleFeaturesChange = (value: string) => {
-    console.log("features value:", value);
-    setFormData((prev) => ({ ...prev, features: value }));
-  };
-
-  const handleImageChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    isMainImage: boolean
-  ) => {
-    const files = e.target.files;
-    if (files) {
-      if (isMainImage) {
-        setFormData((prev) => ({ ...prev, productImage: files[0] }));
-      } else {
-        setFormData((prev) => ({
-          ...prev,
-          image: [...prev.image, ...Array.from(files)],
-        }));
-      }
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
 
     try {
       const url = id ? `/api/product/${id}` : "/api/product";
       const method = id ? "PATCH" : "POST";
 
-      // Prepare the request body based on the method (PATCH or POST)
       if (method === "PATCH") {
-        // For PATCH request, we send the data as JSON
         const requestBody = {
-          name: formData.name,
-          description: formData.description,
-          retailPrice: formData.retailPrice,
-          wholeSalePrice: formData.wholeSalePrice,
-          inStock: formData.inStock,
-          brand: formData.brand,
-          subCategory: formData.subCategory,
-          features: formData.features,
-          colors: formData.colors, // No need to stringify for JSON
+          name: values.name,
+          description: values.description,
+          retailPrice: values.retailPrice,
+          wholeSalePrice: values.wholeSalePrice,
+          retailDiscountedPrice: values.retailDiscountedPrice,
+          wholeSaleDiscountedPrice: values.wholeSaleDiscountedPrice,
+          inStock: parseInt(values.inStock.toString(), 10),
+          brand: values.brand,
+          subCategory: values.subCategory,
+          features: values.features,
+          colors: values.colors,
         };
 
-        // Log the request body for debugging
         console.log("Request Body for PATCH:", requestBody);
 
         const response = await fetch(url, {
           method,
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-            "Content-Type": "application/json", // Send as JSON for PATCH
+            "Content-Type": "application/json",
           },
-          body: JSON.stringify(requestBody), // Convert to JSON string
+          body: JSON.stringify(requestBody),
         });
 
         if (!response.ok) {
@@ -250,33 +254,22 @@ const ProductForm: React.FC = () => {
           throw new Error(errorData.error || "Failed to update product");
         }
       } else {
-        // For POST request, we need to send the data as FormData
         const productFormData = new FormData();
 
-        // Add basic fields
-        productFormData.append("name", formData.name);
-        productFormData.append("description", formData.description);
-        productFormData.append("retailPrice", formData.retailPrice.toString());
-        productFormData.append(
-          "wholeSalePrice",
-          formData.wholeSalePrice.toString()
-        );
-        productFormData.append("inStock", formData.inStock.toString());
-        productFormData.append("brand", formData.brand);
-        productFormData.append("subCategory", formData.subCategory);
-        productFormData.append("features", formData.features);
-        productFormData.append("colors", JSON.stringify(formData.colors)); // JSON.stringify for FormData
-
-        // Only append images for new product creation (POST)
-        if (formData.productImage) {
-          productFormData.append("productImage", formData.productImage);
-        }
-
-        formData.image.forEach((file, index) => {
-          productFormData.append(`image`, file);
+        Object.entries(values).forEach(([key, value]) => {
+          if (key === "colors") {
+            productFormData.append(key, JSON.stringify(value));
+          } else if (key === "productImage" && value instanceof File) {
+            productFormData.append(key, value);
+          } else if (key === "image" && Array.isArray(value)) {
+            value.forEach((file) => {
+              productFormData.append(`image`, file);
+            });
+          } else {
+            productFormData.append(key, String(value));
+          }
         });
 
-        // Log FormData contents for debugging
         for (let pair of productFormData.entries()) {
           console.log("data in productFormData", pair[0], pair[1]);
         }
@@ -286,7 +279,7 @@ const ProductForm: React.FC = () => {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
-          body: productFormData, // Send FormData for POST
+          body: productFormData,
         });
 
         if (!response.ok) {
@@ -307,7 +300,7 @@ const ProductForm: React.FC = () => {
         error instanceof Error ? error.message : "Failed to submit product"
       );
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -341,240 +334,319 @@ const ProductForm: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">Name</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="description">Description</Label>
-                    <Input
-                      id="description"
-                      name="description"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="retailPrice">Retail Price</Label>
-                    <Input
-                      id="retailPrice"
-                      name="retailPrice"
-                      type="number"
-                      value={formData.retailPrice}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="wholeSalePrice">Wholesale Price</Label>
-                    <Input
-                      id="wholeSalePrice"
-                      name="wholeSalePrice"
-                      type="number"
-                      value={formData.wholeSalePrice}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="brand">Brand</Label>
-                    <Select
-                      name="brand"
-                      value={formData.brand}
-                      onValueChange={(value) =>
-                        handleSelectChange("brand", value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a brand" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {brands.map((brand) => (
-                          <SelectItem key={brand._id} value={brand._id}>
-                            {brand.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="subCategory">Subcategory</Label>
-                    <Select
-                      name="subCategory"
-                      value={formData.subCategory}
-                      onValueChange={(value) =>
-                        handleSelectChange("subCategory", value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a subcategory" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {subCategories.map((subCategory) => (
-                          <SelectItem
-                            key={subCategory._id}
-                            value={subCategory._id}
-                          >
-                            {subCategory.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="inStock">In Stock</Label>
-                    <Input
-                      id="inStock"
-                      name="inStock"
-                      type="number"
-                      value={formData.inStock}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-
-                  {!id && (
-                    <>
+                <Formik
+                  initialValues={initialFormData}
+                  validationSchema={validationSchema}
+                  onSubmit={handleSubmit}
+                  enableReinitialize
+                >
+                  {({ values, setFieldValue, isSubmitting }) => (
+                    <Form className="space-y-4">
                       <div>
-                        <Label>Main Product Image</Label>
-                        <Input
-                          type="file"
-                          onChange={(e) => handleImageChange(e, true)}
-                          accept="image/*"
-                          required
+                        <Label htmlFor="name">Name</Label>
+                        <Field name="name" as={Input} />
+                        <ErrorMessage
+                          name="name"
+                          component="div"
+                          className="text-red-500"
                         />
                       </div>
 
                       <div>
-                        <Label>Additional Images</Label>
-                        <Input
-                          type="file"
-                          onChange={(e) => handleImageChange(e, false)}
-                          accept="image/*"
-                          multiple
-                          className="mt-4"
+                        <Label htmlFor="description">Description</Label>
+                        <Field name="description" as={Input} />
+                        <ErrorMessage
+                          name="description"
+                          component="div"
+                          className="text-red-500"
                         />
                       </div>
-                    </>
-                  )}
 
-                  <div>
-                    <Label>Features</Label>
-                    <div className="mt-2">
-                      <TinyMCEEditor
-                        value={formData.features}
-                        onChange={handleFeaturesChange}
-                        height={600}
-                      />
-                    </div>
-                  </div>
+                      <div>
+                        <Label htmlFor="retailPrice">Retail Price</Label>
+                        <Field name="retailPrice" type="number" as={Input} />
+                        <ErrorMessage
+                          name="retailPrice"
+                          component="div"
+                          className="text-red-500"
+                        />
+                      </div>
 
-                  <div>
-                    <Label>Colors</Label>
-                    <div className="flex items-center gap-2 mt-2">
-                      <Button
-                        type="button"
-                        onClick={() => setShowColorPicker(true)}
-                        size="sm"
-                        variant="secondary"
-                      >
-                        <FaPlus className="mr-2" /> Add Color
-                      </Button>
-                    </div>
-                    <div className="mt-2 space-y-2">
-                      {formData.colors.map((color, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <div
-                            className="w-6 h-6 rounded-full cursor-pointer border border-gray-200"
-                            style={{ backgroundColor: color.hex }}
-                          />
-                          <span>{color.name}</span>
-                          <Button
-                            type="button"
-                            onClick={() => {
-                              setFormData((prev) => ({
-                                ...prev,
-                                colors: prev.colors.filter(
-                                  (_, i) => i !== index
-                                ),
-                              }));
-                            }}
-                            size="sm"
-                            variant="destructive"
-                          >
-                            <FaTimes />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                    {showColorPicker && (
-                      <div className="mt-4">
-                        <HexColorPicker
-                          color={colorInput}
-                          onChange={setColorInput}
+                      <div>
+                        <Label htmlFor="wholeSalePrice">Wholesale Price</Label>
+                        <Field name="wholeSalePrice" type="number" as={Input} />
+                        <ErrorMessage
+                          name="wholeSalePrice"
+                          component="div"
+                          className="text-red-500"
                         />
-                        <Input
-                          type="text"
-                          placeholder="Color name"
-                          value={colorInput}
-                          onChange={(e) => setColorInput(e.target.value)}
-                          className="mt-2"
+                      </div>
+
+                      <div>
+                        <Label htmlFor="retailDiscountedPrice">
+                          Retail Discounted Price
+                        </Label>
+                        <Field
+                          name="retailDiscountedPrice"
+                          type="number"
+                          as={Input}
                         />
-                        <div className="mt-2 space-x-2">
-                          <Button
-                            type="button"
-                            onClick={() => {
-                              if (colorInput) {
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  colors: [
-                                    ...prev.colors,
-                                    { name: colorInput, hex: colorInput },
-                                  ],
-                                }));
-                                setColorInput("");
-                                setShowColorPicker(false);
+                        <ErrorMessage
+                          name="retailDiscountedPrice"
+                          component="div"
+                          className="text-red-500"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="wholeSaleDiscountedPrice">
+                          Wholesale Discounted Price
+                        </Label>
+                        <Field
+                          name="wholeSaleDiscountedPrice"
+                          type="number"
+                          as={Input}
+                        />
+                        <ErrorMessage
+                          name="wholeSaleDiscountedPrice"
+                          component="div"
+                          className="text-red-500"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="brand">Brand</Label>
+                        <Field name="brand">
+                          {({ field, form }: { field: any; form: any }) => (
+                            <Select
+                              onValueChange={(value) =>
+                                form.setFieldValue(field.name, value)
                               }
-                            }}
-                          >
-                            Add Color
-                          </Button>
+                              value={field.value}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a brand" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {brands.map((brand) => (
+                                  <SelectItem key={brand._id} value={brand._id}>
+                                    {brand.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        </Field>
+                        <ErrorMessage
+                          name="brand"
+                          component="div"
+                          className="text-red-500"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="subCategory">Subcategory</Label>
+                        <Field name="subCategory">
+                          {({ field, form }: { field: any; form: any }) => (
+                            <Select
+                              onValueChange={(value) =>
+                                form.setFieldValue(field.name, value)
+                              }
+                              value={field.value}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a subcategory" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {subCategories.map((subCategory) => (
+                                  <SelectItem
+                                    key={subCategory._id}
+                                    value={subCategory._id}
+                                  >
+                                    {subCategory.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        </Field>
+                        <ErrorMessage
+                          name="subCategory"
+                          component="div"
+                          className="text-red-500"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="inStock">In Stock</Label>
+                        <Field
+                          name="inStock"
+                          type="number"
+                          as={Input}
+                          min="0"
+                        />
+                        <ErrorMessage
+                          name="inStock"
+                          component="div"
+                          className="text-red-500"
+                        />
+                      </div>
+
+                      {!id && (
+                        <>
+                          <div>
+                            <Label>Main Product Image</Label>
+                            <Input
+                              type="file"
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  setFieldValue("productImage", file);
+                                }
+                              }}
+                              accept="image/*"
+                            />
+                          </div>
+
+                          <div>
+                            <Label>Additional Images</Label>
+                            <Input
+                              type="file"
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) => {
+                                const files = e.target.files;
+                                if (files) {
+                                  setFieldValue("image", Array.from(files));
+                                }
+                              }}
+                              accept="image/*"
+                              multiple
+                              className="mt-4"
+                            />
+                          </div>
+                        </>
+                      )}
+
+                      <div>
+                        <Label>Features</Label>
+                        <div className="mt-2">
+                          <Field name="features">
+                            {({ field }: { field: any }) => (
+                              <TinyMCEEditor
+                                value={field.value}
+                                onChange={(content: string) =>
+                                  setFieldValue("features", content)
+                                }
+                                height={600}
+                              />
+                            )}
+                          </Field>
+                        </div>
+                        <ErrorMessage
+                          name="features"
+                          component="div"
+                          className="text-red-500"
+                        />
+                      </div>
+
+                      <div>
+                        <Label>Colors</Label>
+                        <div className="flex items-center gap-2 mt-2">
                           <Button
                             type="button"
-                            onClick={() => setShowColorPicker(false)}
-                            variant="outline"
+                            onClick={() => setShowColorPicker(true)}
+                            size="sm"
+                            variant="secondary"
                           >
-                            Cancel
+                            <FaPlus className="mr-2" /> Add Color
                           </Button>
                         </div>
+                        <div className="mt-2 space-y-2">
+                          {values.colors.map((color, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center gap-2"
+                            >
+                              <div
+                                className="w-6 h-6 rounded-full cursor-pointer border border-gray-200"
+                                style={{ backgroundColor: color.hex }}
+                              />
+                              <span>{color.name}</span>
+                              <Button
+                                type="button"
+                                onClick={() => {
+                                  const newColors = [...values.colors];
+                                  newColors.splice(index, 1);
+                                  setFieldValue("colors", newColors);
+                                }}
+                                size="sm"
+                                variant="destructive"
+                              >
+                                <FaTimes />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                        {showColorPicker && (
+                          <div className="mt-4">
+                            <HexColorPicker
+                              color={colorInput}
+                              onChange={setColorInput}
+                            />
+                            <Input
+                              type="text"
+                              placeholder="Color name"
+                              value={colorInput}
+                              onChange={(e) => setColorInput(e.target.value)}
+                              className="mt-2"
+                            />
+                            <div className="mt-2 space-x-2">
+                              <Button
+                                type="button"
+                                onClick={() => {
+                                  if (colorInput) {
+                                    setFieldValue("colors", [
+                                      ...values.colors,
+                                      { name: colorInput, hex: colorInput },
+                                    ]);
+                                    setColorInput("");
+                                    setShowColorPicker(false);
+                                  }
+                                }}
+                              >
+                                Add Color
+                              </Button>
+                              <Button
+                                type="button"
+                                onClick={() => setShowColorPicker(false)}
+                                variant="outline"
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
 
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? (
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    ) : id ? (
-                      "Update Product"
-                    ) : (
-                      "Create Product"
-                    )}
-                  </Button>
-                </form>
+                      <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? (
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                        ) : id ? (
+                          "Update Product"
+                        ) : (
+                          "Create Product"
+                        )}
+                      </Button>
+                    </Form>
+                  )}
+                </Formik>
               </CardContent>
             </Card>
           </motion.div>

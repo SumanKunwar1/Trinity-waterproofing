@@ -44,7 +44,10 @@ const Checkout: React.FC = () => {
         },
       });
 
-      if (!response.ok) throw new Error("Failed to fetch addresses");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to fetch addresses");
+      }
 
       const data = await response.json();
 
@@ -60,9 +63,9 @@ const Checkout: React.FC = () => {
         console.error("Invalid data structure:", data);
         setAddresses([]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching addresses:", error);
-      toast.error("Failed to load addresses");
+      toast.error(error.message || "Failed to load addresses");
       setAddresses([]);
     } finally {
       setIsLoading(false);
@@ -87,12 +90,15 @@ const Checkout: React.FC = () => {
         }
       );
 
-      if (!response.ok) throw new Error("Failed to set default address");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to set default address");
+      }
       await fetchAddresses();
       toast.success("Default address updated");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error setting default address:", error);
-      toast.error("Failed to set default address");
+      toast.error(error.message || "Failed to set default address");
     }
   };
 
@@ -115,11 +121,18 @@ const Checkout: React.FC = () => {
             `Invalid product ID for item: ${JSON.stringify(item)}`
           );
         }
+        const price =
+          item.product?.retailDiscountedPrice ||
+          item.product?.retailPrice ||
+          item.product?.wholeSaleDiscountedPrice ||
+          item.product?.wholeSalePrice ||
+          item.price ||
+          0;
         return {
           productId,
           color: item.selectedColor || item.color || null,
           quantity: item.quantity,
-          price: item.price || (item.product && item.product.price) || 0,
+          price,
         };
       });
 
@@ -173,7 +186,7 @@ const Checkout: React.FC = () => {
               ) : (
                 <div className="text-center py-8">
                   <p className="text-gray-600 mb-4">No addresses found.</p>
-                  <Link to="/customer/manage-profile">
+                  <Link to="/customer/address-book">
                     <Button variant="outline">Add New Address</Button>
                   </Link>
                 </div>

@@ -132,6 +132,7 @@ const Dashboard: React.FC = () => {
       toast.error(error.message);
     }
   };
+  console.log("Orders:", orders);
 
   const fetchUsers = async () => {
     try {

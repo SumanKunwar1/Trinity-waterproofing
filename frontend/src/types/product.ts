@@ -9,6 +9,8 @@ export interface IProduct {
   description: string;
   wholeSalePrice: number;
   retailPrice: number;
+  retailDiscountedPrice?: number;
+  wholeSaleDiscountedPrice?: number;
   productImage: string;
   image: string[];
   subCategory: string;

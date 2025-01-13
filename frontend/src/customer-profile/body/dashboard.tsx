@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
 import {
@@ -8,7 +8,6 @@ import {
   FaRegHeart,
   FaCube,
   FaPlus,
-  FaStar,
 } from "react-icons/fa";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
@@ -20,7 +19,6 @@ import {
 import { AddressForm } from "./address-form";
 import { Address } from "../../types/address";
 import { useUserData } from "../../hooks/useUserData";
-import { ReviewDialog } from "./ReviewDialog";
 import { useWishlist } from "../../context/WishlistContext";
 
 export const Dashboard: React.FC = () => {
@@ -31,20 +29,16 @@ export const Dashboard: React.FC = () => {
     error: wishlistError,
   } = useWishlist();
   const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false);
-  const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(
-    null
-  );
+  const navigate = useNavigate();
 
-  console.log("Wishlist in dashboard", wishlist);
   const defaultAddress = addresses.find((addr: Address) => addr.default);
 
   const totalExpenditure = orders.reduce(
-    (total, order) => total + order.subtotal,
+    (total: number, order: any) => total + order.subtotal,
     0
   );
   const totalOrdered = orders.reduce(
-    (total, order) => total + order.products.length,
+    (total: number, order: any) => total + order.products.length,
     0
   );
 
@@ -67,31 +61,6 @@ export const Dashboard: React.FC = () => {
     } catch (error) {
       console.error("Error adding address:", error);
       toast.error("Failed to add address");
-    }
-  };
-
-  const handleReviewSubmit = async (rating: number, content: string) => {
-    if (!selectedProductId) return;
-
-    try {
-      const response = await fetch("/api/review", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-        body: JSON.stringify({
-          productId: selectedProductId,
-          rating,
-          content,
-        }),
-      });
-      if (!response.ok) throw new Error("Failed to submit review");
-      setIsReviewDialogOpen(false);
-      toast.success("Review submitted successfully");
-    } catch (error) {
-      console.error("Error submitting review:", error);
-      toast.error("Failed to submit review");
     }
   };
 
@@ -206,7 +175,7 @@ export const Dashboard: React.FC = () => {
           <h2 className="text-2xl font-semibold text-gray-800 mb-4">
             Recent Orders
           </h2>
-          {orders.slice(0, 5).map((order) => (
+          {orders.slice(0, 5).map((order: any) => (
             <div
               key={order._id}
               className="border-b border-gray-200 py-4 last:border-b-0"
@@ -217,44 +186,29 @@ export const Dashboard: React.FC = () => {
                   <p className="text-sm text-gray-600">
                     {new Date(order.createdAt).toLocaleDateString()}
                   </p>
+                  <p className=" text-md">
+                    <strong>Product Name:</strong>
+                    <ul className="list-disc pl-5">
+                      {order?.products.map((product: any) => (
+                        <li
+                          key={product.productId._id}
+                          className="flex justify-between items-center"
+                        >
+                          <span>
+                            {product.productId.name ||
+                              "Product Name Unavailable"}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </p>
                 </div>
                 <div className="text-right">
                   <p className="font-bold">Rs {order.subtotal.toFixed(2)}</p>
-                  <p className="text-sm text-gray-600">{order.status}</p>
+                  <p className="text-sm text-gray-600 font-semibold">
+                    {order.status.toUpperCase().split("-").join(" ")}
+                  </p>
                 </div>
-              </div>
-              <div className="mt-2">
-                {order.products.map((product) => (
-                  <div
-                    key={product._id}
-                    className="flex justify-between items-center mt-2"
-                  >
-                    <p className="text-sm">{product.name}</p>
-                    <Dialog
-                      open={
-                        isReviewDialogOpen && selectedProductId === product._id
-                      }
-                      onOpenChange={(open) => {
-                        setIsReviewDialogOpen(open);
-                        if (!open) setSelectedProductId(null);
-                      }}
-                    >
-                      <DialogTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="ml-2"
-                          onClick={() => setSelectedProductId(product._id)}
-                        >
-                          <FaStar className="mr-2" /> Review
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <ReviewDialog onSubmit={handleReviewSubmit} />
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                ))}
               </div>
             </div>
           ))}
@@ -315,3 +269,5 @@ const StatCard: React.FC<StatCardProps> = ({ icon, value, label, color }) => (
     </Card>
   </motion.div>
 );
+
+export default Dashboard;

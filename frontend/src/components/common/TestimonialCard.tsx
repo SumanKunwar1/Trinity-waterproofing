@@ -113,6 +113,7 @@ const TestimonialCard = ({ reviews }: TestimonialCardProps) => {
 
     return stars;
   };
+  console.log("currentReviews:", currentReviews);
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
@@ -283,6 +284,18 @@ const TestimonialCard = ({ reviews }: TestimonialCardProps) => {
               <blockquote className="text-gray-600 italic text-sm">
                 {review.content}
               </blockquote>
+              {review.image && review.image.length > 0 && (
+                <div className="mt-4">
+                  {review.image.map((image, index) => (
+                    <img
+                      key={index}
+                      src={image}
+                      alt={`Review ${index + 1}`}
+                      className="w-auto max-h-48 object-cover rounded-md"
+                    />
+                  ))}
+                </div>
+              )}
             </motion.div>
           ))}
         </div>

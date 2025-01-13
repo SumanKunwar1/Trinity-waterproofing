@@ -11,6 +11,8 @@ export interface IProduct extends Document {
   name: string;
   retailPrice: number;
   wholeSalePrice: number;
+  retailDiscountedPrice?: number; // New optional field
+  wholeSaleDiscountedPrice?: number;
   review: [Types.ObjectId];
   description?: string;
   productImage: string;
@@ -31,6 +33,8 @@ const productSchema: Schema = new Schema(
     description: { type: String, default: "" },
     retailPrice: { type: Number, required: true },
     wholeSalePrice: { type: Number, required: true },
+    retailDiscountedPrice: { type: Number, default: 0 }, // Optional field
+    wholeSaleDiscountedPrice: { type: Number, default: 0 }, // Optional field
     productImage: { type: String, required: true },
     image: [String],
     features: [String],

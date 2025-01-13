@@ -7,7 +7,6 @@ import { Card, CardContent } from "../components/ui/card";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import ImageContentSection from "../components/common/ImageContentSection";
-import { Skeleton } from "../components/ui/skeleton";
 
 interface AboutData {
   title: string;
@@ -46,7 +45,17 @@ const About: React.FC = () => {
         ]);
 
         if (!aboutRes.ok || !coresRes.ok || !tabsRes.ok) {
-          throw new Error("Failed to fetch data");
+          const errorData = await Promise.all([
+            aboutRes.json(),
+            coresRes.json(),
+            tabsRes.json(),
+          ]);
+
+          throw new Error(
+            errorData
+              .map((res) => res.error || "Failed to fetch data")
+              .join(", ")
+          );
         }
 
         const [aboutData, coresData, tabsData] = await Promise.all([
@@ -59,9 +68,10 @@ const About: React.FC = () => {
         setCoreValues(coresData);
         setTabs(tabsData);
         setActiveTab(tabsData[0]?.title || "");
-      } catch (err) {
+      } catch (err: any) {
         setError(
-          "An error occurred while fetching data. Please try again later."
+          err.message ||
+            "An error occurred while fetching data. Please try again later."
         );
         console.error("Error fetching data:", err);
       } finally {

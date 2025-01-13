@@ -11,6 +11,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { IProduct } from "../types/product";
 import { Helmet } from "react-helmet";
+import Loader from "../components/common/Loader";
+
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [product, setProduct] = useState<IProduct | null>(null);
@@ -42,14 +44,13 @@ const ProductDetail: React.FC = () => {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <Loader />;
   if (error) return <div>{error}</div>;
 
   if (!product) {
     return <div>Product not found</div>;
   }
 
-  // Dynamic meta tags using the product data
   const productMetaDescription =
     product.description || "Check out this amazing product!";
   const productMetaKeywords = product.name
@@ -59,7 +60,7 @@ const ProductDetail: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Helmet>
-        <title>{product.name}</title>
+        <title>Tinity Waterproofing - {product.name}</title>
         <meta name="description" content={productMetaDescription} />
         <meta name="keywords" content={productMetaKeywords} />
         <meta property="og:title" content={product.name} />
