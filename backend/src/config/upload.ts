@@ -1,8 +1,10 @@
 import multer from "multer";
+import sharp from "sharp";
 import path from "path";
 import fs from "fs";
 import { httpMessages } from "../middlewares";
 import dotenv from "dotenv";
+import { NextFunction } from "express";
 dotenv.config();
 
 console.log("image upload folder name:", process.env.IMAGE_UPLOAD);
@@ -20,6 +22,62 @@ const allowedVideoTypes = [
   "video/mov",
   "video/quicktime",
 ];
+const MAX_IMAGE_SIZE = process.env.IMAGE_SIZE_LIMIT
+  ? parseInt(process.env.IMAGE_SIZE_LIMIT) * 1024 * 1024
+  : 1 * 1024 * 1024;
+const MAX_VIDEO_SIZE = process.env.VIDEO_SIZE_LIMIT
+  ? parseInt(process.env.VIDEO_SIZE_LIMIT) * 1024 * 1024
+  : 10 * 1024 * 1024;
+
+const compressAndValidateImage = async (
+  filePath: string,
+  compressedFilePath: string
+) => {
+  try {
+    console.log("Starting compression and validation...");
+    console.log(`Original file path: ${filePath}`);
+    console.log(`Compressed file path: ${compressedFilePath}`);
+    const image = sharp(filePath);
+    await image.metadata(); // This will throw an error if the file is not a valid image
+
+    console.log("Compressing the image...since it is correct metadata");
+    await sharp(filePath)
+      .resize()
+      .jpeg({ quality: 50 })
+      .toFile(compressedFilePath);
+
+    console.log("Image compression completed. Checking file size...");
+    const originalStats = fs.statSync(filePath);
+    const compressedStats = fs.statSync(compressedFilePath);
+
+    console.log(`Original file size: ${originalStats.size} bytes`);
+    console.log(`Compressed file size: ${compressedStats.size} bytes`);
+
+    if (compressedStats.size > MAX_IMAGE_SIZE) {
+      console.error(
+        `Compressed image exceeds maximum allowed size of ${
+          MAX_IMAGE_SIZE / (1024 * 1024)
+        } MB. Deleting compressed file...`
+      );
+      fs.unlinkSync(compressedFilePath); // Delete compressed file if too large
+      throw httpMessages.BAD_REQUEST(
+        `Compressed image exceeds the maximum size of ${
+          MAX_IMAGE_SIZE / (1024 * 1024)
+        } MB.`
+      );
+    }
+
+    console.log("Deleting original uncompressed file...");
+
+    console.log("Compression and validation completed successfully.");
+    return compressedFilePath;
+  } catch (err) {
+    console.error("Error during image compression/validation:", err);
+    return httpMessages.BAD_REQUEST(
+      `Image compression/validation failed: ${err || "Unknown error"}`
+    );
+  }
+};
 
 // Add fileFilter to enforce file type restrictions
 const fileFilter = (req: any, file: any, cb: any) => {
@@ -67,19 +125,55 @@ const fileFilter = (req: any, file: any, cb: any) => {
 };
 
 const storage: multer.StorageEngine = multer.diskStorage({
-  destination: (req, file, cb) => {
-    console.log("Uploading file to:", uploadFolder); // Log the destination folder
+  destination: (req: any, file: any, cb: any) => {
+    console.log("Uploading file...");
+    console.log("Upload folder path:", uploadFolder);
     cb(null, uploadFolder); // Save to the upload folder
   },
-  filename: (req, file, cb) => {
+  filename: (req: any, file: any, cb: any) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const filename = uniqueSuffix + path.extname(file.originalname);
-    console.log(`Saving file: ${filename}`); // Log the file name being saved
-    cb(null, filename); // Save the file with the new unique name
+    const originalFilePath = path.join(
+      uploadFolder,
+      uniqueSuffix + path.extname(file.originalname)
+    );
+    const compressedFilePath = path.join(
+      uploadFolder,
+      "compressed-" + uniqueSuffix + path.extname(file.originalname)
+    );
+
+    console.log("Generated file paths:");
+    console.log(`Original file path: ${originalFilePath}`);
+    console.log(`Compressed file path: ${compressedFilePath}`);
+
+    // Save the file temporarily
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+
+    // After saving, compress and validate the image
+    process.nextTick(() => {
+      console.log("Initiating compression/validation for the uploaded file...");
+      compressAndValidateImage(originalFilePath, compressedFilePath)
+        .then(() => {
+          console.log("Compression completed. Renaming file...");
+          try {
+            fs.renameSync(compressedFilePath, originalFilePath);
+            console.log(
+              `Successfully renamed compressed file to original: ${originalFilePath}`
+            );
+          } catch (err: any) {
+            cb(null, new multer.MulterError(err));
+          }
+        })
+        .catch((err) => {
+          console.error("Error during file compression/validation:", err);
+        });
+    });
   },
 });
 
-const upload = multer({ storage: storage, fileFilter: fileFilter });
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+});
 
 // This middleware exclusively for product file uploads
 export const uploadMiddleware = upload.fields([
