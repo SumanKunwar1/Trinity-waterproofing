@@ -41,6 +41,9 @@ const schema = Joi.object({
   features: Joi.string().optional().messages({
     "string.base": "Features must be a string",
   }),
+  pdfUrl: Joi.string().optional().messages({
+    "string.base": "Features must be a string",
+  }),
   brand: Joi.string().optional().messages({
     "string.base": "Brand must be a string",
   }),
