@@ -43,6 +43,7 @@ export class OrderService {
         console.log("Processing order item:", orderItem);
 
         const { productId, color, quantity } = orderItem;
+        const orderItemPrice = orderItem.price;
 
         const product = await Product.findById(productId);
         if (!product) {
@@ -64,6 +65,12 @@ export class OrderService {
         console.log(
           `Price for product '${product.name}' determined as: ${price}`
         );
+
+        if (price !== orderItemPrice) {
+          throw httpMessages.BAD_REQUEST(
+            `Detected Mismatch between the prices .... for ${product.name}. Price gotten:${orderItemPrice}, price Calculated:${price}`
+          );
+        }
 
         if (product.colors && product.colors.length > 0) {
           console.log(
