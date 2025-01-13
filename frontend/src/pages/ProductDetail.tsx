@@ -56,7 +56,7 @@ const ProductDetail: React.FC = () => {
   const productMetaKeywords = product.name
     ? product.name + ", shopping, buy"
     : "product, online store";
-
+  console.log("product", product);
   return (
     <div className="flex flex-col min-h-screen">
       <Helmet>

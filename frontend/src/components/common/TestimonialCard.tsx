@@ -43,9 +43,9 @@ const TestimonialCard = ({ reviews }: TestimonialCardProps) => {
 
   const sortedReviews = [...reviews].sort((a, b) => {
     if (sortOption === "latest") {
-      return new Date(b.date).getTime() - new Date(a.date).getTime();
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     } else if (sortOption === "recent") {
-      return new Date(a.date).getTime() - new Date(b.date).getTime();
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
     } else if (sortOption === "highest") {
       return b.rating - a.rating;
     } else if (sortOption === "lowest") {
@@ -113,7 +113,6 @@ const TestimonialCard = ({ reviews }: TestimonialCardProps) => {
 
     return stars;
   };
-  console.log("currentReviews:", currentReviews);
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
@@ -138,12 +137,13 @@ const TestimonialCard = ({ reviews }: TestimonialCardProps) => {
               <div className="flex">{renderStars(averageRating)}</div>
             </div>
             <div className="max-w-lg w-full space-y-4">
-              {ratingCounts.map((count, index) => {
+              {[5, 4, 3, 2, 1].map((starCount) => {
+                const count = ratingCounts[starCount - 1];
                 const percentage = (count / reviews.length) * 100;
                 return (
-                  <div key={index} className="flex items-center space-x-4">
+                  <div key={starCount} className="flex items-center space-x-4">
                     <div className="flex-shrink-0">
-                      <div className="flex">{renderStars(5 - index)}</div>
+                      <div className="flex">{renderStars(starCount)}</div>
                     </div>
 
                     <div className="flex-grow bg-gray-200 rounded-full h-4">
@@ -248,7 +248,7 @@ const TestimonialCard = ({ reviews }: TestimonialCardProps) => {
 
           {currentReviews.map((review) => (
             <motion.div
-              key={review.id}
+              key={review._id}
               whileHover={{ y: -5 }}
               className="bg-white flex flex-col space-y-3 rounded-lg border-b p-6 mb-4"
             >
@@ -258,10 +258,9 @@ const TestimonialCard = ({ reviews }: TestimonialCardProps) => {
                     {review.fullName ? (
                       <span className="text-xl text-white">
                         {review.fullName
-                          .split(" ") // Split the name by spaces
-                          .map((word) => word.charAt(0).toUpperCase()) // Take the first character of each word and capitalize it
-                          .join("")}{" "}
-                        {/* Join the letters together */}
+                          .split(" ")
+                          .map((word) => word.charAt(0).toUpperCase())
+                          .join("")}
                       </span>
                     ) : (
                       <span className="text-xl text-white">U</span>
@@ -269,8 +268,8 @@ const TestimonialCard = ({ reviews }: TestimonialCardProps) => {
                   </div>
                 </div>
 
-                <div className="ml-4 flex space-x-4">
-                  <h4 className="font-semibold text-base">{review.name}</h4>
+                <div className="ml-6 flex space-x-4">
+                  <h4 className="font-semibold text-base">{review.fullName}</h4>
                   <p className="text-sm text-gray-600">
                     {new Date(review.createdAt).toDateString()}
                   </p>
