@@ -17,6 +17,7 @@ export interface IProduct extends Document {
   description?: string;
   productImage: string;
   image: string[];
+  pdfUrl?: string;
   features: string;
   brand: Types.ObjectId;
   colors?: IColor[]; // Updated to an array of IColor objects
@@ -36,6 +37,7 @@ const productSchema: Schema = new Schema(
     retailDiscountedPrice: { type: Number, default: 0 }, // Optional field
     wholeSaleDiscountedPrice: { type: Number, default: 0 }, // Optional field
     productImage: { type: String, required: true },
+    pdfUrl: { type: String, required: true },
     image: [String],
     features: [String],
     brand: { type: Types.ObjectId, ref: "Brand", required: true },

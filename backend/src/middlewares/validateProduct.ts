@@ -52,7 +52,9 @@ const validateProduct = (
       "array.base": "Images must be an array of valid filenames",
       "array.max": "You can upload a maximum of 10 images",
     }),
-
+    pdfUrl: Joi.string().optional().messages({
+      "string.base": "Features must be a string",
+    }),
     colors: Joi.array().items(colorSchema).optional().messages({
       "array.base":
         "colors must be an array of color objects with 'name' and 'hex'",

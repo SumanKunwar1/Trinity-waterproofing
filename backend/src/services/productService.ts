@@ -160,6 +160,7 @@ export class ProductService {
         subCategory,
         retailDiscountedPrice,
         wholeSaleDiscountedPrice,
+        pdfUrl,
       } = productData;
 
       // Handle brand validation if provided
@@ -212,6 +213,7 @@ export class ProductService {
       if (features) existingProduct.features = features;
       if (brand) existingProduct.brand = brand;
       if (inStock) existingProduct.inStock = inStock;
+      if (pdfUrl) existingProduct.pdfUrl = pdfUrl;
 
       await existingProduct.save();
 
