@@ -83,7 +83,10 @@ const ProductDetail: React.FC = () => {
               </div>
             </div>
             <div className="mb-16 py-3 px-6">
-              <ProductDescription features={product.features} />
+              <ProductDescription
+                features={product.features}
+                pdfUrl={product.pdfUrl}
+              />
             </div>
           </div>
 

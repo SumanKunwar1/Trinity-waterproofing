@@ -55,6 +55,7 @@ interface ProductFormData {
   brand: string;
   colors: Color[];
   inStock: number;
+  pdfUrl: string;
   subCategory: string;
 }
 
@@ -87,6 +88,8 @@ const validationSchema = Yup.object().shape({
       hex: Yup.string().required("Color hex is required"),
     })
   ),
+  image: Yup.array().min(1, "At least one image is required"),
+  pdfUrl: Yup.string().url("Invalid PDF URL"),
 });
 
 const ProductForm: React.FC = () => {
@@ -110,6 +113,7 @@ const ProductForm: React.FC = () => {
     colors: [],
     inStock: 0,
     subCategory: "",
+    pdfUrl: "",
   });
   const [colorInput, setColorInput] = useState("");
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -206,6 +210,7 @@ const ProductForm: React.FC = () => {
         colors: formattedColors,
         inStock: Number(productData.inStock) || 0,
         subCategory: productData.subCategory || "",
+        pdfUrl: productData.pdfUrl || "",
       });
     } catch (error: any) {
       toast.error(error.message || "Failed to fetch product");
@@ -236,6 +241,7 @@ const ProductForm: React.FC = () => {
           subCategory: values.subCategory,
           features: values.features,
           colors: values.colors,
+          pdfUrl: values.pdfUrl,
         };
 
         console.log("Request Body for PATCH:", requestBody);
@@ -409,6 +415,15 @@ const ProductForm: React.FC = () => {
                         />
                         <ErrorMessage
                           name="wholeSaleDiscountedPrice"
+                          component="div"
+                          className="text-red-500"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="pdfUrl">PDF URL</Label>
+                        <Field name="pdfUrl" type="url" as={Input} />
+                        <ErrorMessage
+                          name="pdfUrl"
                           component="div"
                           className="text-red-500"
                         />

@@ -14,6 +14,7 @@ export interface IProduct {
   productImage: string;
   image: string[];
   subCategory: string;
+  pdfUrl: string;
   features: string;
   brand: string;
   createdAt: string;

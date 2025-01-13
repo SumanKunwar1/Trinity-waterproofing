@@ -135,12 +135,12 @@ const Products: React.FC = () => {
     {
       header: "Retail Price",
       accessor: "retailPrice",
-      cell: (row: IProduct) => `$${row.retailPrice.toFixed(2)}`,
+      cell: (row: IProduct) => `Rs ${row.retailPrice.toFixed(2)}`,
     },
     {
       header: "Wholesale Price",
       accessor: "wholeSalePrice",
-      cell: (row: IProduct) => `$${row.wholeSalePrice.toFixed(2)}`,
+      cell: (row: IProduct) => `Rs ${row.wholeSalePrice.toFixed(2)}`,
     },
     { header: "Stock", accessor: "inStock" },
     {
@@ -296,12 +296,16 @@ const Products: React.FC = () => {
               <strong>Brand:</strong> {selectedProduct?.brand.name}
             </p>
             <p>
-              <strong>Retail Price:</strong> $
-              {selectedProduct?.retailPrice.toFixed(2)}
+              <strong>Retail Price:</strong>
+              {" Rs " + selectedProduct?.retailPrice.toFixed(2)}
             </p>
             <p>
-              <strong>Wholesale Price:</strong> $
-              {selectedProduct?.wholeSalePrice.toFixed(2)}
+              <strong>Wholesale Price:</strong>
+              {" Rs " + selectedProduct?.wholeSalePrice.toFixed(2)}
+            </p>
+            <p>
+              <strong>PDF URL:</strong>
+              {selectedProduct?.pdfUrl}
             </p>
             <p>
               <strong>In Stock:</strong> {selectedProduct?.inStock}
@@ -309,15 +313,20 @@ const Products: React.FC = () => {
             <div>
               <strong>Colors:</strong>
               <div className="flex gap-2 mt-2">
-                {selectedProduct?.colors.map((color, index) => (
-                  <div key={index} className="flex items-center gap-1">
-                    <div
-                      className="w-6 h-6 rounded-full border border-gray-300"
-                      style={{ backgroundColor: color.hex }}
-                    />
-                    <span>{color.name}</span>
-                  </div>
-                ))}
+                {!selectedProduct?.colors ||
+                selectedProduct.colors.length === 0 ? (
+                  <p>No colors for this product</p>
+                ) : (
+                  selectedProduct.colors.map((color, index) => (
+                    <div key={index} className="flex items-center gap-1">
+                      <div
+                        className="w-6 h-6 rounded-full border border-gray-300"
+                        style={{ backgroundColor: color.hex }}
+                      />
+                      <span>{color.name}</span>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
             <div>
