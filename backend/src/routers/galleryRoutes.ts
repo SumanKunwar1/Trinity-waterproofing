@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { GalleryController } from "../controllers";
+import { compressUploadedImages } from "../config/fileCompress";
 import {
   isAuthenticated,
   isAuthorized,
@@ -29,6 +30,7 @@ router.post(
   uploadMiddleware,
   appendFileDataToBody,
   validateGalleryImageUpload,
+  compressUploadedImages,
   galleryController.uploadImage.bind(galleryController),
   handleResponse
 );

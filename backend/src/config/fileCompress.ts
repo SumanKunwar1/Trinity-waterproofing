@@ -22,7 +22,7 @@ const deleteFile = (filePath: string) => {
   }
 };
 
-const compressAndValidateImage = async (
+export const compressAndValidateImage = async (
   filePath: string,
   compressedFilePath: string,
   imageType: string
@@ -63,6 +63,10 @@ const compressAndValidateImage = async (
     console.log("Image compression/validation completed successfully.");
     return compressedFilePath;
   } catch (err) {
+    if (fs.existsSync(compressedFilePath)) {
+      fs.unlinkSync(compressedFilePath);
+      console.log(`Deleted compressed file: ${compressedFilePath}`);
+    }
     throw new Error(`Image compression/validation failed: ${err}`);
   }
 };
