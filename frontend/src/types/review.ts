@@ -5,4 +5,5 @@ export interface Review {
   rating: number;
   image: string[];
   date: string;
+  createdAt: string;
 }

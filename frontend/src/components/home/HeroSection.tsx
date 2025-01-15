@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import Button from "../common/Button";
 import Carousel from "../common/Carousel";
 import { toast } from "react-toastify"; // Assuming you're using this for toast notifications
+import { Link } from "react-router-dom";
 
 const HeroSection: React.FC = () => {
   const [sliders, setSliders] = useState<any[]>([]); // Store the fetched sliders
@@ -64,9 +65,10 @@ const HeroSection: React.FC = () => {
                 {item.title}
               </h1>
               <p className="text-xl md:text-2xl mb-8">{item.description}</p>
-              <Button to="/products" size="lg">
-                Discover More
-              </Button>
+              <Link to="/products">
+                {" "}
+                <Button size="lg">Discover More</Button>
+              </Link>
             </motion.div>
           </div>
         </div>
@@ -91,9 +93,12 @@ const HeroSection: React.FC = () => {
               {item.title}
             </h1>
             <p className="text-xl md:text-2xl mb-8">{item.description}</p>
-            <Button to="/products" size="lg">
-              Discover More
-            </Button>
+            <Link to="/products">
+              {" "}
+              <Button size="lg" className="cursor-pointer">
+                Discover More
+              </Button>
+            </Link>
           </motion.div>
         </div>
       </div>

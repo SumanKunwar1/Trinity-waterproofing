@@ -8,8 +8,8 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "resolveJsonModule": true,
+    "resolveJsonModule": true
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/sharp.js", "src/sharp.js"],
   "exclude": ["node_modules"]
 }

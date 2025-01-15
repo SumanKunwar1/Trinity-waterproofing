@@ -28,6 +28,7 @@ const MAX_IMAGE_SIZE = process.env.IMAGE_SIZE_LIMIT
 const MAX_VIDEO_SIZE = process.env.VIDEO_SIZE_LIMIT
   ? parseInt(process.env.VIDEO_SIZE_LIMIT) * 1024 * 1024
   : 10 * 1024 * 1024;
+console.log(MAX_IMAGE_SIZE, MAX_VIDEO_SIZE);
 
 const compressAndValidateImage = async (
   filePath: string,
@@ -37,8 +38,15 @@ const compressAndValidateImage = async (
     console.log("Starting compression and validation...");
     console.log(`Original file path: ${filePath}`);
     console.log(`Compressed file path: ${compressedFilePath}`);
-    const image = sharp(filePath);
-    await image.metadata(); // This will throw an error if the file is not a valid image
+    console.log("Fetching image metadata...");
+    await sharp(filePath)
+      .toBuffer()
+      .then((data) => {
+        console.log("File is valid for compression");
+      })
+      .catch((err) => {
+        console.error("Error:", err);
+      });
 
     console.log("Compressing the image...since it is correct metadata");
     await sharp(filePath)
@@ -72,8 +80,7 @@ const compressAndValidateImage = async (
     console.log("Compression and validation completed successfully.");
     return compressedFilePath;
   } catch (err) {
-    console.error("Error during image compression/validation:", err);
-    return httpMessages.BAD_REQUEST(
+    throw httpMessages.BAD_REQUEST(
       `Image compression/validation failed: ${err || "Unknown error"}`
     );
   }
@@ -114,7 +121,6 @@ const fileFilter = (req: any, file: any, cb: any) => {
       );
     }
   } else {
-    console.error(`Unexpected field name ${file.fieldname}`);
     cb(
       new multer.MulterError(
         "LIMIT_UNEXPECTED_FILE",
@@ -125,12 +131,17 @@ const fileFilter = (req: any, file: any, cb: any) => {
 };
 
 const storage: multer.StorageEngine = multer.diskStorage({
-  destination: (req: any, file: any, cb: any) => {
-    console.log("Uploading file...");
-    console.log("Upload folder path:", uploadFolder);
-    cb(null, uploadFolder); // Save to the upload folder
+  destination: async (req: any, file: any, cb: any) => {
+    try {
+      console.log("Uploading file...");
+      console.log("Upload folder path:", uploadFolder);
+      cb(null, uploadFolder); // Save to the upload folder
+    } catch (err) {
+      console.error("Error in destination callback:", err);
+      cb(err);
+    }
   },
-  filename: (req: any, file: any, cb: any) => {
+  filename: async (req: any, file: any, cb: any) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     const originalFilePath = path.join(
       uploadFolder,
@@ -148,24 +159,45 @@ const storage: multer.StorageEngine = multer.diskStorage({
     // Save the file temporarily
     cb(null, uniqueSuffix + path.extname(file.originalname));
 
-    // After saving, compress and validate the image
-    process.nextTick(() => {
+    // Add a delay to ensure the file is completely written
+    process.nextTick(async () => {
       console.log("Initiating compression/validation for the uploaded file...");
-      compressAndValidateImage(originalFilePath, compressedFilePath)
-        .then(() => {
-          console.log("Compression completed. Renaming file...");
-          try {
-            fs.renameSync(compressedFilePath, originalFilePath);
-            console.log(
-              `Successfully renamed compressed file to original: ${originalFilePath}`
-            );
-          } catch (err: any) {
-            cb(null, new multer.MulterError(err));
-          }
-        })
-        .catch((err) => {
-          console.error("Error during file compression/validation:", err);
-        });
+
+      try {
+        // Check if the original file exists before proceeding
+        if (!fs.existsSync(originalFilePath)) {
+          throw new Error(`Input file is missing: ${originalFilePath}`);
+        }
+
+        console.log("File exists. Starting compression and validation...");
+        await compressAndValidateImage(originalFilePath, compressedFilePath);
+
+        console.log("Compression completed. Renaming compressed file...");
+        fs.renameSync(compressedFilePath, originalFilePath);
+        console.log(
+          `Successfully renamed compressed file to original: ${originalFilePath}`
+        );
+      } catch (err) {
+        console.error("Error during file compression/validation:", err);
+
+        // Delete temporary files on error
+        if (fs.existsSync(originalFilePath)) {
+          console.log(`Deleting original file: ${originalFilePath}`);
+          fs.unlinkSync(originalFilePath);
+        }
+        if (fs.existsSync(compressedFilePath)) {
+          console.log(`Deleting compressed file: ${compressedFilePath}`);
+          fs.unlinkSync(compressedFilePath);
+        }
+
+        // Propagate the error to multer
+        cb(
+          new multer.MulterError(
+            "LIMIT_FILE_SIZE",
+            `Compression/Validation failed: ${err}`
+          )
+        );
+      }
     });
   },
 });

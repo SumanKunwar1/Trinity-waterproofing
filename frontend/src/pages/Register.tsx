@@ -46,7 +46,7 @@ const Register: React.FC = () => {
       console.log(response);
 
       if (response.ok) {
-        const data = await response.json();
+        // const data = await response.json();
         toast.success("Registration successful! Please log in.");
         navigate("/login"); // Redirect to login page
       } else {

@@ -28,14 +28,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../components/ui/dialog";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationPrevious,
-  PaginationNext,
-} from "../components/ui/pagination";
+// import {
+//   Pagination,
+//   PaginationContent,
+//   PaginationItem,
+//   PaginationLink,
+//   PaginationPrevious,
+//   PaginationNext,
+// } from "../components/ui/pagination";
 import { IProduct } from "../../types/product";
 
 const Products: React.FC = () => {
@@ -45,8 +45,8 @@ const Products: React.FC = () => {
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<IProduct | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  // const [currentPage, setCurrentPage] = useState(1);
+  // const itemsPerPage = 10;
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
@@ -107,15 +107,15 @@ const Products: React.FC = () => {
     setProductToDelete(null);
   };
   // Pagination logic
-  const indexOfLastReview = currentPage * itemsPerPage;
-  const indexOfFirstReview = indexOfLastReview - itemsPerPage;
-  const currentProducts = products.slice(indexOfFirstReview, indexOfLastReview);
+  // const indexOfLastReview = currentPage * itemsPerPage;
+  // const indexOfFirstReview = indexOfLastReview - itemsPerPage;
+  // const currentProducts = products.slice(indexOfFirstReview, indexOfLastReview);
 
-  const totalPages = Math.ceil(products.length / itemsPerPage);
+  // const totalPages = Math.ceil(products.length / itemsPerPage);
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
+  // const handlePageChange = (page: number) => {
+  //   setCurrentPage(page);
+  // };
 
   const handleViewDetails = (product: IProduct, e?: React.MouseEvent) => {
     if (e) {
@@ -234,7 +234,7 @@ const Products: React.FC = () => {
                   onRowClick={(item: IProduct) => handleViewDetails(item)}
                   itemsPerPage={10}
                 />
-                <Pagination className="mt-4">
+                {/* <Pagination className="mt-4">
                   <PaginationPrevious
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
@@ -255,7 +255,7 @@ const Products: React.FC = () => {
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
                   />
-                </Pagination>
+                </Pagination> */}
               </CardContent>
             </Card>
           </motion.div>

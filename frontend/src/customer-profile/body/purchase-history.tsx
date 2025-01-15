@@ -31,6 +31,7 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { toast } from "react-toastify";
+import Loader from "../../components/common/Loader";
 
 interface Product {
   productId: {
@@ -190,7 +191,7 @@ export const PurchaseHistory: React.FC = () => {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <Loader />;
   if (isError) return <div>Error loading purchase history</div>;
 
   return (
@@ -216,7 +217,7 @@ export const PurchaseHistory: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {Object.entries(statusIcons).map(([status, icon]) => (
           <Card
             key={status}
@@ -277,6 +278,22 @@ export const PurchaseHistory: React.FC = () => {
                         <p className="text-sm text-gray-500">
                           {new Date(order.createdAt).toLocaleDateString()}
                         </p>
+                        {/* <p className=" text-md">
+                          <strong>Product Name:</strong>
+                          <ul className="list-disc pl-5">
+                            {order.products.map((product: any) => (
+                              <li
+                                key={product.productId._id}
+                                className="flex justify-between items-center"
+                              >
+                                <span>
+                                  {product.productId.name ||
+                                    "Product Name Unavailable"}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </p> */}
                       </div>
                     </div>
                     <div className="text-right flex items-center">

@@ -138,7 +138,7 @@ const ContentForm: React.FC<ContentFormProps> = ({
             />
             {errors.title && (
               <p className="text-red-500 text-sm mt-1">
-                {errors.title.message}
+                {(errors.title as { message?: string }).message}
               </p>
             )}
           </div>
@@ -150,7 +150,7 @@ const ContentForm: React.FC<ContentFormProps> = ({
             />
             {errors.description && (
               <p className="text-red-500 text-sm mt-1">
-                {errors.description.message}
+                {(errors.description as { message?: string }).message}
               </p>
             )}
           </div>
@@ -162,10 +162,11 @@ const ContentForm: React.FC<ContentFormProps> = ({
             />
             {errors.image && (
               <p className="text-red-500 text-sm mt-1">
-                {errors.image.message}
+                {(errors.image as { message?: string }).message}
               </p>
             )}
           </div>
+
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel

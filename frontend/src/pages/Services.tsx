@@ -9,6 +9,7 @@ import Footer from "../components/layout/Footer";
 import ImageContentSection from "../components/common/ImageContentSection";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import Loader from "../components/common/Loader";
 
 interface ICard {
   _id?: string;
@@ -41,6 +42,8 @@ const ServicesPage: React.FC = () => {
     } catch (error) {
       console.error("Error fetching service:", error);
       toast.error("Failed to load service");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -61,6 +64,10 @@ const ServicesPage: React.FC = () => {
     fetchService();
     fetchCards();
   }, []);
+
+  if (isLoading) {
+    return <Loader />;
+  }
 
   if (!service) {
     return <div>No service data available.</div>;
@@ -92,7 +99,7 @@ const ServicesPage: React.FC = () => {
               <CardContent className="p-8">
                 <ImageContentSection
                   imagePosition="left"
-                  imageUrl={`${service.image}`}
+                  imageUrl={service.image}
                   content={
                     <div>
                       <h2 className="text-2xl font-semibold mb-4">
@@ -108,16 +115,13 @@ const ServicesPage: React.FC = () => {
             </Card>
 
             {/* Feature Section (Cards Section) */}
-            <FeatureSection
-              features={cards} // Pass the dynamic cards data
-              className="gap-8"
-            />
+            <FeatureSection features={cards} className="gap-8" />
           </motion.section>
 
           {/* Detailed Service Sections (Left-Right pattern) */}
           {cards.map((card, index) => (
             <motion.section
-              key={card._id}
+              key={card._id || index}
               className="py-12"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -130,9 +134,8 @@ const ServicesPage: React.FC = () => {
               <Card>
                 <CardContent className="p-6">
                   <ImageContentSection
-                    // Alternating image position: Left for even index, Right for odd index
                     imagePosition={index % 2 === 0 ? "left" : "right"}
-                    imageUrl={`${card.image}`}
+                    imageUrl={card.image}
                     content={
                       <div>
                         <p className="text-gray-600 dark:text-gray-400">

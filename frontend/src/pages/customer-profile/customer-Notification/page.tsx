@@ -1,6 +1,6 @@
 import Footer from "../../../components/layout/Footer";
 import Header from "../../../components/layout/Header";
-import Notifications from "../../../customer-profile/body/customerNotification";
+import Notifications from "../../../customer-profile/body/notification";
 import { SideBar } from "../../../customer-profile/body/side-bar";
 
 export const Notification = () => {

@@ -186,7 +186,7 @@ export const Dashboard: React.FC = () => {
                   <p className="text-sm text-gray-600">
                     {new Date(order.createdAt).toLocaleDateString()}
                   </p>
-                  <p className=" text-md">
+                  {/* <p className=" text-md">
                     <strong>Product Name:</strong>
                     <ul className="list-disc pl-5">
                       {order?.products.map((product: any) => (
@@ -201,7 +201,7 @@ export const Dashboard: React.FC = () => {
                         </li>
                       ))}
                     </ul>
-                  </p>
+                  </p> */}
                 </div>
                 <div className="text-right">
                   <p className="font-bold">Rs {order.subtotal.toFixed(2)}</p>

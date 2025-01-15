@@ -3,14 +3,14 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "./card";
 
 interface Feature {
-  _id: string;
+  _id?: string;
   title: string;
   description: string;
-  image: string; // Renamed from imageUrl to image as per the provided structure
+  image: string;
 }
 
 interface FeatureSectionProps {
-  features: Feature[]; // Pass dynamic feature data
+  features: Feature[];
   className?: string;
 }
 
@@ -30,10 +30,7 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({
 
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-    },
+    visible: { y: 0, opacity: 1 },
   };
 
   return (
@@ -43,21 +40,23 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({
       initial="hidden"
       animate="visible"
     >
-      {features.map((feature) => (
-        <motion.div key={feature._id} variants={itemVariants}>
+      {features.map((feature, index) => (
+        <motion.div key={feature._id || index} variants={itemVariants}>
           <Card className="h-full">
             <CardContent className="p-4 flex items-center space-x-4">
               {/* Image on the left side */}
               <img
-                src={`${feature.image}`} // Assuming the images are stored in the assets folder
-                alt={feature.title}
+                src={feature.image || "/assets/placeholder.png"}
+                alt={feature.title || "Feature Image"}
                 className="w-16 h-16 object-cover rounded-md flex-shrink-0"
               />
               {/* Content on the right side */}
               <div>
-                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
+                <h3 className="text-lg font-semibold mb-2">
+                  {feature.title || "Untitled"}
+                </h3>
                 <p className="text-gray-600 dark:text-gray-300 line-clamp-3">
-                  {feature.description}
+                  {feature.description || "No description available."}
                 </p>
               </div>
             </CardContent>

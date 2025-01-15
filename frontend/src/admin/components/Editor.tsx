@@ -14,39 +14,13 @@ const TinyMCEEditor: React.FC<TinyMCEEditorProps> = ({
   height = 500,
 }) => {
   const editorRef = useRef<any>(null);
-  const baseURL = window.location.origin + "/api/image";
 
   // Modified handleImageUpload to use Base64 encoding
-  const handleImageUpload = async (blobInfo: any) => {
-    return new Promise<string>((resolve, reject) => {
-      try {
-        const reader = new FileReader();
-
-        reader.onloadend = () => {
-          const base64Data = reader.result as string; // The Base64 encoded string
-          // Include the width and height for proper rendering
-          const imgTag = `${base64Data}`;
-          resolve(imgTag);
-        };
-
-        reader.onerror = (error) => {
-          reject("Failed to upload image");
-          toast.error("Failed to upload image");
-        };
-
-        // Read the file as a data URL (Base64 encoding)
-        reader.readAsDataURL(blobInfo.blob());
-      } catch (error) {
-        reject("Image upload failed");
-        toast.error("Failed to upload image");
-      }
-    });
-  };
 
   return (
     <Editor
       apiKey="uhfeug0xkj84104hiv9as3vx780dego6oo7ohr6l654yxih5"
-      onInit={(evt, editor) => (editorRef.current = editor)}
+      onInit={(editor) => (editorRef.current = editor)}
       value={value}
       onEditorChange={onChange}
       init={{
@@ -132,17 +106,6 @@ const TinyMCEEditor: React.FC<TinyMCEEditorProps> = ({
           { text: "Markdown", value: "markdown" },
           { text: "Plain Text", value: "plain" },
         ],
-
-        // Image handling configuration
-        images_upload_handler: handleImageUpload,
-        image_advtab: true,
-        image_caption: true,
-        automatic_uploads: true,
-        file_picker_types: "image",
-        // Add image-related configurations
-        image_prepend_url: baseURL, // Prepend this URL to image paths
-        images_upload_url: "../../../../UPLOADS", // Backend endpoint to handle image uploads
-        images_upload_base_path: "../../../../UPLOADS", // Base path for uploaded images
 
         // Template configuration
         templates: [

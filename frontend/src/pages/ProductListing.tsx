@@ -11,7 +11,6 @@ import Loader from "../components/common/Loader";
 import { IProduct } from "../types/product";
 import { Category } from "../types/category";
 import { SubCategory } from "../types/subCategory";
-import { Input } from "../components/ui/input";
 const ITEMS_PER_PAGE = 9;
 
 const ProductListing: React.FC = () => {
