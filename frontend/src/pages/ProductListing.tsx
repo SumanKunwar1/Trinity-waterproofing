@@ -9,11 +9,52 @@ import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
 import Loader from "../components/common/Loader";
 import { IProduct } from "../types/product";
-import { Category } from "../types/category";
-import { SubCategory } from "../types/subCategory";
-
+import { Brand } from "../types/brand";
 const ITEMS_PER_PAGE = 9;
 
+interface Category {
+  _id: string;
+  name: string;
+  description?: string;
+  subCategories: SubCategory[];
+}
+interface SubCategory {
+  _id: string;
+  name: string;
+  description?: string;
+  category: string;
+  products: Product[];
+}
+
+interface IColor {
+  name: string;
+  hex: string;
+}
+
+interface IReview {
+  rating: number;
+  content: string;
+}
+
+interface Product {
+  _id: string;
+  name: string;
+  description: string;
+  wholeSalePrice: number;
+  retailPrice: number;
+  retailDiscountedPrice?: number;
+  wholeSaleDiscountedPrice?: number;
+  productImage: string;
+  image: string[];
+  subCategory: string;
+  pdfUrl: string;
+  features: string[];
+  brand: string | Brand;
+  createdAt: string;
+  colors?: IColor[];
+  inStock: number;
+  review: IReview[];
+}
 interface FilterOptions {
   category: string;
   subcategory: string;
@@ -31,7 +72,6 @@ const ProductListing: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
-  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
 
   const userRole = localStorage.getItem("userRole");
   const isLoggedIn = !!localStorage.getItem("authToken");
@@ -62,15 +102,12 @@ const ProductListing: React.FC = () => {
           productsRes = await axios.get("/api/product");
         }
 
-        const [categoriesRes, subCategoriesRes] = await Promise.all([
-          axios.get("/api/category"),
-          axios.get("/api/subcategory"),
-        ]);
+        const [categoriesRes] = await Promise.all([axios.get("/api/category")]);
 
         setProducts(productsRes.data);
         setFilteredProducts(productsRes.data);
         setCategories(categoriesRes.data);
-        setSubCategories(subCategoriesRes.data);
+
         setLoading(false);
       } catch (error) {
         setError("Failed to fetch data");
@@ -193,11 +230,7 @@ const ProductListing: React.FC = () => {
           <h1 className="text-3xl font-bold mb-8">Our Products</h1>
           <div className="flex flex-col md:flex-row">
             <div className="w-full md:w-1/4 mb-8 md:mb-0">
-              <ProductFilter
-                onFilter={handleFilter}
-                categories={categories}
-                subCategories={subCategories}
-              />
+              <ProductFilter onFilter={handleFilter} categories={categories} />
             </div>
             <div className="w-full md:w-3/4 md:pl-5">
               <ProductSort onSort={handleSort} />

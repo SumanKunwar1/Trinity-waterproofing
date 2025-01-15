@@ -283,7 +283,7 @@ export const PurchaseHistory: React.FC = () => {
                             <p className="text-sm text-gray-500">
                               {new Date(order.createdAt).toLocaleDateString()}
                             </p>
-                            <p className="text-md">
+                            <p className="text-md mt-2 flex flex-col space-y-2">
                               <strong>Products:</strong>
                               <ul className="list-disc pl-5">
                                 {order.products.map(
@@ -301,11 +301,10 @@ export const PurchaseHistory: React.FC = () => {
                                         <div className="flex items-center">
                                           <img
                                             src={
-                                              product.productId?.productImage ||
-                                              "/placeholder.svg"
+                                              product.productId?.productImage
                                             }
                                             alt={product.productId?.name}
-                                            className="w-20 h-20 object-cover rounded-full mr-2"
+                                            className="w-auto max-w-36 h-24 object-contain rounded-sm mr-2"
                                           />
                                           <span>{product.productId?.name}</span>
                                         </div>

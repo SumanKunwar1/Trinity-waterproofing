@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 
 interface RelatedProductsProps {
   currentProductId: string;
-  categoryId: string;
+  categoryId: any;
 }
 
 const RelatedProducts: React.FC<RelatedProductsProps> = ({

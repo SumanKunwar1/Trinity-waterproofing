@@ -1,14 +1,9 @@
 import { Brand } from "./brand";
 import { SubCategory } from "./subCategory";
-
+import { Review } from "./review";
 export interface IColor {
   name: string;
   hex: string;
-}
-
-export interface IReview {
-  rating: number;
-  content: string;
 }
 
 export interface IProduct {
@@ -28,5 +23,5 @@ export interface IProduct {
   createdAt: string;
   colors?: IColor[];
   inStock: number;
-  review: IReview[];
+  review: Review[];
 }
