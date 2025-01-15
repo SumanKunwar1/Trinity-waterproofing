@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchOrdersAsync,
@@ -50,7 +50,7 @@ import {
 } from "../components/ui/pagination";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import QRCode from "qrcode";
+import { toDataURL } from "qrcode";
 
 type Order = {
   _id: string;
@@ -103,17 +103,13 @@ const getStatusBadge = (status: string) => {
 
 function Orders() {
   const dispatch = useDispatch<AppDispatch>();
-  const { orders, status, error } = useSelector(
-    (state: RootState) => state.orders
-  );
+  const { orders } = useSelector((state: RootState) => state.orders);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isViewMoreDialogOpen, setIsViewMoreDialogOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
-  const [customerFilter, setCustomerFilter] = useState("");
-  const [dateFilter, setDateFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const ordersPerPage = 10;
@@ -124,9 +120,7 @@ function Orders() {
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     try {
-      const result = await dispatch(
-        updateOrderStatusAsync({ orderId, newStatus })
-      ).unwrap();
+      await dispatch(updateOrderStatusAsync({ orderId, newStatus })).unwrap();
       toast.success(`Order status updated to ${newStatus}`);
     } catch (error) {
       toast.error(
@@ -193,7 +187,7 @@ function Orders() {
 
   const generateQRCode = async (text: string): Promise<string> => {
     try {
-      return await QRCode.toDataURL(text);
+      return await toDataURL(text);
     } catch (err) {
       console.error("Error generating QR code:", err);
       return "";
@@ -404,23 +398,15 @@ function Orders() {
   const filteredOrders = useMemo(() => {
     return orders
       .filter((order) => {
-        const matchesCustomer =
-          !customerFilter ||
-          order.userId.fullName
-            .toLowerCase()
-            .includes(customerFilter.toLowerCase());
-        const matchesDate =
-          !dateFilter ||
-          format(new Date(order.createdAt), "yyyy-MM-dd") === dateFilter;
         const matchesStatus =
           statusFilter === "all" || order.status === statusFilter;
-        return matchesCustomer && matchesDate && matchesStatus;
+        return matchesStatus;
       })
       .sort(
         (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
-  }, [orders, customerFilter, dateFilter, statusFilter]);
+  }, [orders, statusFilter]);
 
   const pageCount = Math.ceil(filteredOrders.length / ordersPerPage);
   const paginatedOrders = filteredOrders.slice(

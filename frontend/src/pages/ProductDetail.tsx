@@ -10,7 +10,7 @@ import Header from "../components/layout/Header";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { IProduct } from "../types/product";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 import Loader from "../components/common/Loader";
 
 const ProductDetail: React.FC = () => {

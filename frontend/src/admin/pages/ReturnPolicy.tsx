@@ -38,11 +38,19 @@ const policySchema = yup.object().shape({
   description: yup.string().required("Description is required"),
 });
 
+// Define the Policy interface
+interface Policy {
+  _id: string;
+  title: string;
+  description: string;
+  updatedAt: string;
+}
+
 const ReturnPolicy = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const [policies, setPolicies] = useState([]);
+  const [policies, setPolicies] = useState<Policy[]>([]); // Use the Policy type
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingPolicy, setEditingPolicy] = useState(null);
+  const [editingPolicy, setEditingPolicy] = useState<Policy | null>(null); // Allow editingPolicy to be null
   const authToken = localStorage.getItem("authToken");
   const {
     register,
@@ -63,7 +71,7 @@ const ReturnPolicy = () => {
         throw new Error(errorData.error || "Failed to fetch policies");
       }
 
-      const data = await response.json();
+      const data: Policy[] = await response.json(); // Specify the type here
       console.log("Policies:", data);
       setPolicies(data || []);
     } catch (error: any) {
@@ -132,7 +140,7 @@ const ReturnPolicy = () => {
     }
   };
 
-  const handleEdit = (policy: any) => {
+  const handleEdit = (policy: Policy) => {
     setEditingPolicy(policy);
     setValue("title", policy.title);
     setValue("description", policy.description);
@@ -168,7 +176,7 @@ const ReturnPolicy = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {policies.length > 0 ? (
-                policies.map((policy: any) => (
+                policies.map((policy) => (
                   <motion.div
                     key={policy._id}
                     initial={{ opacity: 0, y: 20 }}

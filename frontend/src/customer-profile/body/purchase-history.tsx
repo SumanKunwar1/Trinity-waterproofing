@@ -37,6 +37,7 @@ interface Product {
   productId: {
     _id: string;
     name: string;
+    productImage: string;
   };
 }
 
@@ -92,25 +93,24 @@ export const PurchaseHistory: React.FC = () => {
     resolver: yupResolver(returnSchema),
   });
 
-  console.log("Orders:", orders);
   const filteredHistory = orders
     .filter(
-      (order: any) =>
+      (order: Order) =>
         (statusFilter === "" || order.status === statusFilter) &&
-        (order.products.some((product: any) =>
-          product?.productId?.name?.toLowerCase().includes(filter.toLowerCase())
+        (order.products.some((product) =>
+          product.productId?.name.toLowerCase().includes(filter.toLowerCase())
         ) ||
-          order.status?.toLowerCase().includes(filter.toLowerCase()))
+          order.status.toLowerCase().includes(filter.toLowerCase()))
     )
     .sort(
-      (a: any, b: any) =>
+      (a: Order, b: Order) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
   const handleReviewSubmit = async (
     rating: number,
     content: string,
-    images: File[]
+    images?: File[]
   ) => {
     if (!selectedProductForReview || !selectedPurchase) return;
 
@@ -119,9 +119,11 @@ export const PurchaseHistory: React.FC = () => {
       formData.append("productId", selectedProductForReview.productId._id);
       formData.append("rating", rating.toString());
       formData.append("content", content);
-      images.forEach((image) => {
-        formData.append("image", image);
-      });
+      if (images) {
+        images.forEach((image) => {
+          formData.append("image", image);
+        });
+      }
 
       const response = await fetch(`/api/review/${selectedPurchase._id}`, {
         method: "POST",
@@ -258,85 +260,106 @@ export const PurchaseHistory: React.FC = () => {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
-            {filteredHistory.map((order: any) => (
-              <Card
-                key={order._id}
-                className="bg-white shadow-md hover:shadow-lg transition-shadow duration-300"
-              >
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-3">
-                      <div className="text-2xl">
-                        {statusIcons[
-                          order.status as keyof typeof statusIcons
-                        ] || <FaRegClock className="text-gray-500" />}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-lg">
-                          Order #{order._id}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {new Date(order.createdAt).toLocaleDateString()}
-                        </p>
-                        {/* <p className=" text-md">
-                          <strong>Product Name:</strong>
-                          <ul className="list-disc pl-5">
-                            {order.products.map((product: any) => (
-                              <li
-                                key={product.productId._id}
-                                className="flex justify-between items-center"
+            {filteredHistory.map(
+              (order: Order) => (
+                console.log("Get order by id?", order),
+                (
+                  <Card
+                    key={order._id}
+                    className="bg-white shadow-md hover:shadow-lg transition-shadow duration-300"
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center space-x-3">
+                          <div className="text-2xl">
+                            {statusIcons[
+                              order.status as keyof typeof statusIcons
+                            ] || <FaRegClock className="text-gray-500" />}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-lg">
+                              Order #{order._id}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              {new Date(order.createdAt).toLocaleDateString()}
+                            </p>
+                            <p className="text-md">
+                              <strong>Products:</strong>
+                              <ul className="list-disc pl-5">
+                                {order.products.map(
+                                  (product) => (
+                                    console.log(
+                                      "Product:",
+                                      product.productId,
+                                      product.productId?.productImage
+                                    ),
+                                    (
+                                      <li
+                                        key={product.productId?._id}
+                                        className="flex justify-between items-center"
+                                      >
+                                        <div className="flex items-center">
+                                          <img
+                                            src={
+                                              product.productId?.productImage ||
+                                              "/placeholder.svg"
+                                            }
+                                            alt={product.productId?.name}
+                                            className="w-20 h-20 object-cover rounded-full mr-2"
+                                          />
+                                          <span>{product.productId?.name}</span>
+                                        </div>
+                                      </li>
+                                    )
+                                  )
+                                )}
+                              </ul>
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right flex items-center">
+                          <p className="font-bold text-lg mr-4">
+                            Rs {order.subtotal.toFixed(2)}
+                          </p>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <FaEllipsisV />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem
+                                onSelect={() => setSelectedPurchase(order)}
                               >
-                                <span>
-                                  {product.productId.name ||
-                                    "Product Name Unavailable"}
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
-                        </p> */}
+                                View Details
+                              </DropdownMenuItem>
+                              {order.status === "order-delivered" && (
+                                <DropdownMenuItem
+                                  onSelect={() => {
+                                    setSelectedPurchase(order);
+                                    setIsReturnDialogOpen(true);
+                                  }}
+                                >
+                                  Return
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem
+                                onSelect={() => {
+                                  setSelectedPurchase(order);
+                                  setIsCancelDialogOpen(true);
+                                }}
+                              >
+                                Cancel
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-right flex items-center">
-                      <p className="font-bold text-lg mr-4">
-                        Rs {order.subtotal.toFixed(2)}
-                      </p>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <FaEllipsisV />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuItem
-                            onSelect={() => setSelectedPurchase(order)}
-                          >
-                            View Details
-                          </DropdownMenuItem>
-                          {order.status === "order-delivered" && (
-                            <DropdownMenuItem
-                              onSelect={() => {
-                                setSelectedPurchase(order);
-                                setIsReturnDialogOpen(true);
-                              }}
-                            >
-                              Return
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem
-                            onSelect={() => {
-                              setSelectedPurchase(order);
-                              setIsCancelDialogOpen(true);
-                            }}
-                          >
-                            Cancel
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    </CardContent>
+                  </Card>
+                )
+              )
+            )}
           </motion.div>
         ) : (
           <motion.div
@@ -361,7 +384,7 @@ export const PurchaseHistory: React.FC = () => {
         <DialogContent className="bg-white rounded-md shadow-lg p-6">
           <ReviewDialog
             onSubmit={handleReviewSubmit}
-            productName={selectedProductForReview?.productId.name}
+            productName={selectedProductForReview?.productId?.name}
           />
         </DialogContent>
       </Dialog>
@@ -398,9 +421,14 @@ export const PurchaseHistory: React.FC = () => {
                   key={product.productId._id}
                   className="flex justify-between items-center"
                 >
-                  <span>
-                    {product.productId.name || "Product Name Unavailable"}
-                  </span>
+                  <div className="flex items-center">
+                    <img
+                      src={product.productId.productImage || "/placeholder.svg"}
+                      alt={product.productId.name}
+                      className="w-8 h-8 object-cover rounded-full mr-2"
+                    />
+                    <span>{product.productId.name}</span>
+                  </div>
 
                   {selectedPurchase.status === "order-delivered" && (
                     <Button

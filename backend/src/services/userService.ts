@@ -92,7 +92,7 @@ export class UserService {
 
   public async getUsers() {
     try {
-      const users = await User.find({}, "fullName email role createdAt number");
+      const users = await User.find();
       return users;
     } catch (error) {
       throw error;

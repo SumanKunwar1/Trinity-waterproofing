@@ -1,5 +1,3 @@
-import React from "react";
-
 interface ProductSortProps {
   onSort: (option: string) => void;
 }

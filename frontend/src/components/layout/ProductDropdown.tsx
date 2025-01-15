@@ -1,14 +1,25 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { ChevronDown } from "lucide-react";
-import { Category } from "../../types/category";
+import { IProduct } from "../../types/product";
 
 interface ProductDropdownProps {
   isOpen: boolean;
   onClose: () => void;
+}
+export interface SubCategory {
+  _id: string;
+  name: string;
+  products: IProduct[]; // Add this property to represent the products in the sub-category
+}
+
+export interface Category {
+  _id: string;
+  name: string;
+  subCategories: SubCategory[]; // Reference to the SubCategory type
 }
 
 export const ProductDropdown: React.FC<ProductDropdownProps> = ({

@@ -1,5 +1,5 @@
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { useState, useEffect, useRef } from "react";
 import { FaStar, FaStarHalfAlt, FaFilter } from "react-icons/fa";
 import { IoChevronDownOutline } from "react-icons/io5";
 import Pagination from "./Pagination";
@@ -9,7 +9,7 @@ interface TestimonialCardProps {
   reviews: Review[];
 }
 
-const TestimonialCard = ({ reviews }: TestimonialCardProps) => {
+const TestimonialCard: React.FC<TestimonialCardProps> = ({ reviews }) => {
   const [sortOption, setSortOption] = useState<string>("latest");
   const [ratingFilter, setRatingFilter] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -288,7 +288,7 @@ const TestimonialCard = ({ reviews }: TestimonialCardProps) => {
                   {review.image.map((image, index) => (
                     <img
                       key={index}
-                      src={image}
+                      src={image || "/placeholder.svg"}
                       alt={`Review ${index + 1}`}
                       className="w-auto max-h-48 object-cover rounded-md"
                     />

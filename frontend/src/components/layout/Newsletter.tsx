@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { toast } from "react-toastify";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
@@ -12,13 +11,10 @@ const newsletterSchema = Yup.object().shape({
 });
 
 const Newsletter = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   const handleSubmit = async (
     values: { email: string },
     { resetForm }: { resetForm: () => void }
   ) => {
-    setIsSubmitting(true);
     try {
       const response = await axios.post("/api/newsletter", values);
       toast.success(
@@ -30,8 +26,6 @@ const Newsletter = () => {
         error.response?.data?.message ||
         "Something went wrong. Please try again.";
       toast.error(errorMessage);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 

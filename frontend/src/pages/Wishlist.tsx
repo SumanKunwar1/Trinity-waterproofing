@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useWishlist } from "../context/WishlistContext";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";

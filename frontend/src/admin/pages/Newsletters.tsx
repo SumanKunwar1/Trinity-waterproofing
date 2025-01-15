@@ -118,6 +118,7 @@ export default function Newsletters() {
   if (error) {
     return <div>Error: {error}</div>;
   }
+  if (isLoading) return <div>Loading...</div>;
 
   return (
     <div className="flex bg-gray-100">

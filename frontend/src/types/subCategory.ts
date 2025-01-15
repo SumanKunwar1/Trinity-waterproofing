@@ -1,6 +1,7 @@
-import { IProduct } from "./product";
+import { Category } from "./category";
+
 export interface SubCategory {
   _id: string;
   name: string;
-  products: IProduct[]; // Each subCategory directly contains products
+  category: Category;
 }

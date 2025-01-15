@@ -269,7 +269,10 @@ export class OrderService {
         })
       );
 
-      console.log("orderwithaddress", ordersWithAddresses);
+      console.log(
+        "orderwithaddress in get by user id",
+        JSON.stringify(ordersWithAddresses)
+      );
       return ordersWithAddresses;
     } catch (error) {
       throw error;

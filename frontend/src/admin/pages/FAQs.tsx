@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
 import {
@@ -6,6 +6,7 @@ import {
   createFaqAsync,
   editFaqAsync,
   deleteFaqAsync,
+  Faq,
 } from "../store/faqSlice";
 import { motion } from "framer-motion";
 import {
@@ -30,6 +31,7 @@ import {
   flexRender,
   getCoreRowModel,
   useReactTable,
+  ColumnDef,
 } from "@tanstack/react-table";
 import {
   Table,
@@ -43,28 +45,23 @@ import {
   Pagination,
   PaginationContent,
   PaginationItem,
+  PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "../../components/ui/pagination";
+} from "../components/ui/pagination";
 import { MoreVertical } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
-
-interface Faq {
-  _id: string;
-  question: string;
-  answer: string;
-}
+import { toast } from "react-toastify";
 
 const AdminFAQPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const faqs = useSelector((state: RootState) => state.faqs.faqs);
-  const status = useSelector((state: RootState) => state.faqs.status);
+  const isLoading = useSelector((state: RootState) => state.faqs.isLoading);
   const error = useSelector((state: RootState) => state.faqs.error);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
-  //const [searchTerm, setSearchTerm] = useState(""); //Removed
+  const itemsPerPage = 10;
   const [selectedFaq, setSelectedFaq] = useState<Faq | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -72,40 +69,50 @@ const AdminFAQPage: React.FC = () => {
   const [newQuestion, setNewQuestion] = useState("");
   const [newAnswer, setNewAnswer] = useState("");
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+
   useEffect(() => {
     dispatch(fetchFaqsAsync());
   }, [dispatch]);
 
-  //const filteredFaqs = faqs.filter( //Removed
-  //  (faq) =>
-  //    faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //    faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
-  //);
-
   const handleAddFaq = async () => {
     if (newQuestion && newAnswer) {
-      await dispatch(
+      const resultAction = await dispatch(
         createFaqAsync({ question: newQuestion, answer: newAnswer })
       );
-      setNewQuestion("");
-      setNewAnswer("");
-      setIsAddDialogOpen(false);
+      if (createFaqAsync.fulfilled.match(resultAction)) {
+        toast.success("FAQ added successfully");
+        setNewQuestion("");
+        setNewAnswer("");
+        setIsAddDialogOpen(false);
+      } else {
+        toast.error("Failed to add FAQ");
+      }
     }
   };
 
   const handleEditFaq = async () => {
     if (selectedFaq && selectedFaq.question && selectedFaq.answer) {
-      await dispatch(editFaqAsync(selectedFaq));
-      setIsEditDialogOpen(false);
-      setSelectedFaq(null);
+      const resultAction = await dispatch(editFaqAsync(selectedFaq));
+      if (editFaqAsync.fulfilled.match(resultAction)) {
+        toast.success("FAQ updated successfully");
+        setIsEditDialogOpen(false);
+        setSelectedFaq(null);
+      } else {
+        toast.error("Failed to update FAQ");
+      }
     }
   };
 
   const handleDeleteFaq = async () => {
     if (selectedFaq) {
-      await dispatch(deleteFaqAsync(selectedFaq._id));
-      setIsDeleteDialogOpen(false);
-      setSelectedFaq(null);
+      const resultAction = await dispatch(deleteFaqAsync(selectedFaq._id));
+      if (deleteFaqAsync.fulfilled.match(resultAction)) {
+        toast.success("FAQ deleted successfully");
+        setIsDeleteDialogOpen(false);
+        setSelectedFaq(null);
+      } else {
+        toast.error("Failed to delete FAQ");
+      }
     }
   };
 
@@ -129,14 +136,11 @@ const AdminFAQPage: React.FC = () => {
     },
   };
 
-  const columns = [
+  const columns: ColumnDef<Faq>[] = [
     {
       accessorKey: "sn",
       header: "SN",
       cell: ({ row }) => row.index + 1,
-      enableSorting: false,
-      enableHiding: false,
-      size: 50,
     },
     {
       accessorKey: "question",
@@ -193,9 +197,20 @@ const AdminFAQPage: React.FC = () => {
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
+
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
+  const totalPages = Math.ceil(faqs.length / itemsPerPage);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
   return (
     <div className="flex h-screen bg-gray-100">
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
@@ -259,10 +274,8 @@ const AdminFAQPage: React.FC = () => {
             <motion.div variants={itemVariants}>
               <Input
                 placeholder="Search FAQs"
-                onChange={(e) => {
-                  const value = e.target.value;
+                onChange={() => {
                   setCurrentPage(1);
-                  // The filtering is now handled by the Table component
                 }}
                 className="mb-6"
               />
@@ -316,7 +329,7 @@ const AdminFAQPage: React.FC = () => {
               </Table>
             </motion.div>
             <motion.div className="mt-6" variants={itemVariants}>
-              <Pagination>
+              <Pagination className="mt-4">
                 <PaginationContent>
                   <PaginationItem>
                     <PaginationPrevious
@@ -326,19 +339,22 @@ const AdminFAQPage: React.FC = () => {
                       disabled={currentPage === 1}
                     />
                   </PaginationItem>
+                  {[...Array(totalPages)].map((_, index) => (
+                    <PaginationItem key={index}>
+                      <PaginationLink
+                        onClick={() => setCurrentPage(index + 1)}
+                        isActive={currentPage === index + 1}
+                      >
+                        {index + 1}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
                   <PaginationItem>
                     <PaginationNext
                       onClick={() =>
-                        setCurrentPage((prev) =>
-                          Math.min(
-                            Math.ceil(faqs.length / itemsPerPage),
-                            prev + 1
-                          )
-                        )
+                        setCurrentPage((prev) => Math.min(totalPages, prev + 1))
                       }
-                      disabled={
-                        currentPage === Math.ceil(faqs.length / itemsPerPage)
-                      }
+                      disabled={currentPage === totalPages}
                     />
                   </PaginationItem>
                 </PaginationContent>

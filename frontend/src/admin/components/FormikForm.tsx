@@ -1,6 +1,5 @@
-import React from 'react';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
-import { motion } from 'framer-motion';
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import { motion } from "framer-motion";
 
 interface FormField {
   name: string;
@@ -33,15 +32,26 @@ const FormikForm: React.FC<FormikFormProps> = ({
       {({ errors, touched }) => (
         <Form className="space-y-4">
           {fields.map((field) => (
-            <motion.div key={field.name} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <label htmlFor={field.name} className="block text-sm font-medium text-gray-700 mb-1">
+            <motion.div
+              key={field.name}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <label
+                htmlFor={field.name}
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 {field.label}
               </label>
-              {field.type === 'select' ? (
+              {field.type === "select" ? (
                 <Field
                   as="select"
                   name={field.name}
-                  className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
+                  className={`w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500 ${
+                    errors[field.name] && touched[field.name]
+                      ? "border-red-500"
+                      : ""
+                  }`}
                 >
                   <option value="">Select {field.label}</option>
                   {field.options?.map((option) => (
@@ -54,10 +64,18 @@ const FormikForm: React.FC<FormikFormProps> = ({
                 <Field
                   name={field.name}
                   type={field.type}
-                  className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
+                  className={`w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500 ${
+                    errors[field.name] && touched[field.name]
+                      ? "border-red-500"
+                      : ""
+                  }`}
                 />
               )}
-              <ErrorMessage name={field.name} component="div" className="text-red-500 text-sm mt-1" />
+              <ErrorMessage
+                name={field.name}
+                component="div"
+                className="text-red-500 text-sm mt-1"
+              />
             </motion.div>
           ))}
           <motion.button
@@ -75,4 +93,3 @@ const FormikForm: React.FC<FormikFormProps> = ({
 };
 
 export default FormikForm;
-

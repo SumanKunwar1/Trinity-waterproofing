@@ -1,6 +1,7 @@
 export interface Review {
-  id: string;
+  _id: string;
   name: string;
+  fullName: string;
   content: string;
   rating: number;
   image: string[];

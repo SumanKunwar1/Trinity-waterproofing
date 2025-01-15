@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -23,40 +23,39 @@ import {
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu";
 import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
 import { toast } from "react-toastify";
 import { MoreVertical, Plus } from "lucide-react";
 import axios from "axios";
-import * as yup from "yup";
+// import * as yup from "yup";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 
-// Validation Schema
-const serviceSchema = yup.object().shape({
-  title: yup.string().required("Title is required"),
-  description: yup.string().required("Description is required"),
-  image: yup.mixed().nullable(),
-});
+// // Validation Schema
+// const serviceSchema = yup.object().shape({
+//   title: yup.string().required("Title is required"),
+//   description: yup.string().required("Description is required"),
+//   image: yup.mixed().nullable().optional(),
+// });
 
-const cardSchema = yup.object().shape({
-  title: yup.string().required("Title is required"),
-  description: yup.string().required("Description is required"),
-  image: yup.mixed().nullable(),
-});
+// const cardSchema = yup.object().shape({
+//   title: yup.string().required("Title is required"),
+//   description: yup.string().required("Description is required"),
+//   image: yup.mixed().nullable().optional(),
+// });
 
 // Interfaces
 interface IService {
   _id?: string;
   title: string;
   description: string;
-  image: string | File | null;
+  image: string | File | null | undefined;
 }
 
 interface ICard {
   _id?: string;
   title: string;
   description: string;
-  image: string | File | null;
+  image: string | File | null | undefined;
 }
 
 const authToken = localStorage.getItem("authToken");
@@ -65,11 +64,43 @@ const authToken = localStorage.getItem("authToken");
 const ServicePage: React.FC = () => {
   const [service, setService] = useState<IService | null>(null);
   const [cards, setCards] = useState<ICard[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isAddCardDialogOpen, setIsAddCardDialogOpen] = useState(false);
   const [isEditServiceDialogOpen, setIsEditServiceDialogOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<ICard | null>(null);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+
+  // Manual validation function
+  // const validateServiceForm = (data: IService) => {
+  //   const errors: { [key: string]: string } = {};
+
+  //   // Manual validation
+  //   if (!data.title) errors.title = "Title is required";
+  //   if (!data.description) errors.description = "Description is required";
+  //   if (
+  //     data.image &&
+  //     !(data.image instanceof File || typeof data.image === "string")
+  //   ) {
+  //     errors.image = "Invalid image format";
+  //   }
+
+  //   return errors;
+  // };
+
+  // const validateCardForm = (data: ICard) => {
+  //   const errors: { [key: string]: string } = {};
+
+  //   // Manual validation
+  //   if (!data.title) errors.title = "Title is required";
+  //   if (!data.description) errors.description = "Description is required";
+  //   if (
+  //     data.image &&
+  //     !(data.image instanceof File || typeof data.image === "string")
+  //   ) {
+  //     errors.image = "Invalid image format";
+  //   }
+
+  //   return errors;
+  // };
 
   const {
     register,
@@ -78,9 +109,7 @@ const ServicePage: React.FC = () => {
     reset,
     setValue,
     watch,
-  } = useForm<IService>({
-    resolver: yupResolver(serviceSchema),
-  });
+  } = useForm<IService>();
 
   const {
     register: registerCard,
@@ -89,9 +118,7 @@ const ServicePage: React.FC = () => {
     reset: resetCard,
     setValue: setCardValue,
     watch: watchCard,
-  } = useForm<ICard>({
-    resolver: yupResolver(cardSchema),
-  });
+  } = useForm<ICard>();
 
   const watchServiceImage = watch("image");
   const watchCardImage = watchCard("image");
@@ -103,7 +130,6 @@ const ServicePage: React.FC = () => {
 
   const fetchService = async () => {
     try {
-      setIsLoading(true);
       const response = await axios.get("/api/service", {
         headers: { Authorization: `Bearer ${authToken}` },
       });
@@ -114,14 +140,11 @@ const ServicePage: React.FC = () => {
     } catch (error) {
       console.error("Error fetching service:", error);
       toast.error("Failed to load service");
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const fetchCards = async () => {
     try {
-      setIsLoading(true);
       const response = await axios.get("/api/service/cards", {
         headers: { Authorization: `Bearer ${authToken}` },
       });
@@ -129,8 +152,6 @@ const ServicePage: React.FC = () => {
     } catch (error) {
       console.error("Error fetching cards:", error);
       toast.error("Failed to load cards");
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -144,7 +165,7 @@ const ServicePage: React.FC = () => {
       if (service) {
         await axios.patch(`/api/service`, formData, {
           headers: {
-            ContentType: "multipart/form-data",
+            "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${authToken}`,
           },
         });
@@ -152,7 +173,7 @@ const ServicePage: React.FC = () => {
       } else {
         await axios.post("/api/service", formData, {
           headers: {
-            ContentType: "multipart/form-data",
+            "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${authToken}`,
           },
         });
@@ -175,7 +196,7 @@ const ServicePage: React.FC = () => {
 
       await axios.post(`/api/service/cards`, formData, {
         headers: {
-          ContentType: "multipart/form-data",
+          "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${authToken}`,
         },
       });
@@ -198,7 +219,7 @@ const ServicePage: React.FC = () => {
 
         await axios.patch(`/api/service/cards/${editingCard._id}`, formData, {
           headers: {
-            ContentType: "multipart/form-data",
+            "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${authToken}`,
           },
         });
@@ -258,9 +279,9 @@ const ServicePage: React.FC = () => {
                 <CardDescription>{service.description}</CardDescription>
               </CardHeader>
               <CardContent>
-                {service.image && (
+                {service.image && typeof service.image === "string" && (
                   <img
-                    src={service.image}
+                    src={service.image || "/placeholder.svg"}
                     alt={service.title}
                     className="w-full h-48 object-cover rounded-md mb-4"
                   />
@@ -306,7 +327,10 @@ const ServicePage: React.FC = () => {
 
                   {watchServiceImage instanceof File && (
                     <img
-                      src={URL.createObjectURL(watchServiceImage)}
+                      src={
+                        URL.createObjectURL(watchServiceImage) ||
+                        "/placeholder.svg"
+                      }
                       alt="Service preview"
                       className="w-full h-48 object-cover rounded-md mt-2"
                     />
@@ -333,7 +357,7 @@ const ServicePage: React.FC = () => {
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() => onDeleteCard(card._id!)}
+                          onClick={() => card._id && onDeleteCard(card._id)}
                         >
                           Delete
                         </DropdownMenuItem>
@@ -342,13 +366,9 @@ const ServicePage: React.FC = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  {card.image && (
+                  {card.image && typeof card.image === "string" && (
                     <img
-                      src={
-                        typeof card.image === "string"
-                          ? card.image
-                          : URL.createObjectURL(card.image)
-                      }
+                      src={card.image || "/placeholder.svg"}
                       alt={card.title}
                       className="w-full h-32 object-cover rounded-md mb-2"
                     />

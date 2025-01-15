@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import Button from "../common/Button";
@@ -12,15 +12,18 @@ import { IProduct } from "../../types/product";
 
 interface ProductInfoProps {
   product: IProduct;
+  onBuyNow: () => Promise<void>;
 }
 
 const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
   const navigate = useNavigate();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [selectedColor, setSelectedColor] = useState<string | undefined>(
+    undefined
+  ); // Set to undefined
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
-  const colors = product.colors || [];
+  const colors = product.colors || []; // Ensure colors is always an array
   const isLoggedIn = !!localStorage.getItem("authToken");
 
   useEffect(() => {
@@ -67,7 +70,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
       return;
     }
     if (quantity <= product.inStock) {
-      if (!selectedColor && product.colors?.length > 0) {
+      if (!selectedColor && colors.length > 0) {
         toast.error("Please select a color");
         return;
       }
@@ -156,7 +159,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
       <p className="text-gray-600 mb-2">{product.description}</p>
       <p className="text-gray-500 mb-2">In Stock: {product.inStock}</p>
 
-      {colors.length > 0 && (
+      {colors && colors.length > 0 && (
         <div className="mb-3">
           <h2 className="text-lg font-medium mb-2">Select Color</h2>
           <div className="flex flex-wrap gap-4">

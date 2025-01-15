@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import { FaEdit, FaTrash, FaEllipsisV, FaPlus } from "react-icons/fa";
@@ -23,9 +23,10 @@ import {
   Pagination,
   PaginationContent,
   PaginationItem,
-  PaginationPrevious,
+  PaginationLink,
   PaginationNext,
-} from "../../components/ui/pagination";
+  PaginationPrevious,
+} from "../components/ui/pagination";
 import { useForm } from "react-hook-form";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
@@ -40,8 +41,6 @@ interface ITeam {
   instagram?: string;
   linkedin?: string;
 }
-
-const ITEMS_PER_PAGE = 10;
 
 const AdminTeam: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = useState<boolean>(false);
@@ -246,21 +245,26 @@ const AdminTeam: React.FC = () => {
                           <PaginationItem>
                             <PaginationPrevious
                               onClick={() =>
-                                setCurrentPage((prev) => Math.max(prev - 1, 1))
+                                setCurrentPage((prev) => Math.max(1, prev - 1))
                               }
                               disabled={currentPage === 1}
                             />
                           </PaginationItem>
-                          <PaginationItem>
-                            <span>
-                              Page {currentPage} of {totalPages}
-                            </span>
-                          </PaginationItem>
+                          {[...Array(totalPages)].map((_, index) => (
+                            <PaginationItem key={index}>
+                              <PaginationLink
+                                onClick={() => setCurrentPage(index + 1)}
+                                isActive={currentPage === index + 1}
+                              >
+                                {index + 1}
+                              </PaginationLink>
+                            </PaginationItem>
+                          ))}
                           <PaginationItem>
                             <PaginationNext
                               onClick={() =>
                                 setCurrentPage((prev) =>
-                                  Math.min(prev + 1, totalPages)
+                                  Math.min(totalPages, prev + 1)
                                 )
                               }
                               disabled={currentPage === totalPages}

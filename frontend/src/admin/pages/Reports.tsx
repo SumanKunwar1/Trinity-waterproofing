@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaFileAlt, FaDownload } from "react-icons/fa";
 import {
@@ -511,7 +511,6 @@ const Reports: React.FC = () => {
 
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
-    const pageHeight = doc.internal.pageSize.height;
     const margin = 10;
     // Add the company logo
     const logoUrl = "/assets/logo.png"; // Update with your logo's path or base64

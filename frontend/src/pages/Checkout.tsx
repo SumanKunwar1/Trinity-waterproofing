@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import OrderSummary from "../components/cart/OrderSummary";
@@ -8,7 +8,7 @@ import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
 import AddressCard from "../components/common/AddressCard";
 import { Address } from "../types/address";
-import { ICartItem } from "../types/cart";
+// import { ICartItem } from "../types/cart";
 import { createOrder } from "../api/orderApi";
 import { OrderItem } from "../types/order";
 
@@ -115,22 +115,16 @@ const Checkout: React.FC = () => {
     setIsSubmitting(true);
     try {
       const orderData: OrderItem[] = checkoutData.map((item: ICartItem) => {
-        const productId = item.product?._id || item.productId;
+        const productId = item.productId; // Use productId directly from ICartItem
         if (!productId) {
           throw new Error(
             `Invalid product ID for item: ${JSON.stringify(item)}`
           );
         }
-        const price =
-          item.product?.retailDiscountedPrice ||
-          item.product?.retailPrice ||
-          item.product?.wholeSaleDiscountedPrice ||
-          item.product?.wholeSalePrice ||
-          item.price ||
-          0;
+        const price = item.price || 0; // Directly use item.price if product-related pricing doesn't exist
         return {
           productId,
-          color: item.selectedColor || item.color || null,
+          color: item.color || null, // Use color from ICartItem if selectedColor doesn't exist
           quantity: item.quantity,
           price,
         };
@@ -215,3 +209,15 @@ const Checkout: React.FC = () => {
 };
 
 export default Checkout;
+
+export interface ICartItem {
+  _id?: string;
+  productId: string; // Referring to productId directly
+  name: string;
+  description: string;
+  inStock: number;
+  productImage: string;
+  color?: string;
+  quantity: number;
+  price: number;
+}

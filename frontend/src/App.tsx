@@ -38,118 +38,127 @@ import { store } from "./admin/store/store";
 import ServicesPage from "./pages/Services";
 import TeamPage from "./pages/Teams";
 import UserGallery from "./pages/Gallery";
+import { HelmetProvider } from "react-helmet-async";
 function App() {
   const userRole = localStorage.getItem("userRole");
   return (
     <ErrorBoundary>
-      <Provider store={store}>
-        {userRole === "admin" ? (
-          <AdminApp />
-        ) : (
-          <AuthProvider>
-            <CartProvider>
-              <WishlistProvider>
-                <SocketProvider>
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/services" element={<ServicesPage />} />
-                    <Route path="/teams" element={<TeamPage />} />
-                    <Route path="/products" element={<ProductListing />} />
-                    <Route path="/products/:id" element={<ProductListing />} />
-                    <Route path="/product/:id" element={<ProductDetail />} />
-                    <Route path="/cart" element={<Cart />} />
-                    <Route path="/wishlist" element={<Wishlist />} />
-                    <Route path="/gallery" element={<UserGallery />} />
-                    <Route path="/checkout" element={<Checkout />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/order-success" element={<OrderSuccess />} />
-                    <Route path="/order-failure" element={<OrderFailure />} />
+      <HelmetProvider>
+        <Provider store={store}>
+          {userRole === "admin" ? (
+            <AdminApp />
+          ) : (
+            <AuthProvider>
+              <CartProvider>
+                <WishlistProvider>
+                  <SocketProvider>
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/services" element={<ServicesPage />} />
+                      <Route path="/teams" element={<TeamPage />} />
+                      <Route path="/products" element={<ProductListing />} />
+                      <Route
+                        path="/products/:id"
+                        element={<ProductListing />}
+                      />
+                      <Route path="/product/:id" element={<ProductDetail />} />
+                      <Route path="/cart" element={<Cart />} />
+                      <Route path="/wishlist" element={<Wishlist />} />
+                      <Route path="/gallery" element={<UserGallery />} />
+                      <Route path="/checkout" element={<Checkout />} />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/order-success" element={<OrderSuccess />} />
+                      <Route path="/order-failure" element={<OrderFailure />} />
 
-                    <Route
-                      path="/forgot-password"
-                      element={<ForgetPassword />}
-                    />
-                    <Route path="/register" element={<Register />} />
-                    <Route
-                      path="/privacy-policy"
-                      element={<PrivacyPolicyPage />}
-                    />
-                    <Route
-                      path="/return-policy"
-                      element={<ReturnPolicyPage />}
-                    />
-                    <Route path="/shipping-policy" element={<ShippingPage />} />
-                    <Route path="/faq" element={<FAQPage />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/contact" element={<Contact />} />
+                      <Route
+                        path="/forgot-password"
+                        element={<ForgetPassword />}
+                      />
+                      <Route path="/register" element={<Register />} />
+                      <Route
+                        path="/privacy-policy"
+                        element={<PrivacyPolicyPage />}
+                      />
+                      <Route
+                        path="/return-policy"
+                        element={<ReturnPolicyPage />}
+                      />
+                      <Route
+                        path="/shipping-policy"
+                        element={<ShippingPage />}
+                      />
+                      <Route path="/faq" element={<FAQPage />} />
+                      <Route path="/about" element={<About />} />
+                      <Route path="/contact" element={<Contact />} />
 
-                    {/* Protect customer profile pages */}
-                    <Route
-                      path="/customer/dashboard"
-                      element={
-                        <PrivateRoute>
-                          <DashboardPage />
-                        </PrivateRoute>
-                      }
-                    />
-                    <Route
-                      path="/customer/notifications"
-                      element={
-                        <PrivateRoute>
-                          <Notification />
-                        </PrivateRoute>
-                      }
-                    />
-                    <Route
-                      path="/customer/manage-profile"
-                      element={
-                        <PrivateRoute>
-                          <ManageProfilePage />
-                        </PrivateRoute>
-                      }
-                    />
-                    <Route
-                      path="/customer/purchase-history"
-                      element={
-                        <PrivateRoute>
-                          <PurchaseHistoryPage />
-                        </PrivateRoute>
-                      }
-                    />
-                    <Route
-                      path="/customer/address-book"
-                      element={
-                        <PrivateRoute>
-                          <AddressBookPage />
-                        </PrivateRoute>
-                      }
-                    />
-                    <Route
-                      path="/customer/reviews-ratings"
-                      element={
-                        <PrivateRoute>
-                          <RatingsAndReviews />
-                        </PrivateRoute>
-                      }
-                    />
-                    <Route
-                      path="/customer/return-and-cancel"
-                      element={
-                        <PrivateRoute>
-                          <ReturnAndCancelPage />
-                        </PrivateRoute>
-                      }
-                    />
+                      {/* Protect customer profile pages */}
+                      <Route
+                        path="/customer/dashboard"
+                        element={
+                          <PrivateRoute>
+                            <DashboardPage />
+                          </PrivateRoute>
+                        }
+                      />
+                      <Route
+                        path="/customer/notifications"
+                        element={
+                          <PrivateRoute>
+                            <Notification />
+                          </PrivateRoute>
+                        }
+                      />
+                      <Route
+                        path="/customer/manage-profile"
+                        element={
+                          <PrivateRoute>
+                            <ManageProfilePage />
+                          </PrivateRoute>
+                        }
+                      />
+                      <Route
+                        path="/customer/purchase-history"
+                        element={
+                          <PrivateRoute>
+                            <PurchaseHistoryPage />
+                          </PrivateRoute>
+                        }
+                      />
+                      <Route
+                        path="/customer/address-book"
+                        element={
+                          <PrivateRoute>
+                            <AddressBookPage />
+                          </PrivateRoute>
+                        }
+                      />
+                      <Route
+                        path="/customer/reviews-ratings"
+                        element={
+                          <PrivateRoute>
+                            <RatingsAndReviews />
+                          </PrivateRoute>
+                        }
+                      />
+                      <Route
+                        path="/customer/return-and-cancel"
+                        element={
+                          <PrivateRoute>
+                            <ReturnAndCancelPage />
+                          </PrivateRoute>
+                        }
+                      />
 
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                  <ToastContainer />
-                </SocketProvider>
-              </WishlistProvider>
-            </CartProvider>
-          </AuthProvider>
-        )}
-      </Provider>
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                    <ToastContainer />
+                  </SocketProvider>
+                </WishlistProvider>
+              </CartProvider>
+            </AuthProvider>
+          )}
+        </Provider>
+      </HelmetProvider>
     </ErrorBoundary>
   );
 }

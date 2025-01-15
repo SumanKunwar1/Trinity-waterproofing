@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import { Settings, LogOut, User, KeyRound } from "lucide-react";
 import {
   DropdownMenu,

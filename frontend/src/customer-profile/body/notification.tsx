@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
 import { Separator } from "../../components/ui/separator";
 import { ScrollArea } from "../../components/ui/scroll-area";
-import { io, Socket } from "socket.io-client";
+import { io } from "socket.io-client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaBell,
@@ -26,7 +26,6 @@ interface Notification {
 
 const CustomerNotifications: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [socket, setSocket] = useState<Socket | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -36,11 +35,12 @@ const CustomerNotifications: React.FC = () => {
     if (!userId) return;
 
     const newSocket = io("http://localhost:5000");
-    setSocket(newSocket);
 
     newSocket.on("notification", (notification: Notification) => {
       setNotifications((prev) => [notification, ...prev]);
-      toast(notification.message, { type: notification.type });
+      toast(notification.message, {
+        icon: getNotificationIcon(notification.type),
+      });
       playNotificationSound();
     });
 

@@ -1,5 +1,4 @@
-import React from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   FaChartBar,
   FaBox,
@@ -30,7 +29,6 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   const location = useLocation();
-  const navigate = useNavigate(); // Hook to navigate to different routes
   const handleLogout = useLogout();
 
   const menuItems = [

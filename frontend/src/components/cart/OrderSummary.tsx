@@ -1,4 +1,3 @@
-import React from "react";
 import { useLocation } from "react-router-dom";
 import { ICartItem } from "../../types/cart";
 
@@ -12,7 +11,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ cartItems }) => {
 
   const itemsToDisplay = checkoutData || cartItems || [];
 
-  const total = itemsToDisplay.reduce((total, item) => {
+  const total = itemsToDisplay.reduce((total: any, item: any) => {
     const price = item.price || item.product?.price || 0;
     const quantity = item.quantity || 1;
     return total + price * quantity;
@@ -22,7 +21,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ cartItems }) => {
     <div className="bg-gray-100 rounded-lg p-6">
       <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
       <div className="space-y-2">
-        {itemsToDisplay.map((item, index) => {
+        {itemsToDisplay.map((item: any, index: any) => {
           const product = item.product || item;
           const price = item.price || product.price || 0;
           const quantity = item.quantity || 1;

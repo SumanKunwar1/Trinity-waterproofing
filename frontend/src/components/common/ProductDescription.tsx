@@ -1,4 +1,3 @@
-import React from "react";
 import QRCodeComponent from "./QRCodeComponent";
 
 interface ProductDescriptionProps {
@@ -10,6 +9,7 @@ const ProductDescription: React.FC<ProductDescriptionProps> = ({
   features,
   pdfUrl,
 }) => {
+  console.log("features", features, "pdfUrl", pdfUrl);
   return (
     <div className="mt-8">
       <h2 className="text-xl font-semibold mb-4">Product Details</h2>
