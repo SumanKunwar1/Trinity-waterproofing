@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { SliderController } from "../controllers";
+import { compressUploadedImages } from "../config/fileCompress";
 import {
   isAuthenticated,
   isAuthorized,
@@ -37,6 +38,7 @@ router.post(
   sliderUploadMiddleware,
   appendSliderDataToBody,
   validateSlider,
+  compressUploadedImages,
   sliderController.createSlider.bind(sliderController),
   handleResponse
 );
@@ -48,6 +50,7 @@ router.patch(
   sliderUploadMiddleware,
   appendSliderDataToBody,
   validateEditSlider,
+  compressUploadedImages,
   sliderController.editSlider.bind(sliderController),
   handleResponse
 );

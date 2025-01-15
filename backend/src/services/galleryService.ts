@@ -1,6 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
-import { uploadFolder } from "../config/upload";
+import { uploadFolder } from "../config/uploadConstants";
 import { httpMessages } from "../middlewares";
 
 export class GalleryService {

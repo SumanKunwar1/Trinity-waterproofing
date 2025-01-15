@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { BrandController } from "../controllers";
+import { compressUploadedImages } from "../config/fileCompress";
 import {
   isAuthenticated,
   isAuthorized,
@@ -20,6 +21,7 @@ router.post(
   imageUploadMiddleware,
   appendImageDataToBody,
   validateBrand,
+  compressUploadedImages,
   brandController.createBrand.bind(brandController),
   handleResponse
 );
@@ -43,6 +45,7 @@ router.patch(
   imageUploadMiddleware,
   appendImageDataToBody,
   validateEditBrand,
+  compressUploadedImages,
   brandController.editBrand.bind(brandController),
   handleResponse
 );
