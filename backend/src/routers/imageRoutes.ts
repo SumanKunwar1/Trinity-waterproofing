@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from "express";
 import path from "path";
 import fs from "fs";
 import mime from "mime-types";
-import { uploadFolder } from "../config/upload";
+import { uploadFolder } from "../config/uploadConstants";
 
 const imageRouter = Router();
 

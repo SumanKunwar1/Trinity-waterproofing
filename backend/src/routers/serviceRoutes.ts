@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { ServiceController } from "../controllers";
+import { compressUploadedImages } from "../config/fileCompress";
 import {
   isAuthenticated,
   isAuthorized,
@@ -22,6 +23,7 @@ router.post(
   imageUploadMiddleware,
   appendImageDataToBody,
   validateService,
+  compressUploadedImages,
   serviceController.createService.bind(serviceController),
   handleResponse
 );
@@ -39,6 +41,7 @@ router.patch(
   imageUploadMiddleware,
   appendImageDataToBody,
   validateEditService,
+  compressUploadedImages,
   serviceController.editService.bind(serviceController),
   handleResponse
 );
@@ -52,6 +55,7 @@ router.post(
   imageUploadMiddleware,
   appendImageDataToBody,
   validateService,
+  compressUploadedImages,
   serviceController.createCard.bind(serviceController),
   handleResponse
 );
@@ -69,6 +73,7 @@ router.patch(
   imageUploadMiddleware,
   appendImageDataToBody,
   validateEditService,
+  compressUploadedImages,
   serviceController.editCard.bind(serviceController),
   handleResponse
 );

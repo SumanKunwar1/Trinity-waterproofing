@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { TeamController } from "../controllers";
+import { compressUploadedImages } from "../config/fileCompress";
 import {
   isAuthenticated,
   isAuthorized,
@@ -20,6 +21,7 @@ router.post(
   imageUploadMiddleware,
   appendImageDataToBody,
   validateTeam,
+  compressUploadedImages,
   teamController.createTeamMember.bind(teamController),
   handleResponse
 );
@@ -43,6 +45,7 @@ router.patch(
   imageUploadMiddleware,
   appendImageDataToBody,
   validateEditTeam,
+  compressUploadedImages,
   teamController.editTeamMember.bind(teamController),
   handleResponse
 );

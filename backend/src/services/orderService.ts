@@ -228,52 +228,46 @@ export class OrderService {
         throw new Error("User not found");
       }
 
-      const ordersWithAddresses = await Promise.all(
+      const ordersWithAddresses: any = await Promise.all(
         orders.map(async (order) => {
-          console.log("Processing order:", order);
-          console.log("User address book:", user.addressBook);
+          console.log("Order with address:", order);
+          console.log("Product list in the order:", order.products);
 
-          if (!user.addressBook || user.addressBook.length === 0) {
-            console.warn("User has no addresses in the address book.");
-            return order; // Return the order as-is
-          }
+          order.products = order.products.map((product: any) => {
+            if (product.productId) {
+              const updatedProduct = product.productId; // Directly use the populated productId
+              console.log("Original product data:", updatedProduct);
 
-          if (!order.AddressId) {
-            console.warn("Order has no AddressId:", order);
-            return order; // Return the order as-is
-          }
+              // Modify productImage
+              updatedProduct.productImage = `/api/image/${updatedProduct.productImage}`;
 
-          const address = user.addressBook.find((addr) => {
-            if (!addr._id) {
-              console.warn("Address has no _id:", addr);
-              return false;
+              // Modify all images in the image array
+              updatedProduct.image = updatedProduct.image.map(
+                (image: string) => `/api/image/${image}`
+              );
+
+              console.log(
+                "Updated product with formatted images:",
+                updatedProduct
+              );
+
+              // Return updated product with formatted images
+              return { ...product.toObject(), productId: updatedProduct }; // Replace productId with updatedProduct
             }
-            return addr._id.toString() === order.AddressId.toString();
-          });
-
-          const orderWithAddress = order.toObject() as IOrder & {
-            address?: any;
-          };
-
-          if (address) {
-            console.log("Address matched for order:", address);
-            orderWithAddress.address = address;
-          } else {
-            console.warn(
-              "No matching address found for order AddressId:",
-              order.AddressId
+            console.log(
+              "Product without productId:",
+              JSON.stringify(product, null, 2)
             );
-          }
-
-          return orderWithAddress;
+            return product;
+          });
         })
       );
 
       console.log(
-        "orderwithaddress in get by user id",
-        JSON.stringify(ordersWithAddresses)
+        "orderwithaddress in ge orders by id",
+        JSON.stringify(orders, null, 2)
       );
-      return ordersWithAddresses;
+      return orders;
     } catch (error) {
       throw error;
     }
@@ -289,24 +283,30 @@ export class OrderService {
         return null;
       }
 
-      const user = await User.findById(order.userId);
-      if (!user) {
-        throw new Error("User not found");
-      }
+      order.products = order.products.map((product: any) => {
+        if (product.productId) {
+          const updatedProduct = product.productId;
+          console.log("Original product data:", updatedProduct);
 
-      const address = user.addressBook.find(
-        (addr) => addr._id.toString() === order.AddressId.toString()
-      );
+          updatedProduct.productImage = `/api/image/${updatedProduct.productImage}`;
 
-      const orderWithAddress = order.toObject() as IOrder & {
-        address?: any;
-      };
+          updatedProduct.image = updatedProduct.image.map(
+            (image: string) => `/api/image/${image}`
+          );
 
-      if (address) {
-        orderWithAddress.address = address;
-      }
+          console.log("Updated product with formatted images:", updatedProduct);
 
-      return orderWithAddress;
+          return { ...product.toObject(), productId: updatedProduct };
+        }
+
+        console.log(
+          "Product without productId:",
+          JSON.stringify(product, null, 2)
+        );
+        return product; // If no productId, just return the product
+      });
+
+      return order; // Return the order with the formatted products
     } catch (error) {
       throw error;
     }

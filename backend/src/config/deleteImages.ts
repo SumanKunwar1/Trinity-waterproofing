@@ -1,8 +1,7 @@
 import { Request } from "express";
 import fs from "fs/promises";
 import path from "path";
-import { uploadFolder } from "./upload";
-import { Console } from "console";
+import { uploadFolder } from "./uploadConstants";
 
 interface FilesField {
   [key: string]: Express.Multer.File[];

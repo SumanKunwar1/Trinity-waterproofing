@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { ReviewController } from "../controllers";
+import { compressUploadedImages } from "../config/fileCompress";
 import {
   isAuthenticated,
   isAuthorized,
@@ -20,6 +21,7 @@ router.post(
   uploadMiddleware,
   appendFileDataToBody,
   validateReview,
+  compressUploadedImages,
   reviewController.createReview.bind(reviewController),
   handleResponse
 );

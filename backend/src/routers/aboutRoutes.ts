@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { AboutController } from "../controllers";
+import { compressUploadedImages } from "../config/fileCompress";
 import {
   isAuthenticated,
   isAuthorized,
@@ -22,6 +23,7 @@ router.post(
   imageUploadMiddleware,
   appendImageDataToBody,
   validateAbout,
+  compressUploadedImages,
   aboutController.createAbout.bind(aboutController),
   handleResponse
 );
@@ -35,6 +37,7 @@ router.patch(
   imageUploadMiddleware,
   appendImageDataToBody,
   validateEditAbout,
+  compressUploadedImages,
   aboutController.editAbout.bind(aboutController),
   handleResponse
 );
@@ -48,6 +51,7 @@ router.post(
   imageUploadMiddleware,
   appendImageDataToBody,
   validateAbout,
+  compressUploadedImages,
   aboutController.createCore.bind(aboutController),
   handleResponse
 );
@@ -65,6 +69,7 @@ router.patch(
   imageUploadMiddleware,
   appendImageDataToBody,
   validateEditAbout,
+  compressUploadedImages,
   aboutController.editCore.bind(aboutController),
   handleResponse
 );
@@ -86,6 +91,7 @@ router.post(
   imageUploadMiddleware,
   appendImageDataToBody,
   validateAbout,
+  compressUploadedImages,
   aboutController.createTab.bind(aboutController),
   handleResponse
 );
@@ -103,6 +109,7 @@ router.patch(
   imageUploadMiddleware,
   appendImageDataToBody,
   validateEditAbout,
+  compressUploadedImages,
   aboutController.editTab.bind(aboutController),
   handleResponse
 );

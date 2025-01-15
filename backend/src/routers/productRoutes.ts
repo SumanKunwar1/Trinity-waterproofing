@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { ProductController } from "../controllers";
-
+import { compressUploadedImages } from "../config/fileCompress";
 import {
   validateProduct,
   handleResponse,
@@ -29,6 +29,7 @@ router.post(
   appendFileDataToBody,
   parseColorsMiddleware,
   validateProduct,
+  compressUploadedImages,
   productController.createProduct.bind(productController),
   handleResponse
 );
@@ -41,6 +42,7 @@ router.patch(
   appendFileDataToBody,
   parseExistingImageMiddleware,
   validateProductImage,
+  compressUploadedImages,
   productController.editProductImages.bind(productController),
   handleResponse
 );
