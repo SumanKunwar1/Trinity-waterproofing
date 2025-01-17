@@ -1,5 +1,5 @@
 # Use Node.js to build the React app
-FROM node:18 AS builder
+FROM node:18
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -8,22 +8,13 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install frontend dependencies
-RUN npm install
+RUN npm install --no-optional
 
 # Copy the entire frontend source code
 COPY . .
 
-# Build the React app
-RUN npm run build
+# Expose the port for the React app (adjust as needed, e.g., 3000 for Vite/React)
+EXPOSE 5173
 
-# Use an Nginx image to serve the built React app
-FROM nginx:alpine
-
-# Copy the built React app from the builder stage
-COPY --from=builder /app/build /usr/share/nginx/html
-
-# Expose the port for the React app
-EXPOSE 80
-
-# Start Nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Run the frontend development server (e.g., Vite or Create React App)
+CMD ["npm", "run", "dev"]

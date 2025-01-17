@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchReviewsAsync, deleteReviewAsync } from "../store/reviewsSlice";
+import {
+  fetchReviewsAsync,
+  deleteReviewAsync,
+  Review,
+  Product,
+} from "../store/reviewsSlice";
 import { AppDispatch, RootState } from "../store/store";
 import { motion } from "framer-motion";
 import Table from "../components/ui/table";
@@ -33,29 +38,9 @@ import "react-toastify/dist/ReactToastify.css";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 
-interface Review {
-  _id: string;
-  fullName: string;
-  number: string;
-  image: string[];
-  content: string;
-  rating: number;
-  user: string;
-  date: string;
-  createdAt: string;
-  updatedAt: string;
-  productName?: string;
-}
-
-interface Product {
-  _id: string;
-  name: string;
-  review: Review[];
-}
-
 export default function Reviews() {
   const dispatch = useDispatch<AppDispatch>();
-  const products = useSelector((state: RootState) => state.reviews.reviews);
+  const products = useSelector((state: RootState) => state.reviews.products);
   const isLoading = useSelector((state: RootState) => state.reviews.isLoading);
   const error = useSelector((state: RootState) => state.reviews.error);
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
@@ -77,10 +62,13 @@ export default function Reviews() {
         toast.success("Review deleted successfully");
         setIsDeleteDialogOpen(false);
         setSelectedReview(null);
-        // Refresh the reviews list
-        dispatch(fetchReviewsAsync());
-      } catch (error) {
-        toast.error("Failed to delete review");
+      } catch (error: any) {
+        if (error.response && error.response.status === 403) {
+          toast.error("You don't have permission to delete this review");
+        } else {
+          toast.error("Failed to delete review");
+        }
+        console.error("Error deleting review:", error);
       }
     }
   };
@@ -97,9 +85,12 @@ export default function Reviews() {
 
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
-  // Flatten the products array to get all reviews
-  const allReviews = products.flatMap((product) =>
-    product.review.map((review) => ({ ...review, productName: product.name }))
+  // Safely flatten the products array to get all reviews
+  const allReviews = products.flatMap((product: Product) =>
+    product.review.map((review: Review) => ({
+      ...review,
+      productName: product.name,
+    }))
   );
 
   // Pagination logic
@@ -134,7 +125,7 @@ export default function Reviews() {
     {
       header: "Date",
       accessor: "createdAt",
-      cell: (item: any) => new Date(item.createdAt).toLocaleDateString(),
+      cell: (item: Review) => new Date(item.createdAt).toLocaleDateString(),
     },
     {
       header: "Username",
@@ -203,34 +194,44 @@ export default function Reviews() {
             transition={{ duration: 0.5 }}
           >
             <h1 className="text-2xl font-semibold">Reviews</h1>
-            <Table
-              columns={columns}
-              data={currentReviews}
-              onRowClick={(item) => openViewDialog(item)}
-            />
+            {isLoading ? (
+              <div>Loading...</div>
+            ) : (
+              <>
+                <Table
+                  columns={columns}
+                  data={currentReviews}
+                  onRowClick={(item) => openViewDialog(item as Review)}
+                />
 
-            <Pagination className="mt-4">
-              <PaginationPrevious
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-              />
-              <PaginationContent>
-                {Array.from({ length: totalPages }, (_, index) => (
-                  <PaginationItem key={index}>
-                    <PaginationLink
-                      isActive={index + 1 === currentPage}
-                      onClick={() => handlePageChange(index + 1)}
-                    >
-                      {index + 1}
-                    </PaginationLink>
-                  </PaginationItem>
-                ))}
-              </PaginationContent>
-              <PaginationNext
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-              />
-            </Pagination>
+                <Pagination className="mt-4">
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                      />
+                    </PaginationItem>
+                    {Array.from({ length: totalPages }, (_, index) => (
+                      <PaginationItem key={index}>
+                        <PaginationLink
+                          isActive={index + 1 === currentPage}
+                          onClick={() => handlePageChange(index + 1)}
+                        >
+                          {index + 1}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </>
+            )}
 
             {/* View Dialog */}
             <Dialog

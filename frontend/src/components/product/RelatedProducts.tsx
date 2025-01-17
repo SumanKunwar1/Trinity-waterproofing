@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 
 interface RelatedProductsProps {
   currentProductId: string;
-  categoryId: string; // Changed type to `string` to match `subCategory`
+  categoryId: any;
 }
 
 const RelatedProducts: React.FC<RelatedProductsProps> = ({
@@ -23,11 +23,11 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({
   useEffect(() => {
     const fetchRelatedProducts = async () => {
       try {
-        const response = await axios.get(
+        const response = await axios.get<IProduct[]>(
           `/api/product?categoryId=${categoryId}`
         );
         const filteredProducts = response.data.filter(
-          (product: IProduct) => product._id !== currentProductId
+          (product) => product._id !== currentProductId
         );
         setRelatedProducts(filteredProducts.slice(0, 4));
       } catch (error: any) {
@@ -68,7 +68,7 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({
             transition={{ duration: 0.5 }}
           >
             <div
-              onClick={() => navigate(`/product/${product._id}`)} // Navigate to the new product detail page
+              onClick={() => navigate(`/product/${product._id}`)}
               className="cursor-pointer"
             >
               <ProductCard product={product} />

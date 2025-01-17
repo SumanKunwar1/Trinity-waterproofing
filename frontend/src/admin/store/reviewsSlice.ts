@@ -1,8 +1,27 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { fetchReviews, deleteReview } from "../utils/api";
-import { Review } from "../../types/review";
 
-export const fetchReviewsAsync = createAsyncThunk(
+export interface Review {
+  _id: string;
+  fullName: string;
+  number: string;
+  image: string[];
+  content: string;
+  rating: number;
+  user: string;
+  date: string;
+  createdAt: string;
+  updatedAt: string;
+  productName: string;
+}
+
+export interface Product {
+  _id: string;
+  name: string;
+  review: Review[];
+}
+
+export const fetchReviewsAsync = createAsyncThunk<Product[]>(
   "review/fetchReviews",
   async () => {
     const response = await fetchReviews();
@@ -10,7 +29,7 @@ export const fetchReviewsAsync = createAsyncThunk(
   }
 );
 
-export const deleteReviewAsync = createAsyncThunk(
+export const deleteReviewAsync = createAsyncThunk<string, string>(
   "review/deleteReview",
   async (reviewId: string) => {
     await deleteReview(reviewId);
@@ -19,13 +38,13 @@ export const deleteReviewAsync = createAsyncThunk(
 );
 
 interface ReviewsState {
-  reviews: Review[];
+  products: Product[];
   isLoading: boolean;
   error: string | null;
 }
 
 const initialState: ReviewsState = {
-  reviews: [],
+  products: [],
   isLoading: false,
   error: null,
 };
@@ -39,19 +58,28 @@ const reviewsSlice = createSlice({
       .addCase(fetchReviewsAsync.pending, (state) => {
         state.isLoading = true;
       })
-      .addCase(fetchReviewsAsync.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.reviews = action.payload;
-      })
+      .addCase(
+        fetchReviewsAsync.fulfilled,
+        (state, action: PayloadAction<Product[]>) => {
+          state.isLoading = false;
+          state.products = action.payload;
+        }
+      )
       .addCase(fetchReviewsAsync.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.error.message || "An error occurred";
       })
-      .addCase(deleteReviewAsync.fulfilled, (state, action) => {
-        state.reviews = state.reviews.filter(
-          (review) => review.id !== action.payload
-        );
-      });
+      .addCase(
+        deleteReviewAsync.fulfilled,
+        (state, action: PayloadAction<string>) => {
+          state.products = state.products.map((product) => ({
+            ...product,
+            review: product.review.filter(
+              (review) => review._id !== action.payload
+            ),
+          }));
+        }
+      );
   },
 });
 

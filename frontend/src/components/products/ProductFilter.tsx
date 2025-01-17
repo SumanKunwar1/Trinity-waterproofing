@@ -1,72 +1,95 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import { Formik, Form, Field } from "formik";
 import Slider from "rc-slider";
 import { Checkbox } from "../ui/checkbox";
 import { Input } from "../ui/input";
-import { toast } from "react-toastify";
-import axios from "axios";
+
 import "rc-slider/assets/index.css";
-import { Category } from "../../types/category";
-import { SubCategory } from "../../types/subCategory";
-import { FilterValues } from "../../types/filterValues";
-interface ProductFilterProps {
-  onFilter: (filters: FilterValues) => void;
-  categories: Category[];
+import { Brand } from "../../types/brand";
+
+interface Category {
+  _id: string;
+  name: string;
+  description?: string;
   subCategories: SubCategory[];
 }
 
-const ProductFilter: React.FC<ProductFilterProps> = ({ onFilter }) => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [allSubcategories, setAllSubcategories] = useState<SubCategory[]>([]);
+interface SubCategory {
+  _id: string;
+  name: string;
+  description?: string;
+  category: string;
+  products: Product[];
+}
 
-  // Fetch categories from API
-  // Fetch categories from API
-  const fetchCategories = async () => {
-    try {
-      const response = await axios.get("/api/category");
-      console.log("Categories fetched:", response.data);
-      setCategories(response.data);
-    } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.error || "Failed to fetch categories";
-      toast.error(errorMessage); // Show error message in toast notification
-    }
-  };
+interface IColor {
+  name: string;
+  hex: string;
+}
 
-  // Fetch subcategories from API
-  const fetchSubcategories = async () => {
-    try {
-      const response = await axios.get("/api/subcategory");
-      console.log("Subcategories fetched:", response.data);
-      setAllSubcategories(response.data);
-    } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.error || "Failed to fetch subcategories";
-      toast.error(errorMessage); // Show error message in toast notification
-    }
-  };
+interface IReview {
+  rating: number;
+  content: string;
+}
 
-  useEffect(() => {
-    fetchCategories();
-    fetchSubcategories();
-  }, []);
+interface Product {
+  _id: string;
+  name: string;
+  description: string;
+  wholeSalePrice: number;
+  retailPrice: number;
+  retailDiscountedPrice?: number;
+  wholeSaleDiscountedPrice?: number;
+  productImage: string;
+  image: string[];
+  subCategory: string;
+  pdfUrl: string;
+  features: string[];
+  brand: string | Brand;
+  createdAt: string;
+  colors?: IColor[];
+  inStock: number;
+  review: IReview[];
+}
 
-  // Get filtered subcategories based on selected category
+interface FilterValues {
+  category: string;
+  subcategory: string;
+  minPrice: number;
+  maxPrice: number;
+  rating: number[];
+  inStock: boolean;
+}
+
+interface ProductFilterProps {
+  onFilter: (filters: FilterValues) => void;
+  categories: Category[];
+}
+
+const ProductFilter: React.FC<ProductFilterProps> = ({
+  onFilter,
+  categories,
+}) => {
+  const [filteredSubcategories, setFilteredSubcategories] = useState<
+    SubCategory[]
+  >([]);
+  const userRole = localStorage.getItem("userRole");
+  const priceKey = userRole === "b2b" ? "wholeSalePrice" : "retailPrice";
+
   const getFilteredSubcategories = (categoryId: string) => {
-    return allSubcategories.filter(
-      (subcategory) => subcategory.category === categoryId
-    );
+    const category = categories.find((cat) => cat._id === categoryId);
+    return category ? category.subCategories : [];
   };
 
-  // Get max price for the selected category
   const getMaxPrice = (categoryId: string) => {
     const subcategories = getFilteredSubcategories(categoryId);
-    let maxPrice = 1000; // Default max price
+    let maxPrice = 1000;
 
     subcategories.forEach((subcategory) => {
-      subcategory.product.forEach((product) => {
-        if (product.price > maxPrice) {
-          maxPrice = product.price;
+      subcategory.products.forEach((product) => {
+        const price = product[priceKey as keyof Product] as number;
+        if (price > maxPrice) {
+          maxPrice = price;
         }
       });
     });
@@ -77,7 +100,7 @@ const ProductFilter: React.FC<ProductFilterProps> = ({ onFilter }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-xl font-semibold mb-4">Filter Products</h2>
-      <Formik
+      <Formik<FilterValues>
         initialValues={{
           category: "",
           subcategory: "",
@@ -95,9 +118,13 @@ const ProductFilter: React.FC<ProductFilterProps> = ({ onFilter }) => {
             ? getMaxPrice(values.category)
             : 1000;
 
-          const filteredSubcategories = values.category
-            ? getFilteredSubcategories(values.category)
-            : [];
+          const handleCategoryChange = (categoryId: string) => {
+            setFieldValue("category", categoryId);
+            setFieldValue("subcategory", "");
+            setFieldValue("minPrice", 0);
+            setFieldValue("maxPrice", getMaxPrice(categoryId));
+            setFilteredSubcategories(getFilteredSubcategories(categoryId));
+          };
 
           return (
             <Form>
@@ -113,13 +140,9 @@ const ProductFilter: React.FC<ProductFilterProps> = ({ onFilter }) => {
                   as="select"
                   name="category"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                    const categoryId = e.target.value;
-                    setFieldValue("category", categoryId);
-                    setFieldValue("subcategory", "");
-                    setFieldValue("minPrice", 0);
-                    setFieldValue("maxPrice", getMaxPrice(categoryId));
-                  }}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                    handleCategoryChange(e.target.value)
+                  }
                 >
                   <option value="">All Categories</option>
                   {categories.map((category) => (
@@ -171,10 +194,6 @@ const ProductFilter: React.FC<ProductFilterProps> = ({ onFilter }) => {
                     className="w-1/2"
                     min={0}
                     max={values.maxPrice}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      const value = parseInt(e.target.value);
-                      setFieldValue("minPrice", value);
-                    }}
                   />
                   <span>-</span>
                   <Field
@@ -185,22 +204,19 @@ const ProductFilter: React.FC<ProductFilterProps> = ({ onFilter }) => {
                     className="w-1/2"
                     min={values.minPrice}
                     max={maxPriceForCategory}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      const value = parseInt(e.target.value);
-                      setFieldValue("maxPrice", value);
-                    }}
                   />
                 </div>
-
                 <Slider
                   range
                   value={[values.minPrice, values.maxPrice]}
                   min={0}
                   max={maxPriceForCategory}
                   step={10}
-                  onChange={(value: [number, number]) => {
-                    setFieldValue("minPrice", value[0]);
-                    setFieldValue("maxPrice", value[1]);
+                  onChange={(value: number | number[]) => {
+                    if (Array.isArray(value)) {
+                      setFieldValue("minPrice", value[0]);
+                      setFieldValue("maxPrice", value[1]);
+                    }
                   }}
                   className="mt-2"
                 />

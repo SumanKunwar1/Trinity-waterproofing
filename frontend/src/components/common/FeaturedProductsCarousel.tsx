@@ -5,22 +5,11 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "../../hooks/use-toast";
 import axios from "axios";
 import ProductCard from "./ProductCard";
-
-interface Product {
-  _id: string;
-  name: string;
-  description: string;
-  price: number;
-  productImage: string;
-  category: string;
-  inStock: boolean;
-  rating: number;
-  reviews: number;
-}
+import { IProduct } from "../../types/product";
 
 const FeaturedProductsCarousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [featuredProducts, setFeaturedProducts] = useState<IProduct[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 

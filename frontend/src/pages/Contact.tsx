@@ -1,4 +1,3 @@
-import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
@@ -144,11 +143,7 @@ const Contact: React.FC = () => {
                       />
                     </div>
 
-                    <Button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="w-full"
-                    >
+                    <Button type="submit" className="w-full">
                       {isSubmitting ? "Sending..." : "Send Message"}
                     </Button>
                   </Form>

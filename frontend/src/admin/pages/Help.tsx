@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Card,
@@ -6,9 +6,6 @@ import {
   CardTitle,
   CardContent,
 } from "../components/ui/card";
-import { Input } from "../components/ui/input";
-import { Textarea } from "../components/ui/textarea";
-import { Button } from "../components/ui/button";
 import {
   Tabs,
   TabsContent,
@@ -20,15 +17,9 @@ import Topbar from "../components/Topbar";
 
 const Help: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>("contact");
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Help request submitted");
   };
 
   const tabContent: Record<string, React.ReactNode> = {
@@ -154,7 +145,7 @@ const Help: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Tabs defaultValue="contact" className="w-full">
+                <Tabs defaultValue="category" className="w-full">
                   <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 mb-4">
                     <TabsTrigger value="category">Category</TabsTrigger>
                     <TabsTrigger value="subcategory">Subcategory</TabsTrigger>
@@ -164,15 +155,12 @@ const Help: React.FC = () => {
                   </TabsList>
                   <AnimatePresence mode="wait">
                     <motion.div
-                      key={activeTab}
+                      key="tabContent"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <TabsContent value="contact">
-                        {tabContent.contact}
-                      </TabsContent>
                       <TabsContent value="category">
                         {tabContent.category}
                       </TabsContent>

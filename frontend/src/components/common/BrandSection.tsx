@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import FeaturedProductsHeader from "./FeaturedProductsHeader";
 import { toast } from "react-toastify"; // Assuming you're using react-toastify for notifications

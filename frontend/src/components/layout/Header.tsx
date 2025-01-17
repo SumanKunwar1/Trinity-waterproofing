@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiUser } from "react-icons/fi";
@@ -8,6 +8,7 @@ import { IoSearchOutline, IoCloseOutline } from "react-icons/io5";
 import { FaRegHeart } from "react-icons/fa";
 import { navigationItems } from "../../constants/navigation";
 import { useCart } from "../../context/CartContext";
+
 import { useWishlist } from "../../context/WishlistContext";
 import ProductDropdown from "./ProductDropdown";
 // Import Sentry

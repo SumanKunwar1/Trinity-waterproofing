@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from "react";
+import { createContext, useContext } from "react";
 import { useCart as useSWRCart } from "../hooks/useCart";
 import type { ICartItem } from "../types/cart";
 

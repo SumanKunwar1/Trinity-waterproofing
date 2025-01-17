@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { toast } from "react-toastify";
 import { FaFileAlt } from "react-icons/fa";
 import { jsPDF } from "jspdf";
@@ -7,7 +7,19 @@ import * as XLSX from "xlsx";
 import { Button } from "../components/ui/button";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
-import { fetchOrders, fetchProducts, fetchCategories } from "../utils/api";
+import {
+  fetchOrders,
+  fetchProducts,
+  fetchCategories,
+  fetchUsers,
+} from "../utils/api";
+
+// Extend jsPDF type to include autoTable
+declare module "jspdf" {
+  interface jsPDF {
+    autoTable: (options: any) => jsPDF;
+  }
+}
 
 interface DateRange {
   from: Date | null;
@@ -18,7 +30,7 @@ interface OrderData {
   id: string;
   products: string;
   userId: string;
-  addressId: string;
+  address: string;
   subtotal: number;
   status: string;
   createdAt: string;
@@ -44,6 +56,17 @@ interface CategoryData {
   name: string;
   description: string;
   subCategory: string;
+  products: string;
+  createdAt: string;
+}
+
+interface UserData {
+  id: string;
+  fullName: string;
+  email: string;
+  number: string;
+  role: string;
+  address: string;
   createdAt: string;
 }
 
@@ -57,6 +80,7 @@ const GenerateReport: React.FC = () => {
   const [fileFormat, setFileFormat] = useState<string>("pdf");
   const [isLoading, setIsLoading] = useState(false);
   const baseURL = window.location.origin;
+
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
@@ -65,8 +89,14 @@ const GenerateReport: React.FC = () => {
     type: string,
     startDate: Date | null,
     endDate: Date | null
-  ) => {
-    if (!startDate || !endDate) {
+  ): Promise<OrderData[] | ProductData[] | CategoryData[] | UserData[]> => {
+    if (
+      !startDate ||
+      (!endDate &&
+        type !== "users" &&
+        type !== "products" &&
+        type !== "categories")
+    ) {
       throw new Error("Invalid date range");
     }
 
@@ -74,16 +104,19 @@ const GenerateReport: React.FC = () => {
       let data;
       switch (type) {
         case "orders":
-          data = await fetchOrders(startDate, endDate);
-          console.log("Fetched Orders Data:", data); // Log orders data
+          data = await fetchOrders();
+          console.log("Order data:", data);
           return data.map((order: any) => ({
             id: order._id,
             products: order.products
-              .map(
-                (p: any) =>
-                  `${p.productId.name} (${p.quantity}) (${
-                    p.color ? p.color : ""
-                  })`
+              .map((p: any) =>
+                p.productId
+                  ? `${p.productId.name} (${p.quantity}) ${
+                      p.color ? `(${p.color})` : ""
+                    } - $${p.price}`
+                  : `Custom Product (${p.quantity}) ${
+                      p.color ? `(${p.color})` : ""
+                    } - $${p.price}`
               )
               .join(", "),
             userId: order.userId.fullName,
@@ -95,65 +128,77 @@ const GenerateReport: React.FC = () => {
               order.address.postalCode,
               order.address.country,
             ]
-              .filter(Boolean) // Remove undefined or null values
+              .filter(Boolean)
               .join(", "),
             subtotal: order.subtotal,
             status: order.status,
             createdAt: new Date(order.createdAt).toLocaleDateString(),
           }));
-
         case "products":
           data = await fetchProducts();
-
-          // Function to clean HTML tags from content
-          function cleanFeaturesContent(content: any) {
-            // Remove HTML tags from each feature
-            return content.replace(/<[^>]*>/g, "").replace(/\n/g, ""); // Remove newlines as well
-          }
-
-          console.log("Fetched Products Data:", data); // Log products data
-
-          return data.map((product: any) => {
-            return {
-              id: product._id,
-              name: product.name,
-              description: product.description,
-              retailPrice: product.retailPrice,
-              wholeSalePrice: product.wholeSalePrice,
-              productImage: baseURL + product.productImage,
-              images: baseURL + product.image.join(", "), // Join all image URLs into a string
-              // Check if features is an array or a string
-              features: Array.isArray(product.features)
-                ? product.features
-                    .map((feature: any) => cleanFeaturesContent(feature))
-                    .join(", ") // Clean each feature if it's an array
-                : cleanFeaturesContent(product.features), // If it's a string, clean directly
-              brand: product.brand._id,
-              inStock: product.inStock,
-              subCategory: product.subCategory.name,
-              createdAt: new Date(product.createdAt).toLocaleDateString(), // Format creation date
-            };
-          });
+          return data.map((product: any) => ({
+            id: product._id,
+            name: product.name,
+            description: product.description,
+            retailPrice: product.retailPrice,
+            wholeSalePrice: product.wholeSalePrice,
+            productImage: baseURL + product.productImage,
+            images: product.image
+              .map((img: string) => baseURL + img)
+              .join(", "),
+            features: Array.isArray(product.features)
+              ? product.features
+                  .map((feature: string) =>
+                    feature.replace(/<[^>]*>/g, "").replace(/\n/g, "")
+                  )
+                  .join(", ")
+              : product.features.replace(/<[^>]*>/g, "").replace(/\n/g, ""),
+            brand: product.brand._id,
+            inStock: product.inStock,
+            subCategory: product.subCategory.name,
+            createdAt: new Date(product.createdAt).toLocaleDateString(),
+          }));
 
         case "categories":
           data = await fetchCategories();
-          console.log("Fetched Categories Data:", data); // Log categories data
           return data.map((category: any) => ({
             id: category._id,
             name: category.name,
             description: category.description,
             subCategory: category.subCategories
               .map((subCat: any) => subCat.name)
-              .join(", "), // Join subcategory names
+              .join(", "),
             products: category.subCategories
-              .map(
-                (subCat: any) =>
-                  subCat.products
-                    .map((product: any) => product.name) // Extract product names
-                    .join(", ") // Join product names with commas
+              .map((subCat: any) =>
+                subCat.products.map((product: any) => product.name).join(", ")
               )
-              .join(", "), // Join all subcategory products with commas
-            createdAt: new Date(category.createdAt).toLocaleDateString(), // Format creation date
+              .join(", "),
+            createdAt: new Date(category.createdAt).toLocaleDateString(),
+          }));
+
+        case "users":
+          data = await fetchUsers();
+          console.log("Users data:", data);
+          return data.map((user: any) => ({
+            id: user._id,
+            fullName: user.fullName,
+            email: user.email,
+            number: user.number,
+            role: user.role,
+            address:
+              user.addressBook && user.addressBook.length > 0
+                ? [
+                    user.addressBook[0].street,
+                    user.addressBook[0].city,
+                    user.addressBook[0].province,
+                    user.addressBook[0].district,
+                    user.addressBook[0].postalCode,
+                    user.addressBook[0].country,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")
+                : "No address provided",
+            createdAt: new Date(user.createdAt).toLocaleDateString(),
           }));
 
         default:
@@ -165,7 +210,9 @@ const GenerateReport: React.FC = () => {
     }
   };
 
-  const generatePDF = (data: OrderData[] | ProductData[] | CategoryData[]) => {
+  const generatePDF = (
+    data: OrderData[] | ProductData[] | CategoryData[] | UserData[]
+  ) => {
     const doc = new jsPDF({
       orientation: "landscape",
       unit: "mm",
@@ -177,21 +224,21 @@ const GenerateReport: React.FC = () => {
     const margin = 10;
 
     // Add the company logo
-    const logoUrl = "/assets/logo.png"; // Update with your logo's path or base64
-    const logoWidth = 30; // Width of the logo in mm
-    const logoHeight = 30; // Height of the logo in mm
-    const logoX = (pageWidth - logoWidth) / 2; // Center the logo horizontally
-    const logoY = margin; // Position the logo slightly below the top margin
+    const logoUrl = "/assets/logo.png";
+    const logoWidth = 30;
+    const logoHeight = 30;
+    const logoX = (pageWidth - logoWidth) / 2;
+    const logoY = margin;
 
     doc.addImage(logoUrl, "PNG", logoX, logoY, logoWidth, logoHeight);
 
     // Add company name
-    const companyName = "Trinity Waterproofing"; // Update with your company name
+    const companyName = "Trinity Waterproofing";
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
     const companyNameWidth = doc.getTextWidth(companyName);
-    const companyNameX = (pageWidth - companyNameWidth) / 2; // Center the company name
-    doc.text(companyName, companyNameX, logoY + logoHeight + 5); // Position name below the logo
+    const companyNameX = (pageWidth - companyNameWidth) / 2;
+    doc.text(companyName, companyNameX, logoY + logoHeight + 5);
 
     // Title of the report
     doc.setFontSize(14);
@@ -223,7 +270,7 @@ const GenerateReport: React.FC = () => {
       body: rows,
       startY: margin + 50,
       margin: { left: margin, right: margin },
-      columnStyles: headers.reduce((acc, _, index) => {
+      columnStyles: headers.reduce((acc: any, _, index) => {
         acc[index] = {
           cellWidth: columnWidth,
           overflow: "linebreak",
@@ -260,7 +307,9 @@ const GenerateReport: React.FC = () => {
     doc.save(`${reportType}_report.pdf`);
   };
 
-  const generateCSV = (data: OrderData[] | ProductData[] | CategoryData[]) => {
+  const generateCSV = (
+    data: OrderData[] | ProductData[] | CategoryData[] | UserData[]
+  ) => {
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
@@ -268,7 +317,7 @@ const GenerateReport: React.FC = () => {
   };
 
   const generateExcel = (
-    data: OrderData[] | ProductData[] | CategoryData[]
+    data: OrderData[] | ProductData[] | CategoryData[] | UserData[]
   ) => {
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
@@ -277,7 +326,13 @@ const GenerateReport: React.FC = () => {
   };
 
   const handleGenerateReport = async () => {
-    if (!dateRange.from || !dateRange.to) {
+    if (
+      !dateRange.from ||
+      (!dateRange.to &&
+        reportType !== "users" &&
+        reportType !== "products" &&
+        reportType !== "categories")
+    ) {
       toast.error("Please select a valid date range");
       return;
     }
@@ -351,6 +406,7 @@ const GenerateReport: React.FC = () => {
                     <option value="orders">Orders Report</option>
                     <option value="products">Products Report</option>
                     <option value="categories">Categories Report</option>
+                    <option value="users">Users Report</option>
                   </select>
                 </div>
 

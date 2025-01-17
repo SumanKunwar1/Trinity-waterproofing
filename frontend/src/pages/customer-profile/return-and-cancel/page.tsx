@@ -1,6 +1,6 @@
 import Footer from "../../../components/layout/Footer";
 import Header from "../../../components/layout/Header";
-import { ReturnAndCancel } from "../../../customer-profile/body/return-and-cancel";
+import ReturnAndCancel from "../../../customer-profile/body/return-and-cancel";
 import { SideBar } from "../../../customer-profile/body/side-bar";
 
 export const ReturnAndCancelPage = () => {

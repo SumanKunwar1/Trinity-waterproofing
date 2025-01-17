@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import { io, Socket } from "socket.io-client";
+import { useState, useEffect, useRef } from "react";
+import { io } from "socket.io-client";
 import { Bell, Check, X } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
@@ -22,21 +22,24 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({
   onNewNotification,
 }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [socket, setSocket] = useState<Socket | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  <audio ref={audioRef} src="/assets/notification-sound.mp3" />;
 
   useEffect(() => {
     const userId = JSON.parse(localStorage.getItem("userId") || "");
     if (!userId) return;
 
     const newSocket = io("http://localhost:5000");
-    setSocket(newSocket);
 
     newSocket.on("notification", (notification: Notification) => {
       setNotifications((prev) => [notification, ...prev]);
-      toast(notification.message, { type: notification.type });
+      toast(notification.message, {
+        icon: <Bell className="h-4 w-4" />, // You can add an icon if needed
+        style: {
+          background: notification.type === "error" ? "#f44336" : "#4caf50",
+        }, // optional style for different types
+        duration: 4000, // optional duration for the toast
+      });
       playNotificationSound();
       if (onNewNotification) {
         onNewNotification();

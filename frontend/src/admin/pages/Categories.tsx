@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
@@ -41,7 +41,7 @@ interface Subcategory {
   _id: string;
   name: string;
   description: string;
-  categoryId: string;
+  category: string;
 }
 
 const categorySchema = Yup.object().shape({
@@ -51,7 +51,7 @@ const categorySchema = Yup.object().shape({
 
 const subcategorySchema = Yup.object().shape({
   name: Yup.string().required("Required"),
-  categoryId: Yup.string().required("Required"),
+  category: Yup.string().required("Required"),
   description: Yup.string().required("Required"),
 });
 
@@ -391,7 +391,7 @@ const Categories: React.FC = () => {
                                 initialValues={
                                   editingSubcategory || {
                                     name: "",
-                                    categoryId: "",
+                                    category: "",
                                     description: "",
                                   }
                                 }
@@ -404,7 +404,7 @@ const Categories: React.FC = () => {
                                     type: "text",
                                   },
                                   {
-                                    name: "categoryId",
+                                    name: "category",
                                     label: "Category",
                                     type: "select",
                                     options: categories.map((c) => ({
@@ -438,7 +438,7 @@ const Categories: React.FC = () => {
                             ...subcategory,
                             category: categories.find(
                               (category) =>
-                                category._id === subcategory.category // Use subcategory.category to match with category._id
+                                category._id === subcategory.category
                             )?.name,
                             actions: (
                               <div className="flex space-x-2">

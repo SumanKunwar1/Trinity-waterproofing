@@ -1,4 +1,3 @@
-import React from "react";
 import { RatingsProps } from "../../types/rating";
 
 const Ratings: React.FC<RatingsProps> = ({ rating, ratingCount }) => {

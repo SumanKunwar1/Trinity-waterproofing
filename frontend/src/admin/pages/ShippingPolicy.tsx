@@ -32,6 +32,14 @@ import { MoreVertical, Plus } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 
+// Define the Policy interface
+interface IPolicy {
+  _id: string;
+  title: string;
+  description: string;
+  updatedAt: string;
+}
+
 // Validation schema
 const shippingPolicySchema = yup.object().shape({
   title: yup.string().required("Title is required"),
@@ -40,9 +48,9 @@ const shippingPolicySchema = yup.object().shape({
 
 const ShippingPolicy = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const [policies, setPolicies] = useState([]);
+  const [policies, setPolicies] = useState<IPolicy[]>([]); // Specify the type of policies as IPolicy[]
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingPolicy, setEditingPolicy] = useState(null);
+  const [editingPolicy, setEditingPolicy] = useState<IPolicy | null>(null); // Update type to IPolicy or null
   const authToken = localStorage.getItem("authToken");
   const {
     register,
@@ -136,7 +144,7 @@ const ShippingPolicy = () => {
     }
   };
 
-  const handleEdit = (policy: any) => {
+  const handleEdit = (policy: IPolicy) => {
     setEditingPolicy(policy);
     setValue("title", policy.title);
     setValue("description", policy.description);
@@ -172,7 +180,7 @@ const ShippingPolicy = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {policies.length > 0 ? (
-                policies.map((policy: any) => (
+                policies.map((policy: IPolicy) => (
                   <motion.div
                     key={policy._id}
                     initial={{ opacity: 0, y: 20 }}

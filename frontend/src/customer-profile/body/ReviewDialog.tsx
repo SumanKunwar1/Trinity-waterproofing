@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { DialogHeader, DialogTitle } from "../../components/ui/dialog";
 import { Button } from "../../components/ui/button";
 import { Textarea } from "../../components/ui/textarea";
@@ -8,8 +8,8 @@ import { FaStar, FaUpload } from "react-icons/fa";
 import { toast } from "react-toastify";
 
 interface ReviewDialogProps {
-  onSubmit: (rating: number, content: string, images?: File[]) => void;
-  productName: string;
+  onSubmit: (rating: number, content: string, images?: File[]) => Promise<void>;
+  productName?: string;
   initialRating?: number;
   initialContent?: string;
   initialImages?: File[] | null;
@@ -17,7 +17,7 @@ interface ReviewDialogProps {
 
 export const ReviewDialog: React.FC<ReviewDialogProps> = ({
   onSubmit,
-  productName,
+  productName = "",
   initialRating = 0,
   initialContent = "",
   initialImages = null,
@@ -29,10 +29,10 @@ export const ReviewDialog: React.FC<ReviewDialogProps> = ({
   useEffect(() => {
     setRating(initialRating);
     setContent(initialContent);
-    setImages(initialImages || []);
+    setImages(initialImages || null);
   }, [initialRating, initialContent, initialImages]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (rating === 0) {
       toast.error("Please select a rating before submitting.");
@@ -43,7 +43,7 @@ export const ReviewDialog: React.FC<ReviewDialogProps> = ({
       return;
     }
 
-    onSubmit(rating, content, images || undefined);
+    await onSubmit(rating, content, images || undefined);
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,7 +54,9 @@ export const ReviewDialog: React.FC<ReviewDialogProps> = ({
   };
 
   const handleRemoveImage = (index: number) => {
-    setImages((prevImages) => prevImages?.filter((_, i) => i !== index) || []);
+    setImages(
+      (prevImages) => prevImages?.filter((_, i) => i !== index) || null
+    );
   };
 
   return (
@@ -111,7 +113,7 @@ export const ReviewDialog: React.FC<ReviewDialogProps> = ({
               {images.map((img, index) => (
                 <div key={index} className="relative inline-block">
                   <img
-                    src={URL.createObjectURL(img)}
+                    src={URL.createObjectURL(img) || "/placeholder.svg"}
                     alt={`review-image-${index}`}
                     className="w-16 h-16 object-cover rounded-md"
                   />

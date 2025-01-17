@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -7,12 +5,10 @@ import {
   FaTimesCircle,
   FaCheckCircle,
   FaSpinner,
-  FaSearch,
 } from "react-icons/fa";
 import { Label } from "../../components/ui/label";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
-import { Input } from "../../components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -55,8 +51,8 @@ const statusIcons = {
   },
 };
 
-export const ReturnAndCancel = () => {
-  const { orders, isLoading, isError } = useUserData();
+const ReturnAndCancel = () => {
+  const { orders, isError } = useUserData();
   const [filter, setFilter] = useState("");
   const [selectedItem, setSelectedItem] = useState<Order | null>(null);
   const [statusFilter, setStatusFilter] = useState("");
@@ -258,3 +254,5 @@ export const ReturnAndCancel = () => {
     </motion.div>
   );
 };
+
+export default ReturnAndCancel;

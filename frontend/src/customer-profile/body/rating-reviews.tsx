@@ -1,15 +1,30 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useUserData } from "../../hooks/useUserData";
 import { Card, CardContent } from "../../components/ui/card";
 import { FaStar } from "react-icons/fa";
 
+// Define the types for the review objects
+interface ReviewContent {
+  _id: string;
+  rating: number;
+  content: string;
+  image?: string | string[]; // Image can be a single string or an array of strings
+}
+
+interface Review {
+  _id: string;
+  name: string;
+  review: ReviewContent[]; // Array of reviews for this product or service
+}
+
 export const Reviews: React.FC = () => {
   const { isLoading, isError } = useUserData();
-  const [reviews, setReviews] = useState([]);
   const userId = JSON.parse(localStorage.getItem("userId") || "");
 
+  const [reviews, setReviews] = useState<Review[]>([]);
+
   // Fetch Reviews by User
-  const fetchReviewsByUser = async (userId: string) => {
+  const fetchReviewsByUser = async (userId: string): Promise<Review[]> => {
     try {
       const response = await fetch(`/api/review/user/${userId}`, {
         headers: {

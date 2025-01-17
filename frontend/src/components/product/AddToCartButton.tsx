@@ -1,4 +1,3 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import Button from "../common/Button";
@@ -39,7 +38,6 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({
   return (
     <Button
       onClick={handleAddToCart}
-      disabled={isLoading}
       size="sm"
       className="flex align-middle text-center justify-between"
     >

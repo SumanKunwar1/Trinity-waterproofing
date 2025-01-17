@@ -1,4 +1,3 @@
-import React from "react";
 import ProductCard from "../common/ProductCard";
 import { IProduct } from "../../types/product";
 

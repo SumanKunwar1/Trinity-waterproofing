@@ -8,19 +8,10 @@ import {
   TableRow,
 } from "../../components/ui/table";
 import { format } from "date-fns";
-
-interface Order {
-  _id: string;
-  userId: {
-    fullName: string;
-  };
-  subtotal: number;
-  status: string;
-  createdAt: string;
-}
+import { IOrder } from "../pages/Dashboard"; // Import IOrder from Dashboard
 
 interface LatestOrderTableProps {
-  orders: Order[];
+  orders: IOrder[];
 }
 
 const LatestOrderTable: React.FC<LatestOrderTableProps> = ({ orders }) => {

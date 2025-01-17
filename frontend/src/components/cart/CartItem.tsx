@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { Button } from "../ui/button";

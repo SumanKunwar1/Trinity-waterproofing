@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -23,7 +21,7 @@ import {
   DialogDescription,
   DialogClose,
 } from "../../components/ui/dialog";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Address } from "../../types/address";
 

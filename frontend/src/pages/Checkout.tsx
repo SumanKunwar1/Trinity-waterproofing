@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import OrderSummary from "../components/cart/OrderSummary";
@@ -8,9 +8,9 @@ import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
 import AddressCard from "../components/common/AddressCard";
 import { Address } from "../types/address";
-import { ICartItem } from "../types/cart";
 import { createOrder } from "../api/orderApi";
 import { OrderItem } from "../types/order";
+import { ICartItem } from "../types/cart"; // Import this if not already imported
 
 const Checkout: React.FC = () => {
   const location = useLocation();
@@ -23,6 +23,7 @@ const Checkout: React.FC = () => {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Checkout data: If it's from direct buy now, it will be passed via location state; otherwise, fallback to cart.
   const checkoutData = location.state?.checkoutData || cart;
 
   useEffect(() => {
@@ -115,24 +116,20 @@ const Checkout: React.FC = () => {
     setIsSubmitting(true);
     try {
       const orderData: OrderItem[] = checkoutData.map((item: ICartItem) => {
-        const productId = item.product?._id || item.productId;
+        const productId = item.product?._id || item.productId; // Normalize productId
         if (!productId) {
           throw new Error(
             `Invalid product ID for item: ${JSON.stringify(item)}`
           );
         }
-        const price =
-          item.product?.retailDiscountedPrice ||
-          item.product?.retailPrice ||
-          item.product?.wholeSaleDiscountedPrice ||
-          item.product?.wholeSalePrice ||
-          item.price ||
-          0;
+
+        // Build the order data for placing an order
         return {
           productId,
-          color: item.selectedColor || item.color || null,
+          color: item.color || null,
+          // name: item.name,
           quantity: item.quantity,
-          price,
+          price: item.price,
         };
       });
 
@@ -140,6 +137,9 @@ const Checkout: React.FC = () => {
         throw new Error("No valid items to order");
       }
 
+      console.log("Order Data:", JSON.stringify(orderData, null, 2)); // Debugging
+
+      // Call the API to create an order
       const response = await createOrder(orderData, selectedAddressId);
 
       if (response.success && response.orderId) {

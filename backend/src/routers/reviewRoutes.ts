@@ -42,17 +42,6 @@ router.get(
   handleResponse
 );
 
-// router.patch(
-//   "/:userId/:reviewId",
-//   isAuthenticated,
-//   isAuthorizedUser,
-//   uploadMiddleware,
-//   appendFileDataToBody,
-//   validateEditReview,
-//   reviewController.updateReviewById.bind(reviewController),
-//   handleResponse
-// );
-
 router.delete(
   "/:reviewId",
   isAuthenticated,
@@ -60,14 +49,6 @@ router.delete(
   reviewController.deleteReviewById.bind(reviewController),
   handleResponse
 );
-
-// router.delete(
-//   "/:userId/:reviewId",
-//   isAuthenticated,
-//   isAuthorizedUser,
-//   reviewController.deleteReviewById.bind(reviewController),
-//   handleResponse
-// );
 
 router.use(handleError);
 

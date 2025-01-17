@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { getFolders, getFiles } from "../admin/utils/api";
@@ -31,7 +31,7 @@ const UserGallery: React.FC = () => {
     try {
       const folderData = await getFolders();
       const folderWithRandomImage = await Promise.all(
-        folderData.map(async (folder) => {
+        folderData.map(async (folder: any) => {
           let randomImage = localStorage.getItem(`previewImage-${folder.name}`);
 
           // If random image is not saved in localStorage, select one
@@ -41,7 +41,10 @@ const UserGallery: React.FC = () => {
               files.length > 0
                 ? files[Math.floor(Math.random() * files.length)]
                 : "";
-            localStorage.setItem(`previewImage-${folder.name}`, randomImage);
+            localStorage.setItem(
+              `previewImage-${folder.name}`,
+              randomImage as string
+            );
           }
 
           return {

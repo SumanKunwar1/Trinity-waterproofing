@@ -1,34 +1,82 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import axios from "axios";
 import ProductGrid from "../components/products/ProductGrid";
 import ProductFilter from "../components/products/ProductFilter";
 import ProductSort from "../components/products/ProductSort";
 import Pagination from "../components/common/Pagination";
 import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
-import axios from "axios";
 import Loader from "../components/common/Loader";
 import { IProduct } from "../types/product";
-import { Category } from "../types/category";
-import { SubCategory } from "../types/subCategory";
+import { Brand } from "../types/brand";
 const ITEMS_PER_PAGE = 9;
+
+interface Category {
+  _id: string;
+  name: string;
+  description?: string;
+  subCategories: SubCategory[];
+}
+interface SubCategory {
+  _id: string;
+  name: string;
+  description?: string;
+  category: string;
+  products: Product[];
+}
+
+interface IColor {
+  name: string;
+  hex: string;
+}
+
+interface IReview {
+  rating: number;
+  content: string;
+}
+
+interface Product {
+  _id: string;
+  name: string;
+  description: string;
+  wholeSalePrice: number;
+  retailPrice: number;
+  retailDiscountedPrice?: number;
+  wholeSaleDiscountedPrice?: number;
+  productImage: string;
+  image: string[];
+  subCategory: string;
+  pdfUrl: string;
+  features: string[];
+  brand: string | Brand;
+  createdAt: string;
+  colors?: IColor[];
+  inStock: number;
+  review: IReview[];
+}
+interface FilterOptions {
+  category: string;
+  subcategory: string;
+  minPrice: number;
+  maxPrice: number;
+  rating: number[];
+  inStock: boolean;
+}
 
 const ProductListing: React.FC = () => {
   const location = useLocation();
   const [products, setProducts] = useState<IProduct[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<IProduct[]>([]);
-  const [sortOption, setSortOption] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
-  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
 
   const userRole = localStorage.getItem("userRole");
   const isLoggedIn = !!localStorage.getItem("authToken");
   const unParsedUserId = localStorage.getItem("userId");
-  let userId = null;
+  let userId: string | null = null;
 
   if (unParsedUserId) {
     try {
@@ -37,8 +85,6 @@ const ProductListing: React.FC = () => {
       console.error("Error parsing userId:", error);
     }
   }
-
-  console.log("userId:", userId);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,15 +102,12 @@ const ProductListing: React.FC = () => {
           productsRes = await axios.get("/api/product");
         }
 
-        const [categoriesRes, subCategoriesRes] = await Promise.all([
-          axios.get("/api/category"),
-          axios.get("/api/subcategory"),
-        ]);
+        const [categoriesRes] = await Promise.all([axios.get("/api/category")]);
 
         setProducts(productsRes.data);
         setFilteredProducts(productsRes.data);
         setCategories(categoriesRes.data);
-        setSubCategories(subCategoriesRes.data);
+
         setLoading(false);
       } catch (error) {
         setError("Failed to fetch data");
@@ -92,7 +135,7 @@ const ProductListing: React.FC = () => {
     }
   }, [location, products]);
 
-  const handleFilter = (filters: any) => {
+  const handleFilter = (filters: FilterOptions) => {
     let filtered = [...products];
 
     if (filters.category) {
@@ -130,22 +173,11 @@ const ProductListing: React.FC = () => {
       filtered = filtered.filter((product) => product.inStock > 0);
     }
 
-    if (searchTerm) {
-      const lowerSearchTerm = searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        (product) =>
-          product.name.toLowerCase().includes(lowerSearchTerm) ||
-          product.description.toLowerCase().includes(lowerSearchTerm) ||
-          product.brand.toLowerCase().includes(lowerSearchTerm)
-      );
-    }
-
     setFilteredProducts(filtered);
     setCurrentPage(1);
   };
 
   const handleSort = (option: string) => {
-    setSortOption(option);
     let sorted = [...filteredProducts];
 
     switch (option) {
@@ -198,11 +230,7 @@ const ProductListing: React.FC = () => {
           <h1 className="text-3xl font-bold mb-8">Our Products</h1>
           <div className="flex flex-col md:flex-row">
             <div className="w-full md:w-1/4 mb-8 md:mb-0">
-              <ProductFilter
-                onFilter={handleFilter}
-                categories={categories}
-                subCategories={subCategories}
-              />
+              <ProductFilter onFilter={handleFilter} categories={categories} />
             </div>
             <div className="w-full md:w-3/4 md:pl-5">
               <ProductSort onSort={handleSort} />

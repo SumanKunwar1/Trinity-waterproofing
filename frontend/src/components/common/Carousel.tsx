@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  ReactNode,
-  useRef,
-  TouchEvent,
-} from "react";
+import { useState, useEffect, ReactNode, useRef, TouchEvent } from "react";
 import { FaChevronLeft, FaChevronRight, FaPause, FaPlay } from "react-icons/fa";
 import { cn } from "../../lib/utils";
 

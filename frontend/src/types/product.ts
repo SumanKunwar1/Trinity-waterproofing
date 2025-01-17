@@ -1,3 +1,6 @@
+import { Brand } from "./brand";
+import { SubCategory } from "./subCategory";
+import { Review } from "./review";
 export interface IColor {
   name: string;
   hex: string;
@@ -13,12 +16,12 @@ export interface IProduct {
   wholeSaleDiscountedPrice?: number;
   productImage: string;
   image: string[];
-  subCategory: string;
+  subCategory: SubCategory;
   pdfUrl: string;
   features: string;
-  brand: string;
+  brand: Brand;
   createdAt: string;
   colors?: IColor[];
   inStock: number;
-  review: { rating: number; content: string }[];
+  review: Review[];
 }

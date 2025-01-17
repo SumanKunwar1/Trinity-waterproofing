@@ -4,19 +4,66 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "5000:5000"
+      - "5000:5000" # Matches the PORT in your .env file
+    networks:
+      - trinity_network
+
+    env_file:
+      - ./backend/.env
     volumes:
       - ./backend:/app
-    environment:
-      NODE_ENV: production
+      - ./backend/uploads:/app/uploads # Persistent uploads folder
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"] # Replace with your backend health endpoint
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "3000:80"
+      - "5173:5173"
+    networks:
+      - trinity_network
+    environment:
+      REACT_APP_API_URL: http://backend:5000 # Ensure frontend communicates with backend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5173"] # Replace with your frontend health endpoint
+      interval: 30s
+      timeout: 10s
+      retries: 5
     volumes:
       - ./frontend:/app
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    networks:
+      - trinity_network
+    volumes:
+      - mongo-data:/data/db
     environment:
-      NODE_ENV: production
+      MONGO_INITDB_DATABASE: trinitywater
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+networks:
+  trinity_network:
+    driver: bridge
+
+volumes:
+  mongo-data:
+    driver: local

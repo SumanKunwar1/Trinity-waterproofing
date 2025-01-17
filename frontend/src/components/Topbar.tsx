@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Bell, Settings, LogOut, User, KeyRound, Check, X } from "lucide-react";
 import {
   DropdownMenu,
@@ -115,10 +115,7 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
   };
 
   // Handle change password submission
-  const handleChangePassword = async (
-    values: any,
-    { setSubmitting, resetForm }: any
-  ) => {
+  const handleChangePassword = async ({ setSubmitting, resetForm }: any) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       toast({
@@ -139,10 +136,7 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
   };
 
   // Handle profile update submission
-  const handleProfileUpdate = async (
-    values: any,
-    { setSubmitting, resetForm }: any
-  ) => {
+  const handleProfileUpdate = async ({ setSubmitting, resetForm }: any) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       toast({

@@ -1,4 +1,3 @@
-import React from "react";
 import FeaturedProductsHeader from "../common/FeaturedProductsHeader";
 import FeaturedProductsCarousel from "../common/FeaturedProductsCarousel";
 

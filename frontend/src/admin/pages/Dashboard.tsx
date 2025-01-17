@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import { Bar, Line, Pie } from "react-chartjs-2";
@@ -53,7 +53,7 @@ interface IProduct {
   createdAt: string;
 }
 
-interface IOrder {
+export interface IOrder {
   _id: string;
   userId: {
     _id: string;
@@ -132,7 +132,6 @@ const Dashboard: React.FC = () => {
       toast.error(error.message);
     }
   };
-  console.log("Orders:", orders);
 
   const fetchUsers = async () => {
     try {
@@ -165,7 +164,6 @@ const Dashboard: React.FC = () => {
       toast.error(errorMessage);
     }
   };
-  console.log("Categories:", categories);
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
@@ -192,14 +190,25 @@ const Dashboard: React.FC = () => {
     });
   };
 
-  const currentMonthOrders = filterDataByMonth(orders, 0);
-  const prevMonthOrders = filterDataByMonth(orders, 1);
-  const currentMonthProducts = filterDataByMonth(products, 0);
+  const typedOrders: IOrder[] = orders.map((order) => ({
+    ...order,
+    // Ensure each order has all the required fields for IOrder
+    // You can set defaults for missing fields here if necessary
+    _id: order._id || "", // Default if missing
+    userId: order.userId || { _id: "", fullName: "" }, // Default if missing
+    products: order.products || [], // Default if missing
+    subtotal: order.subtotal || 0, // Default if missing
+    createdAt: order.createdAt || new Date().toISOString(), // Default if missing
+  }));
+
+  const prevMonthOrders = filterDataByMonth(typedOrders, 1);
   const prevMonthProducts = filterDataByMonth(products, 1);
-  const currentMonthUsers = filterDataByMonth(users, 0);
   const prevMonthUsers = filterDataByMonth(users, 1);
 
-  const totalRevenue = orders.reduce((sum, order) => sum + order.subtotal, 0);
+  const totalRevenue = typedOrders.reduce(
+    (sum, order) => sum + order.subtotal,
+    0
+  );
   const prevTotalRevenue = prevMonthOrders.reduce(
     (sum, order) => sum + order.subtotal,
     0
@@ -209,7 +218,7 @@ const Dashboard: React.FC = () => {
     prevTotalRevenue
   );
 
-  const totalOrders = orders.length;
+  const totalOrders = typedOrders.length;
   const prevTotalOrders = prevMonthOrders.length;
   const ordersChange = calculatePercentageChange(totalOrders, prevTotalOrders);
 
@@ -232,7 +241,7 @@ const Dashboard: React.FC = () => {
     datasets: [
       {
         label: "Sales",
-        data: orders
+        data: typedOrders
           .filter(
             (order) =>
               new Date(order.createdAt).getFullYear() ===
@@ -253,7 +262,7 @@ const Dashboard: React.FC = () => {
     datasets: [
       {
         label: "Orders",
-        data: orders
+        data: typedOrders
           .filter(
             (order) =>
               new Date(order.createdAt).getFullYear() ===
@@ -429,7 +438,7 @@ const Dashboard: React.FC = () => {
                   <CardTitle>Latest Orders</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <LatestOrderTable orders={orders.slice(0, 10)} />
+                  <LatestOrderTable orders={typedOrders.slice(0, 10)} />
                 </CardContent>
               </Card>
             </motion.div>
