@@ -167,12 +167,6 @@ export class ReviewService {
         throw httpMessages.NOT_FOUND("User not found");
       }
 
-      if (!review.user || review.user.toString() !== user._id.toString()) {
-        throw httpMessages.FORBIDDEN(
-          "You do not have permission to delete this review"
-        );
-      }
-
       const result = await Product.updateOne(
         { review: review._id },
         { $pull: { review: review._id } }

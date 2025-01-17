@@ -14,11 +14,11 @@ const Cart: React.FC = () => {
   const handleProceedToCheckout = () => {
     const checkoutData = cart.map((item) => ({
       productId: item.productId,
+      name: item.name,
       quantity: item.quantity,
       price: item.price,
       selectedColor: item.color || null,
     }));
-
     navigate("/checkout", { state: { checkoutData } });
   };
 

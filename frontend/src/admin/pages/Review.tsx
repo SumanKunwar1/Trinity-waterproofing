@@ -62,8 +62,13 @@ export default function Reviews() {
         toast.success("Review deleted successfully");
         setIsDeleteDialogOpen(false);
         setSelectedReview(null);
-      } catch (error) {
-        toast.error("Failed to delete review");
+      } catch (error: any) {
+        if (error.response && error.response.status === 403) {
+          toast.error("You don't have permission to delete this review");
+        } else {
+          toast.error("Failed to delete review");
+        }
+        console.error("Error deleting review:", error);
       }
     }
   };
@@ -80,7 +85,7 @@ export default function Reviews() {
 
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
-  // Flatten the products array to get all reviews
+  // Safely flatten the products array to get all reviews
   const allReviews = products.flatMap((product: Product) =>
     product.review.map((review: Review) => ({
       ...review,
@@ -200,11 +205,13 @@ export default function Reviews() {
                 />
 
                 <Pagination className="mt-4">
-                  <PaginationPrevious
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                  />
                   <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                      />
+                    </PaginationItem>
                     {Array.from({ length: totalPages }, (_, index) => (
                       <PaginationItem key={index}>
                         <PaginationLink
@@ -215,11 +222,13 @@ export default function Reviews() {
                         </PaginationLink>
                       </PaginationItem>
                     ))}
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                      />
+                    </PaginationItem>
                   </PaginationContent>
-                  <PaginationNext
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                  />
                 </Pagination>
               </>
             )}

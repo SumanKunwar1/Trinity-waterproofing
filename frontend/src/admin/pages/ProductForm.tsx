@@ -94,6 +94,7 @@ const validationSchema = Yup.object().shape({
 
 const ProductForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  console.log("Product ID:", id);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setSidebarOpen] = useState(false);

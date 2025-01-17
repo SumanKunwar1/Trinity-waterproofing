@@ -1,3 +1,4 @@
+import React from "react";
 import QRCode from "react-qr-code";
 
 interface QRCodeProps {
@@ -8,14 +9,27 @@ interface QRCodeProps {
 }
 
 const QRCodeComponent: React.FC<QRCodeProps> = ({
-  value = "",
+  value,
   size = 128,
   fgColor = "#000000",
   bgColor = "#ffffff",
 }) => {
+  // Check if the value is valid
+  const isValidValue = value && value.trim() !== "";
+  console.log("value", value);
   return (
     <div style={{ textAlign: "center", margin: "20px" }}>
-      <QRCode value={value} size={size} fgColor={fgColor} bgColor={bgColor} />
+      {isValidValue ? (
+        <QRCode
+          value={value}
+          size={size}
+          fgColor={fgColor}
+          bgColor={bgColor}
+          style={{ width: size, height: size }}
+        />
+      ) : (
+        ""
+      )}
     </div>
   );
 };

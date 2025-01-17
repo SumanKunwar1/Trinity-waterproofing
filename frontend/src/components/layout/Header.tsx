@@ -8,6 +8,7 @@ import { IoSearchOutline, IoCloseOutline } from "react-icons/io5";
 import { FaRegHeart } from "react-icons/fa";
 import { navigationItems } from "../../constants/navigation";
 import { useCart } from "../../context/CartContext";
+
 import { useWishlist } from "../../context/WishlistContext";
 import ProductDropdown from "./ProductDropdown";
 // Import Sentry

@@ -8,9 +8,9 @@ import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
 import AddressCard from "../components/common/AddressCard";
 import { Address } from "../types/address";
-// import { ICartItem } from "../types/cart";
 import { createOrder } from "../api/orderApi";
 import { OrderItem } from "../types/order";
+import { ICartItem } from "../types/cart"; // Import this if not already imported
 
 const Checkout: React.FC = () => {
   const location = useLocation();
@@ -23,6 +23,7 @@ const Checkout: React.FC = () => {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Checkout data: If it's from direct buy now, it will be passed via location state; otherwise, fallback to cart.
   const checkoutData = location.state?.checkoutData || cart;
 
   useEffect(() => {
@@ -115,18 +116,20 @@ const Checkout: React.FC = () => {
     setIsSubmitting(true);
     try {
       const orderData: OrderItem[] = checkoutData.map((item: ICartItem) => {
-        const productId = item.productId; // Use productId directly from ICartItem
+        const productId = item.product?._id || item.productId; // Normalize productId
         if (!productId) {
           throw new Error(
             `Invalid product ID for item: ${JSON.stringify(item)}`
           );
         }
-        const price = item.price || 0; // Directly use item.price if product-related pricing doesn't exist
+
+        // Build the order data for placing an order
         return {
           productId,
-          color: item.color || null, // Use color from ICartItem if selectedColor doesn't exist
+          color: item.color || null,
+          // name: item.name,
           quantity: item.quantity,
-          price,
+          price: item.price,
         };
       });
 
@@ -134,6 +137,9 @@ const Checkout: React.FC = () => {
         throw new Error("No valid items to order");
       }
 
+      console.log("Order Data:", JSON.stringify(orderData, null, 2)); // Debugging
+
+      // Call the API to create an order
       const response = await createOrder(orderData, selectedAddressId);
 
       if (response.success && response.orderId) {
@@ -209,15 +215,3 @@ const Checkout: React.FC = () => {
 };
 
 export default Checkout;
-
-export interface ICartItem {
-  _id?: string;
-  productId: string; // Referring to productId directly
-  name: string;
-  description: string;
-  inStock: number;
-  productImage: string;
-  color?: string;
-  quantity: number;
-  price: number;
-}

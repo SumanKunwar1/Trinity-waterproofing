@@ -8,7 +8,7 @@ interface OrderSummaryProps {
 const OrderSummary: React.FC<OrderSummaryProps> = ({ cartItems }) => {
   const location = useLocation();
   const checkoutData = location.state?.checkoutData;
-
+  console.log("checkoutData:", checkoutData, "cartItems:", cartItems);
   const itemsToDisplay = checkoutData || cartItems || [];
 
   const total = itemsToDisplay.reduce((total: any, item: any) => {
@@ -26,7 +26,16 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ cartItems }) => {
           const price = item.price || product.price || 0;
           const quantity = item.quantity || 1;
           const color = item.selectedColor || item.color || null;
-
+          console.log(
+            "Product:",
+            product,
+            "Price:",
+            price,
+            "Quantity:",
+            quantity,
+            "Color:",
+            color
+          );
           return (
             <div
               key={product._id || index}

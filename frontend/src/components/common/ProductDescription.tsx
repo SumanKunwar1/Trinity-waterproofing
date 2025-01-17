@@ -2,14 +2,13 @@ import QRCodeComponent from "./QRCodeComponent";
 
 interface ProductDescriptionProps {
   features: string;
-  pdfUrl: string;
+  pdfUrl: string | null;
 }
 
 const ProductDescription: React.FC<ProductDescriptionProps> = ({
   features,
   pdfUrl,
 }) => {
-  console.log("features", features, "pdfUrl", pdfUrl);
   return (
     <div className="mt-8">
       <h2 className="text-xl font-semibold mb-4">Product Details</h2>
@@ -17,10 +16,14 @@ const ProductDescription: React.FC<ProductDescriptionProps> = ({
         className="text-gray-600"
         dangerouslySetInnerHTML={{ __html: features }}
       />
-      <h3 className="text-lg font-semibold mt-8">
-        Scan the QR Code to Open the Report
-      </h3>
-      <QRCodeComponent value={pdfUrl} size={200} />
+      {pdfUrl && ( // Check if pdfUrl exists before rendering
+        <>
+          <h3 className="text-lg font-semibold mt-8">
+            Scan the QR Code to Open the Report
+          </h3>
+          <QRCodeComponent value={pdfUrl} size={200} />
+        </>
+      )}
     </div>
   );
 };
