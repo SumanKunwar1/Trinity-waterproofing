@@ -5,8 +5,12 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "typeRoots": [
+      "./node_modules/@types",
+      "./types" // Add this line to include the custom types folder
+    ],
     "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist",
+    "outDir": "./build",
     "rootDir": "./src",
     "resolveJsonModule": true
   },
