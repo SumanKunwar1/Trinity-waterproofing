@@ -1,4 +1,4 @@
-import { memo, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLogout } from "../../utils/authUtils";
 import {
@@ -8,19 +8,43 @@ import {
   FaUserCog,
   FaUndoAlt,
   FaSignOutAlt,
-} from "react-icons/fa"; // Importing React Icons
+  FaChevronRight,
+  FaChevronLeft,
+} from "react-icons/fa";
 import { MdReviews } from "react-icons/md";
 import { IoIosNotifications } from "react-icons/io";
-import { Label } from "../../components/ui/label"; // Importing Label from ShadCN
-import { Badge } from "../../components/ui/badge"; // Importing Label from ShadCN
-// import { Button } from "../../components/ui/button"; // Importing Button from ShadCN
-import { motion } from "framer-motion"; // Importing Framer Motion for animation
+import { Label } from "../../components/ui/label";
+import { Badge } from "../../components/ui/badge";
+import { motion } from "framer-motion";
 
-export const SideBar = memo(() => {
+interface User {
+  _id: string;
+  fullName: string;
+  email: string;
+  role: string;
+  number: string;
+  createdAt: string;
+}
+
+const getInitials = (name: string) => {
+  return name
+    .split(" ")
+    .map((word) => word[0].toUpperCase())
+    .join("")
+    .substr(0, 2);
+};
+
+export const SideBar: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const userString = localStorage.getItem("user");
   const user: User | null = userString ? JSON.parse(userString) : null;
   const handleLogout = useLogout();
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [activeItem, setActiveItem] = useState<string>(
+    localStorage.getItem("activeItem") || "Dashboard"
+  );
+  const navigate = useNavigate();
 
   const navItems = [
     {
@@ -45,7 +69,6 @@ export const SideBar = memo(() => {
         </div>
       ),
     },
-
     {
       label: "Purchase History",
       path: "/customer/purchase-history",
@@ -71,18 +94,8 @@ export const SideBar = memo(() => {
       path: "/customer/reviews-ratings",
       icon: <MdReviews />,
     },
-    {
-      label: "Log Out",
-      path: "/",
-      icon: <FaSignOutAlt />,
-    },
+    { label: "Log Out", path: "/", icon: <FaSignOutAlt /> },
   ];
-
-  const [activeItem, setActiveItem] = useState<string>(
-    localStorage.getItem("activeItem") || "Dashboard"
-  );
-
-  const navigate = useNavigate();
 
   const handleNavigation = (path: string, label: string) => {
     if (label === "Log Out") {
@@ -92,11 +105,24 @@ export const SideBar = memo(() => {
     setActiveItem(label);
     navigate(path);
   };
+
   useEffect(() => {
     localStorage.setItem("activeItem", activeItem);
   }, [activeItem]);
+
   useEffect(() => {
-    // Fetch unread notifications count
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      setIsOpen(window.innerWidth >= 768);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
     const fetchUnreadNotifications = async () => {
       try {
         const userId = JSON.parse(localStorage.getItem("userId") || "");
@@ -115,87 +141,77 @@ export const SideBar = memo(() => {
     };
 
     fetchUnreadNotifications();
-    // Set up an interval to fetch the count periodically
-    const intervalId = setInterval(fetchUnreadNotifications, 60000); // every minute
+    const intervalId = setInterval(fetchUnreadNotifications, 60000);
 
     return () => clearInterval(intervalId);
   }, []);
 
   return (
-    <motion.section
-      className="w-full  bg-[#293855] text-white flex flex-col items-center py-6 h-screen overflow-auto"
-      initial={{ x: -250 }}
-      animate={{ x: 0 }}
-      exit={{ x: -250 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+    <motion.div
+      className={` w-full z-50  bg-[#293855] text-white flex flex-col items-center py-6 h-screen overflow-auto ${
+        isOpen ? "w-64" : "w-16"
+      }`}
+      initial={false}
+      animate={{ width: isOpen ? "16rem" : "4rem" }}
     >
-      <div className="user-info p-4 flex flex-col items-center">
-        <div className="avatar mb-3">
-          {user ? (
-            <div className="avatar-inner w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-secondary flex items-center justify-center">
-              {user.fullName ? (
+      {isMobile && (
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="  bg-[#293855] text-white p-1 rounded-full"
+        >
+          {isOpen ? <FaChevronLeft /> : <FaChevronRight />}
+        </button>
+      )}
+
+      {isOpen && (
+        <div className="user-info p-4 flex flex-col items-center">
+          <div className="avatar mb-3">
+            {user ? (
+              <div className="avatar-inner w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-secondary flex items-center justify-center">
                 <span className="text-xl text-white">
-                  {getInitials(user.fullName)}
+                  {user.fullName ? getInitials(user.fullName) : "U"}
                 </span>
-              ) : (
-                <span className="text-xl text-white">U</span>
-              )}
-            </div>
-          ) : (
-            <div className="avatar-inner w-16 h-16 rounded-full bg-gray-300"></div>
-          )}
-        </div>
-        <div className="user-name text-center text-gray-800">
-          {user ? (
-            <>
-              <div className="text-lg text-gray-200 font-semibold">
-                {user.fullName}
               </div>
-              <div className="text-sm text-gray-200">{user.email}</div>
-            </>
-          ) : (
-            <div className="text-gray-500">No User Logged In</div>
-          )}
+            ) : (
+              <div className="avatar-inner w-16 h-16 rounded-full bg-gray-300"></div>
+            )}
+          </div>
+          <div className="user-name text-center text-gray-800">
+            {user ? (
+              <>
+                <div className="text-lg text-gray-200 font-semibold">
+                  {user.fullName}
+                </div>
+                <div className="text-sm text-gray-200">{user.email}</div>
+              </>
+            ) : (
+              <div className="text-gray-500">No User Logged In</div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="w-[80%] border-b-2 border-gray-600 mb-3"></div>
+      {isOpen && (
+        <div className="w-[80%] border-b-2 border-gray-600 mb-3"></div>
+      )}
 
-      <div className="flex flex-col w-full px-6 space-y-2">
+      <div className="flex flex-col w-full px-2 space-y-2">
         {navItems.map((item) => (
           <motion.div
             key={item.label}
             onClick={() => handleNavigation(item.path, item.label)}
-            className={`flex items-center space-x-3 cursor-pointer py-3 px-3 rounded-md transition duration-200 ${
+            className={`flex items-center cursor-pointer py-3 px-3 rounded-md transition duration-200 ${
               activeItem === item.label
                 ? "bg-blue-600 text-white"
                 : "text-white hover:bg-secondary"
             }`}
             whileHover={{ scale: 1.05 }}
           >
-            <div className={`text-xl `}>{item.icon}</div>
-            <Label className={`text-sm `}>{item.label}</Label>
+            <div className="text-xl">{item.icon}</div>
+            {isOpen && <Label className="text-sm ml-3">{item.label}</Label>}
           </motion.div>
         ))}
       </div>
-    </motion.section>
+    </motion.div>
   );
-});
-
-interface User {
-  _id: string;
-  fullName: string;
-  email: string;
-  role: string;
-  number: string;
-  createdAt: string;
-}
-
-// Helper function to generate initials from the user's name
-const getInitials = (name: string) => {
-  return name
-    .split(" ")
-    .map((word) => word[0].toUpperCase())
-    .join("")
-    .substr(0, 2);
 };

@@ -82,12 +82,12 @@ const BrandSection: React.FC = () => {
             .map((brand, index) => (
               <div
                 key={index}
-                className="flex justify-center items-center h-40 w-40 md:h-48 md:w-48 relative transition-transform duration-300 transform hover:scale-110"
+                className="flex justify-center items-center h-40 w-40 md:h-48 md:w-48 relative transition-transform duration-300 transform hover:scale-110  shadow-md rounded-md"
               >
                 <img
                   src={brand.image}
                   alt={`Brand ${brand.name}`}
-                  className="h-full w-full object-cover rounded-md mix-blend-color-burn"
+                  className="h-full w-full object-contain p-2"
                 />
               </div>
             ))}

@@ -3,12 +3,12 @@ import Header from "../../../components/layout/Header";
 import Notifications from "../../../customer-profile/body/notification";
 import { SideBar } from "../../../customer-profile/body/side-bar";
 
-export const Notification = () => {
+const Notification = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow">
-        <div className="flex w-full h-screen m-8">
+        <div className="flex w-full h-screen">
           <div className="w-[25%]">
             <SideBar />
           </div>
@@ -21,3 +21,5 @@ export const Notification = () => {
     </div>
   );
 };
+
+export default Notification;

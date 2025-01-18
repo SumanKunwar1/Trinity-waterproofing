@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
@@ -30,6 +30,7 @@ import FormikForm from "../components/FormikForm";
 import Table from "../components/ui/table";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
+import { FormikHelpers } from "formik";
 
 interface Category {
   _id: string;
@@ -125,7 +126,7 @@ const Categories: React.FC = () => {
 
   const handleCategorySubmit = async (
     values: Omit<Category, "_id">,
-    { resetForm }: any
+    { resetForm }: FormikHelpers<Omit<Category, "_id">>
   ) => {
     try {
       const sanitizedValues = sanitizeData(values);
@@ -163,14 +164,17 @@ const Categories: React.FC = () => {
 
   const handleSubcategorySubmit = async (
     values: Omit<Subcategory, "_id">,
-    { resetForm }: any
+    { resetForm }: FormikHelpers<Omit<Subcategory, "_id">>
   ) => {
     try {
       const sanitizedValues = sanitizeData(values);
       if (editingSubcategory) {
         await axios.patch(
           `/api/subcategory/${editingSubcategory._id}`,
-          sanitizedValues,
+          {
+            ...sanitizedValues,
+            categoryId: values.category,
+          },
           {
             headers: {
               Authorization: `Bearer ${getAuthToken()}`,
@@ -179,11 +183,18 @@ const Categories: React.FC = () => {
         );
         toast.success("Subcategory updated successfully");
       } else {
-        await axios.post("/api/subcategory", sanitizedValues, {
-          headers: {
-            Authorization: `Bearer ${getAuthToken()}`,
+        await axios.post(
+          "/api/subcategory",
+          {
+            ...sanitizedValues,
+            categoryId: values.category,
           },
-        });
+          {
+            headers: {
+              Authorization: `Bearer ${getAuthToken()}`,
+            },
+          }
+        );
         toast.success("Subcategory added successfully");
       }
       fetchSubcategories();

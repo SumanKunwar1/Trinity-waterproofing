@@ -262,7 +262,11 @@ const Header: React.FC = () => {
                       <HoverCardTrigger>
                         <button className="text-white font-semibold hover:text-secondary flex items-center">
                           {item.title}
-                          <FaChevronDown className="ml-1" />
+                          <FaChevronDown
+                            className={`ml-2 transition-transform duration-300 ${
+                              isHovered ? "rotate-180" : ""
+                            }`}
+                          />
                         </button>
                       </HoverCardTrigger>
                       <HoverCardContent className="border-0 shadow-lg rounded-md w-screen">
@@ -488,21 +492,9 @@ const Header: React.FC = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-white shadow-md"
+            className="md:hidden bg-white shadow-md absolute left-0 right-0 top-full z-40 overflow-y-auto "
           >
             <nav className="flex flex-col p-4">
-              {/* Search in mobile menu */}
-              <button
-                onClick={() => {
-                  setIsSearchOpen(true);
-                  setIsOpen(false);
-                }}
-                className="text-gray-600 hover:text-blue-600 py-2 transition-colors duration-300 flex items-center"
-              >
-                <IoSearchOutline className="mr-2" />
-                Search
-              </button>
-
               {/* Navigation Items */}
               {navigationItems.map((item) =>
                 item.title === "Products" ? (
@@ -520,19 +512,21 @@ const Header: React.FC = () => {
                         }`}
                       />
                     </button>
-                    {isProductDropdownOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="bg-gray-50 rounded-md mt-2"
-                      >
-                        <ProductDropdown
-                          isOpen={isProductDropdownOpen}
-                          onClose={() => setIsProductDropdownOpen(false)}
-                        />
-                      </motion.div>
-                    )}
+                    <AnimatePresence>
+                      {isProductDropdownOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="bg-gray-50 rounded-md mt-2"
+                        >
+                          <ProductDropdown
+                            isOpen={isProductDropdownOpen}
+                            onClose={() => setIsProductDropdownOpen(false)}
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 ) : (
                   <Link
@@ -545,6 +539,37 @@ const Header: React.FC = () => {
                   </Link>
                 )
               )}
+
+              {/* Add search input for mobile */}
+              <div className="relative mb-2">
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchTerm}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="w-full px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                {searchResults.length > 0 && (
+                  <div className="absolute left-0 right-0 mt-2 bg-white rounded-md shadow-lg overflow-hidden z-20">
+                    <div className="max-h-60 overflow-y-auto">
+                      {searchResults.map((item) => (
+                        <div
+                          key={item._id}
+                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                          onClick={() => {
+                            handleSearchResultClick(item);
+                            setIsOpen(false);
+                          }}
+                        >
+                          <span className="text-sm text-gray-700">
+                            {item.name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* Wishlist in mobile menu */}
               <Link
@@ -568,6 +593,20 @@ const Header: React.FC = () => {
                     <div className="font-medium">{user.fullName}</div>
                     <div className="text-sm text-gray-500">{user.email}</div>
                   </div>
+                  <Link
+                    to="/customer/dashboard"
+                    className="text-gray-600 hover:text-blue-600 py-2 transition-colors duration-300"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    to="/customer/notifications"
+                    className="text-gray-600 hover:text-blue-600 py-2 transition-colors duration-300"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Notifications
+                  </Link>
                   <Link
                     to="/customer/purchase-history"
                     className="text-gray-600 hover:text-blue-600 py-2 transition-colors duration-300"
