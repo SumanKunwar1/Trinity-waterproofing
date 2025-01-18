@@ -494,11 +494,11 @@ const Header: React.FC = () => {
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden bg-white shadow-md absolute left-0 right-0 top-full z-40 overflow-y-auto "
           >
-            <nav className="flex flex-col p-4">
+            <nav className="flex flex-col p-4 h-[calc(100vh-6rem)]">
               {/* Navigation Items */}
               {navigationItems.map((item) =>
                 item.title === "Products" ? (
-                  <div key={item.id}>
+                  <div key={item.id} className="relative">
                     <button
                       className="text-gray-600 hover:text-blue-600 py-2 transition-colors duration-300 text-left flex items-center justify-between w-full"
                       onClick={() =>
@@ -518,7 +518,7 @@ const Header: React.FC = () => {
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: "auto" }}
                           exit={{ opacity: 0, height: 0 }}
-                          className="bg-gray-50 rounded-md mt-2"
+                          className="absolute left-0 top-full bg-gray-50 rounded-md mt-1 shadow-md z-50 w-full"
                         >
                           <ProductDropdown
                             isOpen={isProductDropdownOpen}

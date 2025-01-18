@@ -148,7 +148,7 @@ export const SideBar: React.FC = () => {
 
   return (
     <motion.div
-      className={` w-full z-50  bg-[#293855] text-white flex flex-col items-center py-6 h-screen overflow-auto ${
+      className={` w-full  bg-[#293855] text-white flex flex-col items-center py-6 h-screen overflow-auto ${
         isOpen ? "w-64" : "w-16"
       }`}
       initial={false}

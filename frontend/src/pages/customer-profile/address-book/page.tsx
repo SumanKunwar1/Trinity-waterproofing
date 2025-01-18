@@ -9,7 +9,7 @@ const AddressBookPage = () => {
       <Header />
       <main className="flex-grow">
         <div className="flex w-full h-screen">
-          <div className="w-[25%]">
+          <div className="">
             <SideBar />
           </div>
           <div className="w-[75%] overflow-auto">

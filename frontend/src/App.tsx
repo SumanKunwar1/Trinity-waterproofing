@@ -11,6 +11,7 @@ import { Provider } from "react-redux";
 import { store } from "./admin/store/store";
 import { AuthProvider } from "./context/AuthContext";
 import { HelmetProvider } from "react-helmet-async";
+import Loader from "./components/common/Loader";
 
 // Lazy-loaded components
 const Home = lazy(() => import("./pages/Home"));
@@ -65,7 +66,13 @@ function App() {
       <HelmetProvider>
         <Provider store={store}>
           {userRole === "admin" ? (
-            <Suspense fallback={<div>Loading Admin Panel...</div>}>
+            <Suspense
+              fallback={
+                <div>
+                  <Loader />
+                </div>
+              }
+            >
               <AdminApp />
             </Suspense>
           ) : (
@@ -73,7 +80,7 @@ function App() {
               <CartProvider>
                 <WishlistProvider>
                   <SocketProvider>
-                    <Suspense fallback={<div>Loading...</div>}>
+                    <Suspense fallback={<Loader />}>
                       <Routes>
                         <Route path="/" element={<Home />} />
                         <Route path="/services" element={<ServicesPage />} />
