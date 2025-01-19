@@ -105,7 +105,7 @@ const Login: React.FC = () => {
           <div className="flex flex-col md:flex-row items-center justify-center gap-8">
             <div className="w-full md:w-1/2">
               <img
-                src="/assets/login-vector.svg"
+                src="/assets/login-bro.png"
                 alt="Login Illustration"
                 className="w-full max-w-md mx-auto"
               />

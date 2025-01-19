@@ -18,6 +18,24 @@ const FeaturedCategories: React.FC = () => {
         }
         const data: Category[] = await response.json();
         setCategories(data);
+
+        // Dynamically set meta information
+        data.forEach((category) => {
+          const metaTag = document.createElement("meta");
+          metaTag.name = "description";
+          metaTag.content = `${category.name}: ${
+            category.description ||
+            "Explore our waterproofing solutions and products"
+          }`;
+          metaTag.setAttribute("data-category-id", category._id); // Add an identifier to clean up later
+          document.head.appendChild(metaTag);
+
+          const keywordTag = document.createElement("meta");
+          keywordTag.name = "keywords";
+          keywordTag.content = `${category.name}, waterproofing, ${category.name} products, leak prevention`;
+          keywordTag.setAttribute("data-category-id", category._id);
+          document.head.appendChild(keywordTag);
+        });
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -26,6 +44,12 @@ const FeaturedCategories: React.FC = () => {
     };
 
     fetchCategories();
+
+    return () => {
+      // Clean up meta tags to avoid duplication
+      const metaTags = document.head.querySelectorAll("meta[data-category-id]");
+      metaTags.forEach((tag) => tag.remove());
+    };
   }, []);
 
   if (loading) {

@@ -18,7 +18,6 @@ import {
 } from "../../components/ui/dialog";
 import { useUserData } from "../../hooks/useUserData";
 
-// Define types for the order and product
 interface Product {
   productId: { _id: string; name: string };
 }
@@ -57,10 +56,8 @@ const ReturnAndCancel = () => {
   const [selectedItem, setSelectedItem] = useState<Order | null>(null);
   const [statusFilter, setStatusFilter] = useState("");
 
-  // Filter orders based on multiple statuses and the search filter
   const validStatuses = Object.keys(statusIcons);
 
-  // Filter orders by valid statuses, status filter, and the search term
   const filteredOrders = orders
     .filter((order: any) => validStatuses.includes(order.status))
     .filter(
@@ -69,7 +66,7 @@ const ReturnAndCancel = () => {
         (order._id.toLowerCase().includes(filter.toLowerCase()) ||
           order.status.toLowerCase().includes(filter.toLowerCase()) ||
           order.products.some((product: Product) =>
-            product.productId.name.toLowerCase().includes(filter.toLowerCase())
+            product.productId?.name.toLowerCase().includes(filter.toLowerCase())
           ))
     );
 
@@ -82,8 +79,8 @@ const ReturnAndCancel = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="flex justify-between items-center">
-        <Label className="text-3xl font-bold text-gray-800">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+        <Label className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-0">
           Returns & Cancellations
         </Label>
       </div>
@@ -99,9 +96,9 @@ const ReturnAndCancel = () => {
               setStatusFilter(statusFilter === status ? "" : status)
             }
           >
-            <CardContent className="p-4 flex items-center space-x-3">
+            <CardContent className="p-4 flex flex-col items-center text-center space-y-2">
               <div className="text-2xl">{icon}</div>
-              <Label className="text-lg capitalize">{label}</Label>
+              <Label className="text-sm sm:text-base capitalize">{label}</Label>
             </CardContent>
           </Card>
         ))}
@@ -133,34 +130,34 @@ const ReturnAndCancel = () => {
                 className="bg-white shadow-md hover:shadow-lg transition-shadow duration-300"
               >
                 <CardContent className="p-4">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-3">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
                       <div className="text-2xl">
                         {statusIcons[order.status as keyof typeof statusIcons]
                           .icon || <FaSpinner className="text-gray-500" />}
                       </div>
                       <div>
-                        <p className="font-semibold text-lg">
+                        <p className="font-semibold text-sm sm:text-md">
                           Order #{order._id}
                         </p>
                         <p className="text-sm text-gray-500">
                           {new Date(order.createdAt).toLocaleDateString()}
                         </p>
-                        <div className="flex mt-2">
+                        <div className="flex flex-col sm:flex-row mt-2 space-y-2 sm:space-y-0 sm:space-x-2">
                           <span>
                             <strong>Product:</strong>
                           </span>
-                          <ul className=" pl-5">
+                          <ul className="pl-5">
                             {order?.products.map((product: Product) => (
-                              <li key={product.productId._id}>
-                                {product.productId.name}
+                              <li key={product.productId?._id}>
+                                {product.productId?.name}
                               </li>
                             ))}
                           </ul>
                         </div>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-left sm:text-right mt-4 sm:mt-0">
                       <p className="font-medium text-gray-600 capitalize">
                         {
                           statusIcons[order.status as keyof typeof statusIcons]
@@ -206,8 +203,8 @@ const ReturnAndCancel = () => {
                             <ul className="list-disc pl-5">
                               {selectedItem?.products.map(
                                 (product: Product) => (
-                                  <li key={product.productId._id}>
-                                    {product.productId.name}
+                                  <li key={product.productId?._id}>
+                                    {product.productId?.name}
                                   </li>
                                 )
                               )}

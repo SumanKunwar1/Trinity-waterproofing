@@ -60,7 +60,7 @@ const ProductDetail: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Helmet>
-        <title>Tinity Waterproofing - {product.name}</title>
+        <title>Tinity Waterproofing </title>
         <meta name="description" content={productMetaDescription} />
         <meta name="keywords" content={productMetaKeywords} />
         <meta property="og:title" content={product.name} />

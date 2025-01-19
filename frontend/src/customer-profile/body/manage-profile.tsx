@@ -179,36 +179,36 @@ export const ManageProfile = () => {
 
   return (
     <motion.div
-      className="ml-6 w-full min-h-screen bg-gray-100 p-4 flex flex-col"
+      className="w-full min-h-screen bg-gray-100 p-4 sm:p-6 flex flex-col"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <Label className="tracking-wide text-2xl font-semibold">
+      <Label className="tracking-wide text-2xl font-semibold mb-4">
         Manage Profile
       </Label>
 
       {/* Profile Image and Edit Section */}
       <motion.div
-        className="bg-gradient-to-r from-primary to-blue-500 mt-5 p-4 rounded-lg shadow-md"
+        className="bg-gradient-to-r from-primary to-blue-500 mt-5 p-4 sm:p-6 rounded-lg shadow-md"
         initial={{ x: "-100vw" }}
         animate={{ x: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="flex justify-between items-center pb-2 pt-2">
+        <div className="flex flex-col sm:flex-row justify-between items-center pb-2 pt-2 space-y-4 sm:space-y-0">
           <div className="avatar">
-            <div className="avatar-inner w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-secondary flex items-center justify-center">
-              <span className="text-xl text-white">
+            <div className="avatar-inner w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-gradient-to-r from-orange-500 to-secondary flex items-center justify-center">
+              <span className="text-xl sm:text-2xl text-white">
                 {getInitials(userInfo.fullName)}
               </span>
             </div>
           </div>
-          <div>
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button
                   variant="secondary"
-                  className="hover:bg-hover transition-all duration-300 font-semibold"
+                  className="w-full sm:w-auto hover:bg-hover transition-all duration-300 font-semibold"
                 >
                   Update Profile
                 </Button>
@@ -294,7 +294,7 @@ export const ManageProfile = () => {
               <DialogTrigger asChild>
                 <Button
                   variant="outline"
-                  className="ml-2 hover:bg-secondary hover:text-white transition-all duration-300 font-semibold"
+                  className="w-full sm:w-auto hover:bg-secondary hover:text-white transition-all duration-300 font-semibold"
                 >
                   Change Password
                 </Button>
@@ -391,7 +391,7 @@ export const ManageProfile = () => {
 
       {/* Profile Info Section */}
       <motion.div
-        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-5"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mt-5"
         style={{ backgroundColor: "#fbfbfb" }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -404,7 +404,7 @@ export const ManageProfile = () => {
 
       {/* Add Delete Account Button */}
       <motion.div
-        className="mt-5"
+        className="mt-5 flex justify-center sm:justify-start"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 1 }}
@@ -413,7 +413,7 @@ export const ManageProfile = () => {
           <DialogTrigger asChild>
             <Button
               variant="outline"
-              className="border-red-600 hover:bg-red-600 hover:text-white transition-all duration-300 font-semibold"
+              className="w-full sm:w-auto border-red-600 hover:bg-red-600 hover:text-white transition-all duration-300 font-semibold"
             >
               Delete Account
             </Button>
@@ -426,14 +426,19 @@ export const ManageProfile = () => {
               Are you sure you want to delete your account? This action cannot
               be undone.
             </p>
-            <div className="flex justify-end space-x-2">
+            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 mt-4">
               <Button
                 variant="outline"
                 onClick={() => setIsDeleteDialogOpen(false)}
+                className="w-full sm:w-auto"
               >
                 Cancel
               </Button>
-              <Button variant="destructive" onClick={handleDeleteAccount}>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteAccount}
+                className="w-full sm:w-auto"
+              >
                 Delete
               </Button>
             </div>
@@ -465,3 +470,5 @@ const InfoCard: React.FC<InfoCardProps> = ({ label, value, delay }) => (
     </div>
   </motion.div>
 );
+
+export default ManageProfile;

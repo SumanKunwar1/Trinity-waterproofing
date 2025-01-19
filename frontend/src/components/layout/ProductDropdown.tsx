@@ -4,7 +4,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { ChevronDown } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 import { IProduct } from "../../types/product";
+import Loader from "../common/Loader";
 
 interface ProductDropdownProps {
   isOpen: boolean;
@@ -13,13 +15,13 @@ interface ProductDropdownProps {
 export interface SubCategory {
   _id: string;
   name: string;
-  products: IProduct[]; // Add this property to represent the products in the sub-category
+  products: IProduct[];
 }
 
 export interface Category {
   _id: string;
   name: string;
-  subCategories: SubCategory[]; // Reference to the SubCategory type
+  subCategories: SubCategory[];
 }
 
 export const ProductDropdown: React.FC<ProductDropdownProps> = ({
@@ -28,10 +30,9 @@ export const ProductDropdown: React.FC<ProductDropdownProps> = ({
 }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
-  const [hoveredSubCategory, setHoveredSubCategory] = useState<string | null>(
-    null
-  );
+  const [hoveredCategory, setHoveredCategory] = useState<Category | null>(null);
+  const [hoveredSubCategory, setHoveredSubCategory] =
+    useState<SubCategory | null>(null);
 
   const fetchCategories = async () => {
     try {
@@ -59,111 +60,149 @@ export const ProductDropdown: React.FC<ProductDropdownProps> = ({
   if (!isOpen) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      className="absolute left-0 right-0 top-full bg-hover shadow-md z-50"
-    >
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold">Product Categories</h2>
-          <button onClick={onClose} className="text-2xl">
-            &times;
-          </button>
-        </div>
-
-        {loading && <p>Loading...</p>}
-
-        {!loading && categories.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {categories.map((category) => (
-              <div
-                key={category._id}
-                className="relative"
-                onMouseEnter={() => setHoveredCategory(category._id)}
-                onMouseLeave={() => setHoveredCategory(null)}
-              >
-                <div className="flex items-center justify-between p-2 hover:bg-gray-100 rounded-md cursor-pointer group">
-                  <h3 className="text-xl text-brand font-semibold">
-                    {category.name}
-                  </h3>
-                  <ChevronDown
-                    className={`w-5 h-5 transition-transform duration-200 ${
-                      hoveredCategory === category._id ? "rotate-180" : ""
-                    }`}
-                  />
-                </div>
-
-                <AnimatePresence>
-                  {hoveredCategory === category._id && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="absolute left-0 top-full w-full bg-white shadow-lg rounded-md mt-1 z-10"
-                    >
-                      {category.subCategories.map((sub) => (
-                        <div
-                          key={sub._id}
-                          className="relative"
-                          onMouseEnter={() => setHoveredSubCategory(sub._id)}
-                          onMouseLeave={() => setHoveredSubCategory(null)}
-                        >
-                          <div className="p-3 hover:bg-gray-50 cursor-pointer flex items-center justify-between">
-                            <span className="text-gray-700">{sub.name}</span>
-                            <ChevronDown
-                              className={`w-4 h-4 transition-transform duration-200 ${
-                                hoveredSubCategory === sub._id
-                                  ? "rotate-180"
-                                  : ""
-                              }`}
-                            />
-                          </div>
-
-                          {/* Adjust this part: instead of absolute, the product dropdown will expand */}
-                          <AnimatePresence>
-                            {hoveredSubCategory === sub._id && (
-                              <motion.div
-                                initial={{ opacity: 0, y: -5 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -5 }}
-                                className="w-full bg-white shadow-lg rounded-md mt-1 z-10"
-                              >
-                                {sub.products.length > 0 ? (
-                                  <div className="py-2">
-                                    {sub.products.map((product) => (
-                                      <Link
-                                        key={product._id}
-                                        to={`/product/${product._id}`}
-                                        onClick={onClose}
-                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                                      >
-                                        {product.name}
-                                      </Link>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <div className="p-4 text-sm text-gray-500">
-                                    No products available
-                                  </div>
-                                )}
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p>No categories available.</p>
+    <>
+      {/* Dynamic Meta Information */}
+      <Helmet>
+        {hoveredCategory && !hoveredSubCategory && (
+          <>
+            <title>{` Trinity Waterproofing`}</title>
+            <meta
+              name="description"
+              content={`Explore the best solutions in ${hoveredCategory.name} by Trinity Waterproofing. Protect your property with expert waterproofing services.`}
+            />
+            <meta
+              name="keywords"
+              content={`${hoveredCategory.name}, waterproofing`}
+            />
+          </>
         )}
-      </div>
-    </motion.div>
+        {hoveredSubCategory && (
+          <>
+            <title>{` Trinity Waterproofing`}</title>
+            <meta
+              name="description"
+              content={`Discover ${hoveredSubCategory.name} products under ${hoveredCategory?.name} at Trinity Waterproofing. Durable and professional solutions for all needs!`}
+            />
+            <meta
+              name="keywords"
+              content={`${hoveredCategory?.name}, ${hoveredSubCategory.name}, waterproofing, products`}
+            />
+          </>
+        )}
+      </Helmet>
+
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        className="absolute left-0 right-0 top-full bg-hover shadow-md z-50"
+      >
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg sm:text-2xl font-bold">
+              Product Categories
+            </h2>
+            <button onClick={onClose} className="text-2xl">
+              &times;
+            </button>
+          </div>
+
+          {loading && <Loader />}
+
+          {!loading && categories.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {categories.map((category) => (
+                <div
+                  key={category._id}
+                  className="relative"
+                  onMouseEnter={() => setHoveredCategory(category)}
+                  onMouseLeave={() => {
+                    setHoveredCategory(null);
+                    setHoveredSubCategory(null);
+                  }}
+                >
+                  <div className="flex items-center justify-between p-2 hover:bg-gray-100 rounded-md cursor-pointer group">
+                    <h3 className="text-md sm:text-md text-brand font-semibold">
+                      {category.name}
+                    </h3>
+                    <ChevronDown
+                      className={`w-5 h-5 transition-transform duration-200 ${
+                        hoveredCategory?._id === category._id
+                          ? "rotate-180"
+                          : ""
+                      }`}
+                    />
+                  </div>
+
+                  <AnimatePresence>
+                    {hoveredCategory?._id === category._id && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="absolute left-0 top-full w-full bg-white shadow-lg rounded-md mt-1 z-10"
+                      >
+                        {category.subCategories.map((sub) => (
+                          <div
+                            key={sub._id}
+                            className="relative"
+                            onMouseEnter={() => setHoveredSubCategory(sub)}
+                            onMouseLeave={() => setHoveredSubCategory(null)}
+                          >
+                            <div className="p-3 hover:bg-gray-50 cursor-pointer flex items-center justify-between">
+                              <span className="text-gray-700">{sub.name}</span>
+                              <ChevronDown
+                                className={`w-4 h-4 transition-transform duration-200 ${
+                                  hoveredSubCategory?._id === sub._id
+                                    ? "rotate-180"
+                                    : ""
+                                }`}
+                              />
+                            </div>
+
+                            <AnimatePresence>
+                              {hoveredSubCategory?._id === sub._id && (
+                                <motion.div
+                                  initial={{ opacity: 0, y: -5 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -5 }}
+                                  className="w-full bg-white shadow-lg rounded-md mt-1 z-10"
+                                >
+                                  {sub.products.length > 0 ? (
+                                    <div className="py-2">
+                                      {sub.products.map((product) => (
+                                        <Link
+                                          key={product._id}
+                                          to={`/product/${product._id}`}
+                                          onClick={onClose}
+                                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                        >
+                                          {product.name}
+                                        </Link>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="p-4 text-sm text-gray-500">
+                                      No products available
+                                    </div>
+                                  )}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p>No categories available.</p>
+          )}
+        </div>
+      </motion.div>
+    </>
   );
 };
 
