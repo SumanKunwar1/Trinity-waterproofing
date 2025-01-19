@@ -3,9 +3,9 @@ import { CompanyDetails } from "../models";
 let cachedSenderEmail: string | null = null;
 let cachedSenderName: string | null = null;
 
-const initializeSenderCache = async () => {
+export const initializeSenderCache = async () => {
   try {
-    const companyDetail = await CompanyDetails.findOne({}, "name, email");
+    const companyDetail = await CompanyDetails.findOne({}, "name email");
 
     if (companyDetail) {
       cachedSenderEmail = companyDetail.email || "pkharel156@gmail.com";
@@ -22,8 +22,6 @@ const initializeSenderCache = async () => {
     console.error("Error initializing sender cache:", error);
   }
 };
-
-initializeSenderCache();
 
 export const updateSenderCache = (email: string, name: string) => {
   console.log(`Setting new cache with email: ${email}, name: ${name}`); // Debug log

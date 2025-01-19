@@ -34,8 +34,8 @@ export class NotificationService {
       const { fullName, email } = user;
       const subject = "New Notification";
       const content = {
-        html: `<p>Hi ${fullName},</p><p>You have a new notification</p>`,
-        text: `${notification.message}`,
+        html: `<p>Hi ${fullName},</p><br><p>You have a new notification... <br> ${notificationData.message}</p>`,
+        text: `Hi ${fullName},You have a new notification... ${notificationData.message}`,
       };
 
       await sendBrevoEmail({ name: fullName, email }, subject, content);

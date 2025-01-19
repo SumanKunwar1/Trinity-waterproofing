@@ -204,10 +204,15 @@ export class ProductService {
       if (description) existingProduct.description = description;
       if (wholeSalePrice) existingProduct.wholeSalePrice = wholeSalePrice;
       if (wholeSalePrice) existingProduct.wholeSalePrice = wholeSalePrice;
-      if (wholeSaleDiscountedPrice)
+      if (
+        wholeSaleDiscountedPrice !== undefined &&
+        wholeSaleDiscountedPrice !== null
+      )
         existingProduct.wholeSaleDiscountedPrice = wholeSaleDiscountedPrice;
-      if (retailDiscountedPrice)
+
+      if (retailDiscountedPrice !== undefined && retailDiscountedPrice !== null)
         existingProduct.retailDiscountedPrice = retailDiscountedPrice;
+
       if (retailPrice) existingProduct.retailPrice = retailPrice;
       if (colors) existingProduct.colors = colors;
       if (features) existingProduct.features = features;
