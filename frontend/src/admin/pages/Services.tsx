@@ -138,7 +138,7 @@ const ServicePage: React.FC = () => {
         reset(response.data);
       }
     } catch (error) {
-      console.error("Error fetching service:", error);
+      // console.error("Error fetching service:", error);
       toast.error("Failed to load service");
     }
   };
@@ -150,7 +150,7 @@ const ServicePage: React.FC = () => {
       });
       setCards(response.data || []);
     } catch (error) {
-      console.error("Error fetching cards:", error);
+      // console.error("Error fetching cards:", error);
       toast.error("Failed to load cards");
     }
   };
@@ -182,7 +182,7 @@ const ServicePage: React.FC = () => {
       fetchService();
       setIsEditServiceDialogOpen(false);
     } catch (error) {
-      console.error("Error submitting service:", error);
+      // console.error("Error submitting service:", error);
       toast.error("Failed to submit service");
     }
   };
@@ -204,7 +204,7 @@ const ServicePage: React.FC = () => {
       setIsAddCardDialogOpen(false);
       fetchCards();
     } catch (error) {
-      console.error("Error adding card:", error);
+      // console.error("Error adding card:", error);
       toast.error("Failed to add card");
     }
   };
@@ -227,7 +227,7 @@ const ServicePage: React.FC = () => {
         setEditingCard(null);
         fetchCards();
       } catch (error) {
-        console.error("Error updating card:", error);
+        // console.error("Error updating card:", error);
         toast.error("Failed to update card");
       }
     }
@@ -241,7 +241,7 @@ const ServicePage: React.FC = () => {
       toast.success("Card deleted successfully");
       fetchCards();
     } catch (error) {
-      console.error("Error deleting card:", error);
+      // console.error("Error deleting card:", error);
       toast.error("Failed to delete card");
     }
   };

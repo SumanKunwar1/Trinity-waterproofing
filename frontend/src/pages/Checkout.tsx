@@ -61,11 +61,11 @@ const Checkout: React.FC = () => {
           setSelectedAddressId(defaultAddress._id);
         }
       } else {
-        console.error("Invalid data structure:", data);
+        // console.error("Invalid data structure:", data);
         setAddresses([]);
       }
     } catch (error: any) {
-      console.error("Error fetching addresses:", error);
+      // console.error("Error fetching addresses:", error);
       toast.error(error.message || "Failed to load addresses");
       setAddresses([]);
     } finally {
@@ -98,7 +98,7 @@ const Checkout: React.FC = () => {
       await fetchAddresses();
       toast.success("Default address updated");
     } catch (error: any) {
-      console.error("Error setting default address:", error);
+      // console.error("Error setting default address:", error);
       toast.error(error.message || "Failed to set default address");
     }
   };
@@ -137,7 +137,7 @@ const Checkout: React.FC = () => {
         throw new Error("No valid items to order");
       }
 
-      console.log("Order Data:", JSON.stringify(orderData, null, 2)); // Debugging
+      // console.log("Order Data:", JSON.stringify(orderData, null, 2)); // Debugging
 
       // Call the API to create an order
       const response = await createOrder(orderData, selectedAddressId);
@@ -150,7 +150,7 @@ const Checkout: React.FC = () => {
         });
       }
     } catch (error: any) {
-      console.error("Error placing order:", error);
+      // console.error("Error placing order:", error);
       toast.error(error.message || "Failed to place order");
       navigate("/order-failure", {
         state: { error: error.message || "Failed to place order" },

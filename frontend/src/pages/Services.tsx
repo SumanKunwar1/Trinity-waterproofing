@@ -38,7 +38,7 @@ const ServicesPage: React.FC = () => {
       });
       setService(response.data || null);
     } catch (error) {
-      console.error("Error fetching service:", error);
+      // console.error("Error fetching service:", error);
       toast.error("Failed to load service");
     } finally {
       setIsLoading(false);
@@ -53,7 +53,7 @@ const ServicesPage: React.FC = () => {
       });
       setCards(response.data || []);
     } catch (error) {
-      console.error("Error fetching cards:", error);
+      // console.error("Error fetching cards:", error);
       toast.error("Failed to load cards");
     }
   };

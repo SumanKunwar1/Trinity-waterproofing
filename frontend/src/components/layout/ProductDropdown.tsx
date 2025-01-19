@@ -6,7 +6,6 @@ import { toast } from "react-toastify";
 import { ChevronDown } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { IProduct } from "../../types/product";
-import Loader from "../common/Loader";
 
 interface ProductDropdownProps {
   isOpen: boolean;
@@ -107,7 +106,7 @@ export const ProductDropdown: React.FC<ProductDropdownProps> = ({
             </button>
           </div>
 
-          {loading && <Loader />}
+          {loading && <>Loading...</>}
 
           {!loading && categories.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

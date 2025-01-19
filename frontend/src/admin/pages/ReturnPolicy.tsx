@@ -72,7 +72,7 @@ const ReturnPolicy = () => {
       }
 
       const data: Policy[] = await response.json(); // Specify the type here
-      console.log("Policies:", data);
+
       setPolicies(data || []);
     } catch (error: any) {
       toast.error(error.message || "Failed to fetch policies");

@@ -40,7 +40,7 @@ const Login: React.FC = () => {
           const decoded = decodeToken(data.token);
           const userRole = decoded?.role;
 
-          console.log(userRole);
+          // console.log(userRole);
 
           // Store token and role in localStorage
           localStorage.setItem("authToken", data.token);
@@ -57,7 +57,7 @@ const Login: React.FC = () => {
             JSON.stringify(data.user.password)
           );
           localStorage.setItem("userNumber", JSON.stringify(data.user.number));
-          console.log(data.user);
+          // console.log(data.user);
           toast.success("Login successful!");
 
           if (userRole === "admin") {
@@ -80,7 +80,7 @@ const Login: React.FC = () => {
         );
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       toast.error("An unexpected error occurred. Please try again.");
     }
   };
@@ -92,7 +92,7 @@ const Login: React.FC = () => {
       const decodedPayload = JSON.parse(window.atob(base64)); // Decode base64 and parse JSON
       return decodedPayload;
     } catch (e) {
-      console.error("Invalid token", e);
+      // console.error("Invalid token", e);
       return null;
     }
   }

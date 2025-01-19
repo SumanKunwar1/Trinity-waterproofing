@@ -77,7 +77,7 @@ const AdminTeam: React.FC = () => {
       setTeamMembers(data);
       setTotalPages(data.totalPages); // Assuming API provides totalPages
     } catch (error) {
-      console.error("Error fetching team members:", error);
+      // console.error("Error fetching team members:", error);
       toast.error("Failed to fetch team members");
     } finally {
       setIsLoading(false);
@@ -110,15 +110,13 @@ const AdminTeam: React.FC = () => {
       toast.success("Team member deleted successfully");
       fetchTeamMembers();
     } catch (error) {
-      console.error("Error deleting team member:", error);
+      // console.error("Error deleting team member:", error);
       toast.error("Failed to delete team member");
     }
   };
 
   const onSubmit = async (data: ITeam) => {
     try {
-      console.log("Form data before processing:", data);
-
       const formData = new FormData();
 
       Object.entries(data).forEach(([key, value]) => {
@@ -143,8 +141,6 @@ const AdminTeam: React.FC = () => {
         }
       });
 
-      console.log("FormData being sent:", Array.from(formData.entries())); // Debug
-
       const url = editingMember
         ? `/api/team/${editingMember._id}`
         : "/api/team";
@@ -168,7 +164,7 @@ const AdminTeam: React.FC = () => {
       setIsFormDialogOpen(false);
       fetchTeamMembers();
     } catch (error) {
-      console.error("Error saving team member:", error);
+      // console.error("Error saving team member:", error);
       toast.error("Failed to save team member");
     }
   };

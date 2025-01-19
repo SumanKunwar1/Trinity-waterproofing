@@ -45,15 +45,14 @@ export const AddressBook = () => {
   const [addressToDelete, setAddressToDelete] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchAddresses().catch((error) => {
-      console.error("Error in useEffect:", error);
+    fetchAddresses().catch(() => {
+      // console.error("Error in useEffect:", error);
       toast.error("Failed to load addresses");
     });
   }, []);
 
   const fetchAddresses = async () => {
     setIsLoading(true);
-    console.log("IN THE FETCH ADRDRESSES FUNCTION");
     try {
       const userId = JSON.parse(localStorage.getItem("userId") || "");
       if (!userId) {
@@ -67,16 +66,15 @@ export const AddressBook = () => {
       if (!response.ok) throw new Error("Failed to fetch addresses");
 
       const data = await response.json();
-      console.log("Fetched data:", data);
 
       if (data && Array.isArray(data.addressBook)) {
         setAddresses(data.addressBook);
       } else {
-        console.error("Invalid data structure:", data);
+        // console.error("Invalid data structure:", data);
         setAddresses([]);
       }
     } catch (error) {
-      console.error("Error fetching addresses:", error);
+      // console.error("Error fetching addresses:", error);
       toast.error("Failed to load addresses");
       setAddresses([]);
     } finally {
@@ -96,7 +94,6 @@ export const AddressBook = () => {
     e.preventDefault();
     try {
       const userId = JSON.parse(localStorage.getItem("userId") || "");
-      console.log("Submitting Form Data:", JSON.stringify(formData, null, 2));
       const response = await fetch(`/api/users/addressBook/${userId}`, {
         method: "PATCH",
         headers: {
@@ -111,7 +108,7 @@ export const AddressBook = () => {
       setIsAddEditOpen(false);
       toast.success("Address added successfully");
     } catch (error) {
-      console.error("Error adding address:", error);
+      // console.error("Error adding address:", error);
       toast.error("Failed to add address");
     }
   };
@@ -132,7 +129,7 @@ export const AddressBook = () => {
       await fetchAddresses();
       toast.success("Default address updated");
     } catch (error) {
-      console.error("Error setting default address:", error);
+      // console.error("Error setting default address:", error);
       toast.error("Failed to set default address");
     }
   };
@@ -159,7 +156,7 @@ export const AddressBook = () => {
       await fetchAddresses();
       toast.success("Address deleted successfully");
     } catch (error) {
-      console.error("Error deleting address:", error);
+      // console.error("Error deleting address:", error);
       toast.error("Failed to delete address");
     } finally {
       setIsDeleteDialogOpen(false);
@@ -186,9 +183,9 @@ export const AddressBook = () => {
     e.preventDefault();
     if (!selectedAddress) return;
     try {
-      console.log("IN THE HANDLE UPDATE FUNCTION ");
+      // console.log("IN THE HANDLE UPDATE FUNCTION ");
       const userId = JSON.parse(localStorage.getItem("userId") || "");
-      console.log("Submitting Form Data:", JSON.stringify(formData, null, 2));
+      // console.log("Submitting Form Data:", JSON.stringify(formData, null, 2));
       const response = await fetch(
         `/api/users/addressBook/${userId}/${selectedAddress._id}`,
         {
@@ -206,7 +203,7 @@ export const AddressBook = () => {
       setIsAddEditOpen(false);
       toast.success("Address updated successfully");
     } catch (error) {
-      console.error("Error updating address:", error);
+      // console.error("Error updating address:", error);
       toast.error("Failed to update address");
     }
   };

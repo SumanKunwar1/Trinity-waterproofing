@@ -105,7 +105,6 @@ const GenerateReport: React.FC = () => {
       switch (type) {
         case "orders":
           data = await fetchOrders();
-          console.log("Order data:", data);
           return data.map((order: any) => ({
             id: order._id,
             products: order.products
@@ -178,7 +177,6 @@ const GenerateReport: React.FC = () => {
 
         case "users":
           data = await fetchUsers();
-          console.log("Users data:", data);
           return data.map((user: any) => ({
             id: user._id,
             fullName: user.fullName,
@@ -205,7 +203,7 @@ const GenerateReport: React.FC = () => {
           throw new Error("Invalid report type");
       }
     } catch (error) {
-      console.error("Error fetching report data:", error);
+      // console.error("Error fetching report data:", error);
       throw new Error("Failed to fetch report data.");
     }
   };
@@ -372,7 +370,7 @@ const GenerateReport: React.FC = () => {
         } report generated successfully!`
       );
     } catch (error) {
-      console.error("Error generating report:", error);
+      // console.error("Error generating report:", error);
       toast.error("Failed to generate report. Please try again.");
     } finally {
       setIsLoading(false);

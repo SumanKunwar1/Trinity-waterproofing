@@ -28,7 +28,7 @@ const FeaturedProductsCarousel = () => {
     try {
       userId = JSON.parse(unParsedUserId);
     } catch (error) {
-      console.error("Error parsing userId:", error);
+      // console.error("Error parsing userId:", error);
     }
   }
 

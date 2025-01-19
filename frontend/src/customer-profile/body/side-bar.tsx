@@ -136,7 +136,7 @@ export const SideBar: React.FC = () => {
         const data = await response.json();
         setUnreadNotifications(data.count);
       } catch (error) {
-        console.error("Error fetching unread notifications count:", error);
+        // console.error("Error fetching unread notifications count:", error);
       }
     };
 

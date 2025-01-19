@@ -61,7 +61,7 @@ const CustomerNotifications: React.FC = () => {
       const data = await response.json();
       setNotifications(data);
     } catch (error) {
-      console.error("Error fetching notifications:", error);
+      // console.error("Error fetching notifications:", error);
       toast.error("Failed to load notifications");
     }
   };
@@ -83,7 +83,7 @@ const CustomerNotifications: React.FC = () => {
         prev.map((n) => (n._id === notificationId ? { ...n, read: true } : n))
       );
     } catch (error) {
-      console.error("Error marking notification as read:", error);
+      // console.error("Error marking notification as read:", error);
       toast.error("Failed to mark notification as read");
     }
   };
@@ -104,7 +104,7 @@ const CustomerNotifications: React.FC = () => {
       setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
       toast.success("Notification deleted");
     } catch (error) {
-      console.error("Error deleting notification:", error);
+      // console.error("Error deleting notification:", error);
       toast.error("Failed to delete notification");
     }
   };
@@ -123,7 +123,7 @@ const CustomerNotifications: React.FC = () => {
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
       toast.success("All notifications marked as read");
     } catch (error) {
-      console.error("Error marking all notifications as read:", error);
+      // console.error("Error marking all notifications as read:", error);
       toast.error("Failed to mark all notifications as read");
     }
   };
@@ -144,15 +144,15 @@ const CustomerNotifications: React.FC = () => {
       setNotifications([]);
       toast.success("All notifications cleared");
     } catch (error) {
-      console.error("Error clearing all notifications:", error);
+      // console.error("Error clearing all notifications:", error);
       toast.error("Failed to clear all notifications");
     }
   };
 
   const playNotificationSound = () => {
     if (audioRef.current) {
-      audioRef.current.play().catch((error) => {
-        console.error("Error playing notification sound:", error);
+      audioRef.current.play().catch(() => {
+        // console.error("Error playing notification sound:", error);
       });
     }
   };

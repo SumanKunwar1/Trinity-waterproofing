@@ -44,7 +44,7 @@ const TabList: React.FC<TabListProps> = ({
       );
       onDelete();
     } catch (error) {
-      console.error(`Error deleting ${type}:`, error);
+      // console.error(`Error deleting ${type}:`, error);
       toast.error(`Error deleting ${type}`);
     }
   };

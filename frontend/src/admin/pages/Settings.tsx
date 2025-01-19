@@ -83,7 +83,7 @@ const Settings: React.FC = () => {
       setCompanyDetails(data);
     } catch (error: any) {
       toast.info(error.message || "No Company details available at the moment");
-      console.error(error);
+      // console.error(error);
     }
   };
 
@@ -93,7 +93,6 @@ const Settings: React.FC = () => {
 
   const handleSubmit = async (values: CompanyDetails) => {
     try {
-      console.log("Values:", values);
       const method = "PUT";
       const response = await fetch("/api/company-detail", {
         method,
@@ -110,7 +109,7 @@ const Settings: React.FC = () => {
       }
 
       const data = await response.json();
-      console.log("Data:", data);
+
       setCompanyDetails(data.data);
       setIsDialogOpen(false);
       toast.success(
@@ -122,10 +121,9 @@ const Settings: React.FC = () => {
           isEditing ? "updating" : "adding"
         } company details`
       );
-      console.error(error);
+      // console.error(error);
     }
   };
-  console.log("Company Details:", companyDetails);
 
   const openDialog = (editing: boolean) => {
     setIsEditing(editing);

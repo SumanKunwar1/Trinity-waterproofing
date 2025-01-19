@@ -116,7 +116,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setToken(newAccessToken);
       setLastActiveTime(Date.now());
     } catch (error: any) {
-      console.error("Error refreshing access token:", error);
+      // console.error("Error refreshing access token:", error);
       toast.error(error.message);
       logout();
     }

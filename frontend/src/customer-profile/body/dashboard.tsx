@@ -58,7 +58,7 @@ export const Dashboard: React.FC = () => {
       setIsAddressDialogOpen(false);
       toast.success("Address added successfully");
     } catch (error) {
-      console.error("Error adding address:", error);
+      // console.error("Error adding address:", error);
       toast.error("Failed to add address");
     }
   };

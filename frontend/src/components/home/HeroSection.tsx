@@ -27,10 +27,9 @@ const HeroSection: React.FC = () => {
       if (!response.ok) throw new Error("Failed to fetch sliders");
 
       const data = await response.json();
-      console.log("Fetched sliders:", data);
       setSliders(data);
     } catch (error) {
-      console.error("Error fetching sliders:", error);
+      // console.error("Error fetching sliders:", error);
       toast.info("No sliders available at the moment");
     } finally {
       setIsLoading(false);
@@ -57,7 +56,6 @@ const HeroSection: React.FC = () => {
           className="inline-block"
           onClick={(e) => {
             e.stopPropagation();
-            console.log("Button clicked");
           }}
         >
           <Button

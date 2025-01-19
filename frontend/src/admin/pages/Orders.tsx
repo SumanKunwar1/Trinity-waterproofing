@@ -189,7 +189,7 @@ function Orders() {
     try {
       return await toDataURL(text);
     } catch (err) {
-      console.error("Error generating QR code:", err);
+      // console.error("Error generating QR code:", err);
       return "";
     }
   };

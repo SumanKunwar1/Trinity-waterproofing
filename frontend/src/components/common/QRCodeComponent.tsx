@@ -16,7 +16,7 @@ const QRCodeComponent: React.FC<QRCodeProps> = ({
 }) => {
   // Check if the value is valid
   const isValidValue = value && value.trim() !== "";
-  console.log("value", value);
+
   return (
     <div style={{ textAlign: "center", margin: "20px" }}>
       {isValidValue ? (

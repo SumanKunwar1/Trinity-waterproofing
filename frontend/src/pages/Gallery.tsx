@@ -55,7 +55,7 @@ const UserGallery: React.FC = () => {
       );
       setFolders(folderWithRandomImage);
     } catch (error) {
-      console.error("Error fetching folders:", error);
+      // console.error("Error fetching folders:", error);
       toast.error("Failed to fetch galleries");
     } finally {
       setIsLoading(false);
@@ -69,7 +69,7 @@ const UserGallery: React.FC = () => {
       setImages(data || []);
       setSelectedFolder(folderName);
     } catch (error) {
-      console.error("Error fetching images:", error);
+      // console.error("Error fetching images:", error);
       toast.error("Failed to fetch images");
     } finally {
       setIsLoading(false);

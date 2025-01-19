@@ -73,7 +73,7 @@ const About: React.FC = () => {
           err.message ||
             "An error occurred while fetching data. Please try again later."
         );
-        console.error("Error fetching data:", err);
+        // console.error("Error fetching data:", err);
       } finally {
         setIsLoading(false);
       }

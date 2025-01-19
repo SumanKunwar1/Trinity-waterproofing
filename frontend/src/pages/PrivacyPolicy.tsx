@@ -20,7 +20,7 @@ const PrivacyPolicyPage: React.FC = () => {
       const policy = await getLatestPrivacyPolicy();
       setPolicyContent(policy.content);
     } catch (err) {
-      console.error("Error fetching privacy policy:", err);
+      // console.error("Error fetching privacy policy:", err);
       setError("Failed to load privacy policy. Please try again later.");
     } finally {
       setIsLoading(false);

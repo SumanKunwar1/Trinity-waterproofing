@@ -45,7 +45,7 @@ const ForgetPassword: React.FC = () => {
         );
       }
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       toast.error("An unexpected error occurred. Please try again.");
     }
   };

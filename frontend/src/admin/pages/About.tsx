@@ -75,7 +75,7 @@ const AdminAbout: React.FC = () => {
       }));
     } catch (error: any) {
       toast.error(error.message);
-      console.error("Error fetching about data:", error);
+      // console.error("Error fetching about data:", error);
     }
   };
 
@@ -98,7 +98,7 @@ const AdminAbout: React.FC = () => {
       }));
     } catch (error: any) {
       toast.error(error.message);
-      console.error("Error fetching core values:", error);
+      // console.error("Error fetching core values:", error);
     }
   };
 
@@ -121,7 +121,7 @@ const AdminAbout: React.FC = () => {
       }));
     } catch (error: any) {
       toast.error(error.message);
-      console.error("Error fetching tabs:", error);
+      // console.error("Error fetching tabs:", error);
     }
   };
 

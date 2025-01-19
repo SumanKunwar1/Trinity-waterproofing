@@ -137,7 +137,7 @@ export const PurchaseHistory: React.FC = () => {
       setIsReviewDialogOpen(false);
       navigate("/customer/reviews-ratings");
     } catch (error) {
-      console.error("Error submitting review:", error);
+      // console.error("Error submitting review:", error);
     }
   };
 
@@ -160,7 +160,7 @@ export const PurchaseHistory: React.FC = () => {
       toast.success("Return request submitted successfully");
       setIsReturnDialogOpen(false);
     } catch (error) {
-      console.error("Error submitting return request:", error);
+      // console.error("Error submitting return request:", error);
       toast.error("Failed to submit return request");
     }
   };

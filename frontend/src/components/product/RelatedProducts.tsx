@@ -17,7 +17,6 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({
 }) => {
   const [relatedProducts, setRelatedProducts] = useState<IProduct[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,7 +33,6 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({
         const errorMessage =
           error.response?.data?.error ||
           "Failed to fetch related products. Please try again.";
-        setError(errorMessage);
         toast.error(errorMessage);
       } finally {
         setLoading(false);
@@ -48,12 +46,9 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({
     return <p>Loading related products...</p>;
   }
 
-  if (error) {
-    return <p>{error}</p>;
-  }
-
+  // Return null if no related products are found
   if (relatedProducts.length === 0) {
-    return <p>No related products found in this category.</p>;
+    return null;
   }
 
   return (

@@ -28,7 +28,7 @@ const Register: React.FC = () => {
   // Form submission handler
   const handleSubmit = async (values: any, { setSubmitting }: any) => {
     try {
-      console.log(values);
+      // console.log(values);
       const response = await fetch("/api/users/register", {
         method: "POST",
         headers: {
@@ -42,7 +42,7 @@ const Register: React.FC = () => {
           role: "b2c",
         }),
       });
-      console.log(response);
+      // console.log(response);
 
       if (response.ok) {
         // const data = await response.json();
@@ -55,7 +55,7 @@ const Register: React.FC = () => {
         );
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setSubmitting(false);

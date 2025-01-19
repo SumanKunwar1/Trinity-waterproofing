@@ -29,7 +29,7 @@ const Footer: React.FC = () => {
         const response = await axios.get<ICompanyDetail>("/api/company-detail");
         setCompanyDetails(response.data);
       } catch (error) {
-        console.error("Error fetching company details:", error);
+        // console.error("Error fetching company details:", error);
       }
     };
 

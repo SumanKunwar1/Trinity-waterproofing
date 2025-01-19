@@ -147,7 +147,7 @@ const Dashboard: React.FC = () => {
       const data = await response.json();
       setUsers(data);
     } catch (error: any) {
-      console.error("Error fetching users:", error);
+      // console.error("Error fetching users:", error);
       toast.error(error.message);
     }
   };
