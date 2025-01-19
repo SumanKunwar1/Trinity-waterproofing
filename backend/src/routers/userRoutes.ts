@@ -53,6 +53,12 @@ router.patch(
 );
 
 router.patch(
+  "/forgot/password",
+  userController.forgotPasswordRequest.bind(userController),
+  handleResponse
+);
+
+router.patch(
   "/addressBook/:userId",
   isAuthenticated,
   isAuthorizedUser,

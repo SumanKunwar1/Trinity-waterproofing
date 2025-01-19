@@ -29,7 +29,7 @@ const validateCompanyDetails = (
       "string.email": "Email must be a valid email address",
       "any.required": "Email is required",
     }),
-    twitter: Joi.string().optional().allow(null).messages({
+    twitter: Joi.string().optional().messages({
       "string.base": "Twitter must be a string",
     }),
     facebook: Joi.string().optional().allow(null).messages({

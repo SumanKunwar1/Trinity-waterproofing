@@ -6,7 +6,9 @@ import {
   generateAccessToken,
   generateRefreshToken,
   verifyToken,
+  generatePasswordResetToken,
 } from "../config/tokenUtils";
+import { sendBrevoEmail } from "../config/sendBrevoEmail";
 
 export class UserService {
   public async createUser(userData: IUser) {
@@ -99,6 +101,15 @@ export class UserService {
     }
   }
 
+  public static async getUserById(userId: string) {
+    try {
+      const user = await User.findById(userId);
+      return user;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   public async editUser(userId: string, updatedData: Partial<IUser>) {
     try {
       const user = await User.findById(userId);
@@ -106,12 +117,13 @@ export class UserService {
         throw httpMessages.NOT_FOUND("User");
       }
 
-      const { fullName, email, number, role } = updatedData;
+      const { fullName, email, number, role, password } = updatedData;
 
       if (fullName) user.fullName = fullName;
       if (email) user.email = email;
       if (number) user.number = number;
       if (role) user.role = role;
+      if (password) user.password = password;
       console.log(user);
 
       await user.save();
@@ -160,36 +172,39 @@ export class UserService {
     }
   }
 
-  // public async forgotPassword(
-  //   userId: string,
-  //   email: string,
-  //   newPassword: string
-  // ) {
-  //   try {
-  //     const user = await User.findById(userId);
-  //     if (!user) {
-  //       throw httpMessages.NOT_FOUND("User");
-  //     }
+  public async forgotPasswordRequest(email: string): Promise<any> {
+    try {
+      const user = await User.findOne({ email });
+      if (!user) {
+        throw httpMessages.NOT_FOUND(`User with email:${email}`);
+      }
 
-  //     const isMatch = email === user.email;
-  //     if (!isMatch) {
-  //       throw httpMessages.INVALID_CREDENTIALS;
-  //     }
+      const resetToken = generatePasswordResetToken(
+        user._id.toString(),
+        user.email,
+        user.role
+      );
 
-  //     const salt = await bcrypt.genSalt(10);
-  //     const hashedPassword = await bcrypt.hash(newPassword, salt);
+      const resetLink = `http://yourfrontend.com/reset-password?token=${resetToken}`;
+      const content = {
+        html: `<p>We received a password reset request. <br> Please click <a href="${resetLink}">here</a> to reset your password. The link will be valid for 1 hour.</p>`,
+        text: `We received a password reset request. Please visit the following link to reset your password: ${resetLink}    The link will be valid for 1 hour.`,
+      };
 
-  //     user.password = hashedPassword;
+      await sendBrevoEmail(
+        { name: user.fullName, email: user.email },
+        "Password Reset Request",
+        content
+      );
 
-  //     await user.save();
-
-  //     return {
-  //       message: "Password updated successfully",
-  //     };
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // }
+      return {
+        message:
+          "Password reset email sent successfully. Please check your inbox.",
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
 
   // Delete a user
   public async deleteUser(userId: string) {

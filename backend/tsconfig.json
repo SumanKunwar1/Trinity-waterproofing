@@ -5,15 +5,11 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "typeRoots": [
-      "./node_modules/@types",
-      "./types" // Add this line to include the custom types folder
-    ],
     "forceConsistentCasingInFileNames": true,
     "outDir": "./build",
     "rootDir": "./src",
     "resolveJsonModule": true
   },
-  "include": ["src/**/*.ts", "src/sharp.js", "src/sharp.js"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
 }

@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import { httpMessages } from "../middlewares";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
-const ACCESS_TOKEN_EXPIRY = "30m"; // Access token expiry
+const ACCESS_TOKEN_EXPIRY = "1d"; // Access token expiry
 const REFRESH_TOKEN_EXPIRY = "7d"; // Refresh token expiry
 
 export const generateAccessToken = (
@@ -32,4 +32,15 @@ export const verifyToken = (token: string): any => {
   } catch (error) {
     throw httpMessages.UNAUTHORIZED_INVALID_TOKEN;
   }
+};
+
+export const generatePasswordResetToken = (
+  userId: string,
+  email: string,
+  role: string
+): string => {
+  const RESET_TOKEN_EXPIRY = "1h";
+  return jwt.sign({ id: userId, email, role }, JWT_SECRET, {
+    expiresIn: RESET_TOKEN_EXPIRY,
+  });
 };
