@@ -50,6 +50,9 @@ const schema = Joi.object({
   inStock: Joi.number().min(0).optional().messages({
     "number.base": "InStock must be a positive number or zero",
   }),
+  isFeatured: Joi.boolean().optional().messages({
+    "boolean.base": "isFeatured must be boolean",
+  }),
   subCategory: Joi.string()
     .pattern(/^[a-f\d]{24}$/i)
     .optional()

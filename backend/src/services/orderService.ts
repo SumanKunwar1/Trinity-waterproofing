@@ -170,11 +170,11 @@ export class OrderService {
       await NotificationService.createNotification(userNotificationData);
 
       const adminNotificationData = {
-        message: `New order created by ${user.fullName} (${user.email}) on ${formattedDate}. Subtotal: $${subtotal}.`,
+        message: `New order created by ${user.fullName} (${user.email}) on ${formattedDate}. Subtotal: Rs ${subtotal}.`,
         type: "info",
       };
       await NotificationService.createAdminNotification(
-        `New order created by ${user.fullName} (${user.email}) on ${formattedDate}. Subtotal: $${subtotal}.`,
+        `New order created by ${user.fullName} (${user.email}) on ${formattedDate}. Subtotal: Rs ${subtotal}.`,
         "info"
       );
 

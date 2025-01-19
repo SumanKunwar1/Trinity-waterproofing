@@ -8,7 +8,7 @@ interface FilesField {
 }
 
 export const deleteImages = async (images: string[]): Promise<void> => {
-  console.log("Files to delete:", images);
+  //console.log("Files to delete:", images);
   const filesToDelete: string[] = images.map((image) =>
     path.join(uploadFolder, image)
   );
@@ -16,7 +16,7 @@ export const deleteImages = async (images: string[]): Promise<void> => {
   try {
     if (filesToDelete.length > 0) {
       await Promise.all(filesToDelete.map((file) => fs.unlink(file)));
-      console.log("Successfully deleted files:", filesToDelete);
+      ////console.log("Successfully deleted files:", filesToDelete);
     }
   } catch (error) {
     console.error("Error deleting files:", error);
@@ -43,7 +43,7 @@ export const DeleteFileFromFiles = async (req: Request): Promise<void> => {
   const filesToDelete: string[] = [];
 
   const files = req.files as FilesField;
-  console.log(files, "uploaded by multer");
+  //console.log(files, "uploaded by multer");
   if (files) {
     Object.keys(files).forEach((key) => {
       const fileArray = files[key];

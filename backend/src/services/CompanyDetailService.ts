@@ -1,6 +1,5 @@
 import { CompanyDetails } from "../models";
 import { ICompanyDetail } from "../interfaces";
-import { httpMessages } from "../middlewares";
 
 export class CompanyDetailService {
   public async getCompanyDetails() {

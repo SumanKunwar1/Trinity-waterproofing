@@ -22,6 +22,7 @@ export interface IProduct extends Document {
   brand: Types.ObjectId;
   colors?: IColor[]; // Updated to an array of IColor objects
   inStock: number;
+  isFeatured: boolean;
   subCategory: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -48,6 +49,7 @@ const productSchema: Schema = new Schema(
       },
     ],
     inStock: { type: Number, required: true },
+    isFeatured: { type: Boolean, default: false },
     subCategory: { type: Types.ObjectId, ref: "SubCategory", required: true },
   },
   { timestamps: true }

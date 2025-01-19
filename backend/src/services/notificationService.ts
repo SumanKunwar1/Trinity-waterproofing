@@ -1,7 +1,10 @@
 import { getSocketIO } from "../config/socket";
-import { httpMessages } from "../middlewares"; // Error handling middleware
-import { Notification, User } from "../models"; // Notification and User models
-import { INotification } from "../interfaces"; // Notification interface
+import { httpMessages } from "../middlewares";
+import { Notification, User } from "../models";
+import { INotification } from "../interfaces";
+import { sendBrevoEmail } from "../config/sendBrevoEmail";
+import { UserService } from "../services";
+
 import mongoose from "mongoose";
 
 export class NotificationService {
@@ -14,12 +17,28 @@ export class NotificationService {
 
       await notification.save();
 
-      // Emit real-time notification to the user
       const io = getSocketIO();
       io.to(notificationData.userId.toString()).emit(
         "notification",
         notification
       );
+
+      const user = await UserService.getUserById(
+        notificationData.userId.toString()
+      );
+
+      if (!user) {
+        throw httpMessages.NOT_FOUND("User not found");
+      }
+
+      const { fullName, email } = user;
+      const subject = "New Notification";
+      const content = {
+        html: `<p>Hi ${fullName},</p><br><p>You have a new notification... <br> ${notificationData.message}</p>`,
+        text: `Hi ${fullName},You have a new notification... ${notificationData.message}`,
+      };
+
+      await sendBrevoEmail({ name: fullName, email }, subject, content);
 
       return notification;
     } catch (error) {

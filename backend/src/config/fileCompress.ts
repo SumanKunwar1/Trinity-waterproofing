@@ -1,20 +1,17 @@
+import { Request, Response, NextFunction } from "express";
 import sharp, { FormatEnum } from "sharp";
 import fs from "fs";
 import path from "path";
 import { httpMessages } from "../middlewares";
 import { deleteProductImages } from "./deleteImages";
-import {
-  MAX_IMAGE_SIZE,
-  uploadFolder,
-  MAX_VIDEO_SIZE,
-} from "./uploadConstants";
+import { MAX_IMAGE_SIZE, uploadFolder } from "./uploadConstants";
 
 const deleteFile = (filePath: string) => {
   if (fs.existsSync(filePath)) {
     setTimeout(() => {
       try {
         fs.unlinkSync(filePath);
-        console.log(`Deleted file: ${filePath}`);
+        ////console.log(`Deleted file: ${filePath}`);
       } catch (err) {
         console.error(`Failed to delete file: ${filePath}`, err);
       }
@@ -28,7 +25,7 @@ export const compressAndValidateImage = async (
   imageType: string
 ) => {
   try {
-    console.log("Starting compression and validation...", imageType);
+    //console.log("Starting compression and validation...", imageType);
 
     const validFormats: Record<string, keyof FormatEnum> = {
       ".jpeg": "jpeg",
@@ -45,13 +42,13 @@ export const compressAndValidateImage = async (
       throw new Error(`Unsupported image type: ${imageType}`);
     }
 
-    console.log("Compressing the image...");
+    //console.log("Compressing the image...");
     await sharp(filePath)
       .resize()
       .toFormat(format, { quality: 50 })
       .toFile(compressedFilePath);
 
-    console.log("Compression successful. Validating file size...");
+    //console.log("Compression successful. Validating file size...");
     const compressedStats = fs.statSync(compressedFilePath);
 
     if (compressedStats.size > MAX_IMAGE_SIZE) {
@@ -60,18 +57,16 @@ export const compressAndValidateImage = async (
       );
     }
 
-    console.log("Image compression/validation completed successfully.");
+    //console.log("Image compression/validation completed successfully.");
     return compressedFilePath;
   } catch (err) {
     if (fs.existsSync(compressedFilePath)) {
       fs.unlinkSync(compressedFilePath);
-      console.log(`Deleted compressed file: ${compressedFilePath}`);
+      //console.log(`Deleted compressed file: ${compressedFilePath}`);
     }
     throw new Error(`Image compression/validation failed: ${err}`);
   }
 };
-
-import { Request, Response, NextFunction } from "express";
 
 export const compressUploadedImages = async (
   req: Request,
@@ -84,32 +79,30 @@ export const compressUploadedImages = async (
       const compressedFilePath = `${uploadFolder}/compressed-${imageName}`;
       const imageType = path.extname(imageName);
 
-      // Compress and validate the image
       const compressedPath = await compressAndValidateImage(
         originalFilePath,
         compressedFilePath,
         imageType
       );
 
-      // Replace the original file with the compressed one
       fs.renameSync(compressedPath, originalFilePath);
     };
 
     if (req.body.productImage) {
-      console.log("Processing productImage...");
+      //console.log("Processing productImage...");
       await processImage(req.body.productImage);
     }
 
     if (req.body.image) {
       if (Array.isArray(req.body.image)) {
-        console.log("Processing multiple images in req.body.image...");
+        //console.log("Processing multiple images in req.body.image...");
         await Promise.all(
           req.body.image.map(async (imageName: string) => {
             await processImage(imageName);
           })
         );
       } else {
-        console.log("Processing single image in req.body.image...");
+        //console.log("Processing single image in req.body.image...");
         await processImage(req.body.image);
       }
     }

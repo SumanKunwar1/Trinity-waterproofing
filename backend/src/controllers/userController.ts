@@ -129,6 +129,20 @@ export class UserController {
       next(error);
     }
   }
+  public async forgotPasswordRequest(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { email } = req.body;
+      const result = await this.userService.forgotPasswordRequest(email);
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
 
   public async deleteUser(
     req: Request,

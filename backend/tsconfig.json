@@ -10,6 +10,6 @@
     "rootDir": "./src",
     "resolveJsonModule": true
   },
-  "include": ["src/**/*.ts", "src/sharp.js", "src/sharp.js"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
 }

@@ -161,6 +161,7 @@ export class ProductService {
         retailDiscountedPrice,
         wholeSaleDiscountedPrice,
         pdfUrl,
+        isFeatured,
       } = productData;
 
       // Handle brand validation if provided
@@ -204,20 +205,40 @@ export class ProductService {
       if (description) existingProduct.description = description;
       if (wholeSalePrice) existingProduct.wholeSalePrice = wholeSalePrice;
       if (wholeSalePrice) existingProduct.wholeSalePrice = wholeSalePrice;
-      if (wholeSaleDiscountedPrice)
+      if (
+        wholeSaleDiscountedPrice !== undefined &&
+        wholeSaleDiscountedPrice !== null
+      )
         existingProduct.wholeSaleDiscountedPrice = wholeSaleDiscountedPrice;
-      if (retailDiscountedPrice)
+
+      if (retailDiscountedPrice !== undefined && retailDiscountedPrice !== null)
         existingProduct.retailDiscountedPrice = retailDiscountedPrice;
+
       if (retailPrice) existingProduct.retailPrice = retailPrice;
       if (colors) existingProduct.colors = colors;
       if (features) existingProduct.features = features;
       if (brand) existingProduct.brand = brand;
       if (inStock) existingProduct.inStock = inStock;
       if (pdfUrl) existingProduct.pdfUrl = pdfUrl;
+      if (isFeatured !== undefined && isFeatured !== null)
+        existingProduct.isFeatured = isFeatured;
 
       await existingProduct.save();
 
       return existingProduct;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async editProductIsFeatured(productId: string, isFeatured: boolean) {
+    try {
+      const existingProduct = await Product.findById(productId);
+      if (!existingProduct) {
+        throw httpMessages.NOT_FOUND(`Product with ID: ${productId}`);
+      }
+      existingProduct.isFeatured = isFeatured;
+      existingProduct.save();
     } catch (error) {
       throw error;
     }

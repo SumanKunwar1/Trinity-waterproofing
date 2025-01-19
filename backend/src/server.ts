@@ -3,6 +3,7 @@ import http from "http";
 import app from "./app";
 import { connectToDatabase } from "./middlewares";
 import { initializeAdminUser } from "./config/initializeAdmin";
+import { initializeSenderCache } from "./config/cacheSenderData";
 import { initializeSocket } from "./config/socket";
 
 dotenv.config();
@@ -13,6 +14,7 @@ const startServer = async () => {
   try {
     await connectToDatabase();
     await initializeAdminUser();
+    await initializeSenderCache();
 
     const server = http.createServer(app);
 

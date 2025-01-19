@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { CompanyDetailService } from "../services";
 import { ICompanyDetail } from "../interfaces";
+import { updateSenderCache } from "../config/cacheSenderData";
 
 export class CompanyDetailController {
   private companyDetailService: CompanyDetailService;
@@ -33,6 +34,10 @@ export class CompanyDetailController {
       const result = await this.companyDetailService.putCompanyDetails(
         companyDetailData
       );
+      if (result) {
+        console.log("Updating sender cache...");
+        updateSenderCache(result.email, result.name);
+      }
       res.locals.responseData = result;
       next();
     } catch (error: any) {
