@@ -1,15 +1,13 @@
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
-import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 import Input from "../components/common/Input";
 import Button from "../components/common/Button";
-import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
-import { toast } from "react-toastify";
+import Footer from "../components/layout/Footer";
 
-// Validation schema with newPassword and confirmPassword
-const forgetPasswordSchema = Yup.object().shape({
-  email: Yup.string().email("Invalid email").required("Email is required"),
+// Validation schema for reset password
+const resetPasswordSchema = Yup.object().shape({
   newPassword: Yup.string()
     .min(6, "Password must be at least 6 characters")
     .required("New password is required"),
@@ -18,26 +16,20 @@ const forgetPasswordSchema = Yup.object().shape({
     .required("Confirm password is required"),
 });
 
-const ForgetPassword: React.FC = () => {
-  const handleSubmit = async (values: {
-    email: string;
-    newPassword: string;
-  }) => {
+const ResetPasswordForm: React.FC = () => {
+  const handleSubmit = async (values: { newPassword: string }) => {
     try {
-      // Make the reset password request to your backend API
+      // Mock API call to reset the password
       const response = await fetch("/api/users/reset-password", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email: values.email,
-          newPassword: values.newPassword,
-        }),
+        body: JSON.stringify(values),
       });
 
       if (response.ok) {
-        toast.success("Password has been reset successfully!");
+        toast.success("Password reset successfully!");
       } else {
         const errorData = await response.json();
         toast.error(
@@ -45,7 +37,6 @@ const ForgetPassword: React.FC = () => {
         );
       }
     } catch (error) {
-      // console.error(error);
       toast.error("An unexpected error occurred. Please try again.");
     }
   };
@@ -55,33 +46,30 @@ const ForgetPassword: React.FC = () => {
       <Header />
       <main className="flex-grow">
         <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col md:flex-row items-center justify-center gap-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+            {/* Left section with image */}
             <div className="w-full md:w-1/2">
               <img
-                src="/assets/reset-vector.svg"
-                alt="Forget Password Illustration"
-                className="w-full max-w-md mx-auto"
+                src="/assets/password-reset.png" // Replace with your image path
+                alt="Password Reset Illustration"
+                className="w-full max-w-sm mx-auto"
               />
             </div>
+            {/* Right section with the form */}
             <div className="w-full md:w-1/2 max-w-md">
               <h1 className="text-3xl font-bold mb-2 text-center">
-                Reset Your Password
+                Set New Password
               </h1>
               <p className="text-center text-gray-600 mb-8">
-                Please enter your email and new password.
+                Please enter your new password below.
               </p>
               <Formik
-                initialValues={{
-                  email: "",
-                  newPassword: "",
-                  confirmPassword: "",
-                }}
-                validationSchema={forgetPasswordSchema}
+                initialValues={{ newPassword: "", confirmPassword: "" }}
+                validationSchema={resetPasswordSchema}
                 onSubmit={handleSubmit}
               >
                 {() => (
                   <Form>
-                    <Input label="Email" name="email" type="email" />
                     <Input
                       label="New Password"
                       name="newPassword"
@@ -98,12 +86,6 @@ const ForgetPassword: React.FC = () => {
                   </Form>
                 )}
               </Formik>
-              <p className="mt-4 text-center">
-                Remembered your password?{" "}
-                <Link to="/login" className="text-blue-600 hover:text-blue-800">
-                  Back to Login
-                </Link>
-              </p>
             </div>
           </div>
         </div>
@@ -113,4 +95,4 @@ const ForgetPassword: React.FC = () => {
   );
 };
 
-export default ForgetPassword;
+export default ResetPasswordForm;

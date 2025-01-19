@@ -12,6 +12,8 @@ import { store } from "./admin/store/store";
 import { AuthProvider } from "./context/AuthContext";
 import { HelmetProvider } from "react-helmet-async";
 import Loader from "./components/common/Loader";
+import EmailForm from "./pages/EmailForm";
+import ResetPasswordForm from "./pages/ResetPassword";
 
 // Lazy-loaded components
 const Home = lazy(() => import("./pages/Home"));
@@ -41,7 +43,6 @@ const ReturnAndCancelPage = lazy(
 const AddressBookPage = lazy(
   () => import("./pages/customer-profile/address-book/page")
 );
-const ForgetPassword = lazy(() => import("./pages/ForgetPassword"));
 const FAQPage = lazy(() => import("./pages/FAQPage"));
 const ShippingPage = lazy(() => import("./pages/ShippingPolicy"));
 const ReturnPolicyPage = lazy(() => import("./pages/ReturnPolicy"));
@@ -109,7 +110,11 @@ function App() {
                         />
                         <Route
                           path="/forgot-password"
-                          element={<ForgetPassword />}
+                          element={<EmailForm />}
+                        />
+                        <Route
+                          path="/reset-password"
+                          element={<ResetPasswordForm />}
                         />
                         <Route path="/register" element={<Register />} />
                         <Route
