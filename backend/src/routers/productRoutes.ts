@@ -56,6 +56,14 @@ router.patch(
   handleResponse
 );
 
+router.patch(
+  "/isFeatured/:productId",
+  isAuthenticated,
+  isAuthorized("admin"),
+  productController.editProductIsFeatured.bind(productController),
+  handleResponse
+);
+
 router.get(
   "/",
   productController.getProducts.bind(productController),

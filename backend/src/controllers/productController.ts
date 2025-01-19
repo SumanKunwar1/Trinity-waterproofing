@@ -66,6 +66,25 @@ export class ProductController {
       next(error);
     }
   }
+  public async editProductIsFeatured(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const productId: string = req.params.productId;
+      const isFeatured: boolean = req.body;
+      const result = await this.productService.editProductIsFeatured(
+        productId,
+        isFeatured
+      );
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      deleteProductImages(req);
+      next(error);
+    }
+  }
 
   public async getProducts(
     req: Request,

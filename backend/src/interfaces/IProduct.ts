@@ -27,6 +27,7 @@ interface IProduct {
   brand: Types.ObjectId;
   colors?: IColor[];
   inStock: number;
+  isFeatured: boolean;
 }
 
 export interface IEditableProduct {
@@ -41,6 +42,7 @@ export interface IEditableProduct {
   features?: string;
   brand?: Types.ObjectId;
   inStock?: number;
+  isFeatured?: boolean;
   subCategory?: Types.ObjectId;
 }
 
