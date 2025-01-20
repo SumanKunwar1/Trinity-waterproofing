@@ -38,6 +38,7 @@ import ServicePage from "./pages/Services";
 import PrivacyPolicyForm from "./pages/PrivacyPolicyForm";
 import TeamPage from "./pages/Team";
 import Home from "../pages/Home";
+import Login from "../pages/Login";
 
 function AdminApp() {
   return (
@@ -48,6 +49,7 @@ function AdminApp() {
             <CartProvider>
               <WishlistProvider>
                 <Routes>
+                  <Route path="/login" element={<Login />} />
                   {/* Private routes (protected by PrivateRoute) */}
                   {/* <Route
                 path="/"
