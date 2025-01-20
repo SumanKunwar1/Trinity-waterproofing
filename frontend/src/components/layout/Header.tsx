@@ -350,7 +350,7 @@ const Header: React.FC = () => {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56">
                           <DropdownMenuLabel>
-                            <div className="flex flex-col ">
+                            <div className="flex flex-col text-center justify-center mx-auto">
                               <span className="font-medium">
                                 {user.fullName}
                               </span>

@@ -21,9 +21,13 @@ const ImageDialog: React.FC<ImageDialogProps> = ({
 
   const handleWheel = useCallback((e: WheelEvent) => {
     e.preventDefault();
-    setScale((prevScale) =>
-      Math.max(1, Math.min(5, prevScale + e.deltaY * -0.01))
-    );
+    setScale((prevScale) => {
+      const newScale = Math.max(1, Math.min(5, prevScale + e.deltaY * -0.01));
+      if (newScale === 1) {
+        setPosition({ x: 0, y: 0 }); // Reset position when zoomed out completely
+      }
+      return newScale;
+    });
   }, []);
 
   useEffect(() => {
@@ -56,6 +60,11 @@ const ImageDialog: React.FC<ImageDialogProps> = ({
     setIsDragging(false);
   };
 
+  const handleDoubleClick = () => {
+    setScale((prevScale) => (prevScale === 1 ? 2 : 1)); // Toggle between 1x and 2x zoom
+    setPosition({ x: 0, y: 0 }); // Reset position when zooming
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[90vw] max-h-[90vh] p-0 overflow-auto">
@@ -73,6 +82,7 @@ const ImageDialog: React.FC<ImageDialogProps> = ({
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
+            onDoubleClick={handleDoubleClick}
           >
             <img
               src={imageSrc || "/placeholder.svg"}

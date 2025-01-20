@@ -81,57 +81,45 @@ function App() {
               <CartProvider>
                 <WishlistProvider>
                   <SocketProvider>
-                    <Suspense fallback={<Loader />}>
-                      <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/services" element={<ServicesPage />} />
-                        <Route path="/teams" element={<TeamPage />} />
-                        <Route path="/products" element={<ProductListing />} />
-                        <Route
-                          path="/products/:id"
-                          element={<ProductListing />}
-                        />
-                        <Route
-                          path="/product/:id"
-                          element={<ProductDetail />}
-                        />
-                        <Route path="/cart" element={<Cart />} />
-                        <Route path="/wishlist" element={<Wishlist />} />
-                        <Route path="/gallery" element={<UserGallery />} />
-                        <Route path="/checkout" element={<Checkout />} />
-                        <Route path="/login" element={<Login />} />
-                        <Route
-                          path="/order-success"
-                          element={<OrderSuccess />}
-                        />
-                        <Route
-                          path="/order-failure"
-                          element={<OrderFailure />}
-                        />
-                        <Route
-                          path="/forgot-password"
-                          element={<EmailForm />}
-                        />
-                        <Route
-                          path="/reset-password"
-                          element={<ResetPasswordForm />}
-                        />
-                        <Route path="/register" element={<Register />} />
-                        <Route
-                          path="/privacy-policy"
-                          element={<PrivacyPolicyPage />}
-                        />
-                        <Route
-                          path="/return-policy"
-                          element={<ReturnPolicyPage />}
-                        />
-                        <Route
-                          path="/shipping-policy"
-                          element={<ShippingPage />}
-                        />
-                        <Route path="/faq" element={<FAQPage />} />
-                        <Route path="/about" element={<About />} />
-                        <Route path="/contact" element={<Contact />} />
+                    <Suspense fallback={<Loader />} />
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/services" element={<ServicesPage />} />
+                      <Route path="/teams" element={<TeamPage />} />
+                      <Route path="/products" element={<ProductListing />} />
+                      <Route
+                        path="/products/:id"
+                        element={<ProductListing />}
+                      />
+                      <Route path="/product/:id" element={<ProductDetail />} />
+                      <Route path="/cart" element={<Cart />} />
+                      <Route path="/wishlist" element={<Wishlist />} />
+                      <Route path="/gallery" element={<UserGallery />} />
+                      <Route path="/checkout" element={<Checkout />} />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/order-success" element={<OrderSuccess />} />
+                      <Route path="/order-failure" element={<OrderFailure />} />
+                      <Route path="/forgot-password" element={<EmailForm />} />
+                      <Route
+                        path="/reset-password"
+                        element={<ResetPasswordForm />}
+                      />
+                      <Route path="/register" element={<Register />} />
+                      <Route
+                        path="/privacy-policy"
+                        element={<PrivacyPolicyPage />}
+                      />
+                      <Route
+                        path="/return-policy"
+                        element={<ReturnPolicyPage />}
+                      />
+                      <Route
+                        path="/shipping-policy"
+                        element={<ShippingPage />}
+                      />
+                      <Route path="/faq" element={<FAQPage />} />
+                      <Route path="/about" element={<About />} />
+                      <Route path="/contact" element={<Contact />} />
 
                       {/* Protect customer profile pages */}
                       <Route
