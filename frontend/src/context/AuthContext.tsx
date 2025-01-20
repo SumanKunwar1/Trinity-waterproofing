@@ -1,19 +1,18 @@
-import {
+import React, {
   createContext,
   useContext,
-  useState,
   useEffect,
+  useState,
   ReactNode,
 } from "react";
 import { jwtDecode } from "jwt-decode";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { useLogout } from "../utils/authUtils";
 
-// Utility function to decode token and check expiration
 const decodeToken = (token: string) => {
   try {
     return jwtDecode(token);
   } catch (e) {
+    console.error("AuthProvider - Failed to decode token:", e);
     return null;
   }
 };
@@ -21,9 +20,7 @@ const decodeToken = (token: string) => {
 interface AuthContextType {
   isAuthenticated: boolean;
   token: string | null;
-  login: (token: string) => void;
   logout: () => void;
-  refreshToken: () => Promise<void>;
 }
 
 interface AuthProviderProps {
@@ -40,153 +37,69 @@ export const useAuth = () => {
   return context;
 };
 
-// Custom hook for handling logout
-const useLogoutHandler = () => {
-  const navigate = useNavigate();
-
-  return () => {
-    const keysToRemove = [
-      "authToken",
-      "userRole",
-      "user",
-      "userId",
-      "userFullName",
-      "userEmail",
-      "userPassword",
-      "userNumber",
-    ];
-
-    keysToRemove.forEach((key) => localStorage.removeItem(key));
-    navigate("/login");
-    window.location.reload();
-  };
-};
-
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [token, setToken] = useState<string | null>(null);
-  const [lastActiveTime, setLastActiveTime] = useState<number>(Date.now());
-  const handleLogout = useLogoutHandler();
 
-  const ACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes
-  const TOKEN_REFRESH_INTERVAL = 14 * 60 * 1000; // 14 minutes
-  const ACTIVITY_CHECK_INTERVAL = 60000; // Check every minute
+  const handleLogout = useLogout();
 
-  const checkTokenExpiry = (token: string | null) => {
-    if (token) {
-      const decoded: any = decodeToken(token);
-      if (decoded && decoded.exp) {
-        return decoded.exp * 1000 > Date.now();
-      }
+  const checkTokenValidity = (token: string | null) => {
+    if (!token) {
+      console.log("AuthProvider - Token is null or empty.");
+      return false;
     }
+    const decoded: any = decodeToken(token);
+    if (decoded && decoded.exp) {
+      const isValid = decoded.exp * 1000 > Date.now();
+      console.log("AuthProvider - Token validity:", isValid);
+      return isValid;
+    }
+    console.log("AuthProvider - Failed to extract expiration from token.");
     return false;
   };
 
-  const login = (token: string) => {
-    setToken(token);
-    setIsAuthenticated(true);
-    localStorage.setItem("authToken", token);
-    setLastActiveTime(Date.now());
-  };
-
   const logout = () => {
-    setToken(null);
-    setIsAuthenticated(false);
+    console.log("AuthProvider - Logging out user...");
     handleLogout();
   };
 
-  const refreshToken = async () => {
-    try {
-      const response = await fetch("/api/users/refreshToken", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to refresh token");
-      }
-
-      const data = await response.json();
-      const newAccessToken = data.token;
-      localStorage.setItem("authToken", newAccessToken);
-      setToken(newAccessToken);
-      setLastActiveTime(Date.now());
-    } catch (error: any) {
-      console.error("Error refreshing access token:", error);
-      toast.error(error.message);
-      logout();
-    }
-  };
-
-  // Initialize auth state
   useEffect(() => {
+    console.log("AuthProvider - Initializing auth state...");
     const storedToken = localStorage.getItem("authToken");
-    if (storedToken && checkTokenExpiry(storedToken)) {
+    console.log("AuthProvider - Stored token:", storedToken);
+
+    if (storedToken && checkTokenValidity(storedToken)) {
       setToken(storedToken);
       setIsAuthenticated(true);
-      setLastActiveTime(Date.now());
-    } else if (storedToken) {
-      refreshToken();
+      console.log("AuthProvider - User authenticated.");
+    } else {
+      console.log("AuthProvider - Invalid or expired token... ");
+      if (isAuthenticated) {
+        console.log("...logging out");
+        logout();
+      }
     }
   }, []);
 
-  // Activity and token refresh checker
   useEffect(() => {
-    const checkActivity = () => {
-      const currentTime = Date.now();
-      const timeSinceLastActivity = currentTime - lastActiveTime;
+    if (token) {
+      console.log("AuthProvider - Setting up token expiry handler...");
+      const decoded: any = decodeToken(token);
+      if (decoded && decoded.exp) {
+        const expiryTime = decoded.exp * 1000 - Date.now();
+        console.log(`AuthProvider - Token expires in ${expiryTime} ms.`);
+        const timeoutId = setTimeout(() => {
+          console.log("AuthProvider - Token expired. Logging out...");
+          logout();
+        }, expiryTime);
 
-      if (timeSinceLastActivity > ACTIVITY_TIMEOUT) {
-        toast.info("Session expired due to inactivity");
-        logout();
-      } else if (token && timeSinceLastActivity > TOKEN_REFRESH_INTERVAL) {
-        refreshToken();
+        return () => clearTimeout(timeoutId);
       }
-    };
-
-    const activityInterval = setInterval(
-      checkActivity,
-      ACTIVITY_CHECK_INTERVAL
-    );
-
-    return () => clearInterval(activityInterval);
-  }, [lastActiveTime, token]);
-
-  // Activity event listeners
-  useEffect(() => {
-    const handleActivity = () => {
-      setLastActiveTime(Date.now());
-    };
-
-    const events = [
-      "mousemove",
-      "keydown",
-      "mousedown",
-      "touchstart",
-      "scroll",
-      "focus",
-      "resize",
-    ];
-
-    events.forEach((event) => {
-      window.addEventListener(event, handleActivity);
-    });
-
-    return () => {
-      events.forEach((event) => {
-        window.removeEventListener(event, handleActivity);
-      });
-    };
-  }, []);
+    }
+  }, [token]);
 
   return (
-    <AuthContext.Provider
-      value={{ isAuthenticated, token, login, logout, refreshToken }}
-    >
+    <AuthContext.Provider value={{ isAuthenticated, token, logout }}>
       {children}
     </AuthContext.Provider>
   );

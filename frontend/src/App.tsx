@@ -95,7 +95,7 @@ function App() {
                       <Route
                         path="/customer/dashboard"
                         element={
-                          <PrivateRoute>
+                          <PrivateRoute requiredRoles={["b2c", "b2b"]}>
                             <DashboardPage />
                           </PrivateRoute>
                         }
@@ -103,7 +103,7 @@ function App() {
                       <Route
                         path="/customer/notifications"
                         element={
-                          <PrivateRoute>
+                          <PrivateRoute requiredRoles={["b2c", "b2b"]}>
                             <Notification />
                           </PrivateRoute>
                         }
@@ -111,7 +111,7 @@ function App() {
                       <Route
                         path="/customer/manage-profile"
                         element={
-                          <PrivateRoute>
+                          <PrivateRoute requiredRoles={["b2c", "b2b"]}>
                             <ManageProfilePage />
                           </PrivateRoute>
                         }
@@ -119,7 +119,7 @@ function App() {
                       <Route
                         path="/customer/purchase-history"
                         element={
-                          <PrivateRoute>
+                          <PrivateRoute requiredRoles={["b2c", "b2b"]}>
                             <PurchaseHistoryPage />
                           </PrivateRoute>
                         }
@@ -127,7 +127,7 @@ function App() {
                       <Route
                         path="/customer/address-book"
                         element={
-                          <PrivateRoute>
+                          <PrivateRoute requiredRoles={["b2c", "b2b"]}>
                             <AddressBookPage />
                           </PrivateRoute>
                         }
@@ -135,7 +135,7 @@ function App() {
                       <Route
                         path="/customer/reviews-ratings"
                         element={
-                          <PrivateRoute>
+                          <PrivateRoute requiredRoles={["b2c", "b2b"]}>
                             <RatingsAndReviews />
                           </PrivateRoute>
                         }
@@ -143,7 +143,7 @@ function App() {
                       <Route
                         path="/customer/return-and-cancel"
                         element={
-                          <PrivateRoute>
+                          <PrivateRoute requiredRoles={["b2c", "b2b"]}>
                             <ReturnAndCancelPage />
                           </PrivateRoute>
                         }

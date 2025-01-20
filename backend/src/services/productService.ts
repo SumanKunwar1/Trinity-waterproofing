@@ -203,8 +203,8 @@ export class ProductService {
       // Update other product details
       if (name) existingProduct.name = name;
       if (description) existingProduct.description = description;
-      if (wholeSalePrice) existingProduct.wholeSalePrice = wholeSalePrice;
-      if (wholeSalePrice) existingProduct.wholeSalePrice = wholeSalePrice;
+      if (wholeSalePrice !== undefined && wholeSalePrice !== null)
+        existingProduct.wholeSalePrice = wholeSalePrice;
       if (
         wholeSaleDiscountedPrice !== undefined &&
         wholeSaleDiscountedPrice !== null
@@ -214,7 +214,8 @@ export class ProductService {
       if (retailDiscountedPrice !== undefined && retailDiscountedPrice !== null)
         existingProduct.retailDiscountedPrice = retailDiscountedPrice;
 
-      if (retailPrice) existingProduct.retailPrice = retailPrice;
+      if (retailPrice !== undefined && retailPrice !== null)
+        existingProduct.retailPrice = retailPrice;
       if (colors) existingProduct.colors = colors;
       if (features) existingProduct.features = features;
       if (brand) existingProduct.brand = brand;

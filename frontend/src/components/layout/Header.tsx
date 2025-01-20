@@ -8,9 +8,9 @@ import { IoSearchOutline, IoCloseOutline } from "react-icons/io5";
 import { FaRegHeart } from "react-icons/fa";
 import { navigationItems } from "../../constants/navigation";
 import { useCart } from "../../context/CartContext";
-
 import { useWishlist } from "../../context/WishlistContext";
 import ProductDropdown from "./ProductDropdown";
+import { LogOut } from "lucide-react";
 // Import Sentry
 import * as Sentry from "@sentry/react";
 
@@ -393,6 +393,7 @@ const Header: React.FC = () => {
                             className="text-red-600 border rounded-2xl border-red-600 text-center hover:bg-tertiary flex justify-center cursor-pointer focus:text-red-700 transition-all duration-300"
                             onSelect={handleLogout}
                           >
+                            <LogOut className="mr-2 h-4 w-4" />
                             Logout
                           </DropdownMenuItem>
                         </DropdownMenuContent>
