@@ -32,8 +32,6 @@ const validateSlider = (
       "object.missing": "Either 'image' or 'video' is required",
     });
 
-  console.log(req.body);
-
   const { error } = schema.validate(req.body, { abortEarly: false });
   if (error) {
     const errors = error.details.map((err) => ({

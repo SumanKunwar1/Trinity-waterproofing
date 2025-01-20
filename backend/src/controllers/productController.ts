@@ -22,7 +22,6 @@ export class ProductController {
       res.locals.responseData = result;
       next();
     } catch (error: any) {
-      console.log(error, "this is from service or controller");
       deleteProductImages(req);
       next(error);
     }

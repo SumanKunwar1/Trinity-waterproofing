@@ -45,7 +45,6 @@ export class NotificationService {
 
       return notification;
     } catch (error) {
-      console.error(error);
       throw httpMessages.INTERNAL_SERVER_ERROR;
     }
   }
@@ -58,7 +57,6 @@ export class NotificationService {
       const admins = await User.find({ role: "admin" }); // Fetch all admins
 
       if (!admins || admins.length === 0) {
-        console.log("No admin users found to notify.");
         return;
       }
 
@@ -74,15 +72,11 @@ export class NotificationService {
 
       // Emit notifications to all admins
       const io = getSocketIO();
-      console.log("Emitting notification to admins:");
 
       admins.forEach((admin) => {
         io.to(admin._id.toString()).emit("notification", { message, type });
       });
-
-      console.log("Admin notifications created successfully.");
     } catch (error) {
-      console.error("Error creating admin notifications:", error);
       throw httpMessages.INTERNAL_SERVER_ERROR;
     }
   }
@@ -112,7 +106,6 @@ export class NotificationService {
 
       return notification;
     } catch (error) {
-      console.error("Error marking notification as read:", error);
       throw httpMessages.INTERNAL_SERVER_ERROR;
     }
   }
@@ -129,7 +122,6 @@ export class NotificationService {
 
       return notification;
     } catch (error) {
-      console.error("Error deleting notification:", error);
       throw httpMessages.INTERNAL_SERVER_ERROR;
     }
   }
@@ -143,7 +135,6 @@ export class NotificationService {
 
       return result;
     } catch (error) {
-      console.error("Error marking all notifications as read:", error);
       throw httpMessages.INTERNAL_SERVER_ERROR;
     }
   }
@@ -154,7 +145,6 @@ export class NotificationService {
 
       return result;
     } catch (error) {
-      console.error("Error clearing all notifications:", error);
       throw httpMessages.INTERNAL_SERVER_ERROR;
     }
   }
@@ -315,7 +305,6 @@ Thank you for shopping with Trinity Waterproofing!`,
 
     await sendBrevoEmail({ name: fullName, email }, subject, content);
   } catch (error) {
-    console.error("Error sending order notification email:", error);
     throw new Error("Failed to send order notification email");
   }
 };

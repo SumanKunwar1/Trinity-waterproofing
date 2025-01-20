@@ -43,10 +43,8 @@ export class UserController {
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
-      console.log("we got the result");
       next();
     } catch (error: any) {
-      console.log("we got the error");
       next(error);
     }
   }
@@ -57,7 +55,6 @@ export class UserController {
     next: NextFunction
   ): Promise<void> {
     try {
-      console.log(req.cookies);
       const refreshToken = req.cookies.refresh_token;
       if (!refreshToken) {
         httpMessages.NOT_FOUND("Refresh Token");
@@ -171,7 +168,6 @@ export class UserController {
       res.locals.responseData = result;
       next();
     } catch (error: any) {
-      console.log("error in add address", error);
       next(error);
     }
   }

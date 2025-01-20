@@ -31,7 +31,6 @@ export class GalleryController {
   ): Promise<void> {
     try {
       const { folderName, image } = req.body;
-      console.log(folderName, image);
       const result = await this.galleryService.uploadImage(folderName, image);
 
       res.locals.responseData = result;

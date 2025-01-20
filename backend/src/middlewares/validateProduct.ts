@@ -92,14 +92,12 @@ const validateProduct = (
       "date.base": "Updated_at must be a valid date",
     }),
   });
-  console.log("validate product /post body", req.body);
   const { error } = schema.validate(req.body, { abortEarly: false });
   if (error) {
     const errors = error.details.map((err) => ({
       field: err.context?.key,
       message: err.message,
     }));
-    console.log("error in va;idatopn", errors);
 
     deleteProductImages(req);
 

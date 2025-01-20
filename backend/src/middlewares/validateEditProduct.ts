@@ -74,7 +74,6 @@ const validateEditProduct = (
   if (req.body.pdfUrl === "") {
     delete req.body.pdfUrl;
   }
-  console.log("validateEditProduct", req.body);
   const { error } = schema.validate(req.body, { abortEarly: false });
 
   if (error) {

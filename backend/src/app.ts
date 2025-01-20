@@ -26,11 +26,4 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Hello, welcome to the Express + TypeScript app!");
 });
 
-// 404 Catch-All Route for Undefined Routes
-// app.use((req: Request, res: Response, next: NextFunction) => {
-//   const error = new Error(`Route ${req.originalUrl} not found`) as any;
-//   error.statusCode = 404;
-//   next(error); // Pass error to the error handling middleware
-// });
-
 export default app;

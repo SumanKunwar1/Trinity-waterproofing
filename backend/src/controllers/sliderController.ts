@@ -45,7 +45,6 @@ export class SliderController {
   ): Promise<void> {
     try {
       const sliderData: ISlider = req.body;
-      console.log("create slider", sliderData);
       const slider = await this.sliderService.createSlider(sliderData);
       res.locals.responseData = slider;
       next();

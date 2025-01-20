@@ -30,7 +30,6 @@ function renderImage(
   res: Response<any, Record<string, any>>
 ) {
   const filePath = path.join(uploadFolder, filename);
-  console.log(filePath);
 
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
@@ -42,7 +41,6 @@ function renderImage(
     if (!mimeType) {
       return res.status(415).json({ error: "Unsupported file type" });
     }
-    console.log(mimeType);
 
     res.setHeader("Content-Type", mimeType);
 

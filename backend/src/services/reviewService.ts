@@ -43,17 +43,13 @@ export class ReviewService {
       }
 
       // Log the order for debugging
-      console.log("order we got", order);
 
       const productInOrder = order.products.some((orderProduct) => {
-        console.log("Order Product ID:", orderProduct.productId.toString());
-        console.log("Review Product ID:", reviewData.productId.toString());
         return (
           orderProduct.productId.toString() === reviewData.productId.toString()
         );
       });
 
-      console.log("Product found in order:", productInOrder);
       if (!productInOrder) {
         throw httpMessages.FORBIDDEN(
           "You can only review products you have purchased"
@@ -88,7 +84,6 @@ export class ReviewService {
 
       return newReview;
     } catch (error) {
-      console.error("Error while creating review:", error);
       throw error;
     }
   }

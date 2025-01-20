@@ -72,7 +72,6 @@ export class SubCategoryService {
           };
         })
       );
-      //console.log(JSON.stringify(subCategoryResponse, null, 2));
       return subCategoryResponse;
     } catch (error) {
       throw error; // Rethrow error if any occurs
@@ -153,10 +152,6 @@ export class SubCategoryService {
         // Call deleteImages function to remove files
         if (filesToDelete.length > 0) {
           await deleteImages(filesToDelete);
-          // console.log(
-          //   `Successfully deleted files for product ${product._id}:`,
-          //   filesToDelete
-          // );
         }
 
         // Step 4: Delete the product from the database

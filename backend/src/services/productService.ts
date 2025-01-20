@@ -39,7 +39,6 @@ export class ProductService {
       const { productImage, image: newImages, existingImages } = productData;
 
       // Log the input data
-      // console.log("Received Product Data:", productData);
 
       // Extract file names from the existingImages URLs
       const existingImageFileNames = existingImages
@@ -52,15 +51,10 @@ export class ProductService {
         })
         .filter(Boolean); // Remove any empty strings from the list
 
-      // console.log("Existing Image File Names:", existingImageFileNames);
-
       const existingProduct = await Product.findById(productId);
       if (!existingProduct) {
-        // console.log(`Product with ID: ${productId} not found`);
         throw httpMessages.NOT_FOUND(`Product with ID: ${productId}`);
       }
-
-      // console.log("Found existing product:", existingProduct);
 
       const filesToDelete: string[] = [];
 
@@ -69,13 +63,8 @@ export class ProductService {
         if (productImage) {
           // Ensure productImage is a valid string
           const productImageFileName = productImage.split("/").pop();
-          // console.log(
-          //   "Existing product main image file name:",
-          //   existingProduct.productImage
-          // );
-          // console.log("New product image file name:", productImageFileName);
+
           filesToDelete.push(existingProduct.productImage);
-          // console.log(`Added ${existingProduct.productImage} to delete list`);
         }
       }
 
@@ -85,8 +74,6 @@ export class ProductService {
           if (existingImage) {
             // Ensure existingImage is a valid string
             const imageFileName = existingImage.split("/").pop();
-            // console.log("Existing additional image file name:", existingImage);
-            // console.log("New image file name:", imageFileName);
 
             if (
               imageFileName &&
@@ -98,42 +85,32 @@ export class ProductService {
                 existingProduct.image.indexOf(existingImage);
               if (indexToRemove !== -1) {
                 existingProduct.image.splice(indexToRemove, 1); // Remove from existing images array
-                // console.log(
-                // `Removed ${existingImage} from existing images list`
-                // );
               }
-              // console.log(`Added ${existingImage} to delete list`);
             }
           }
         });
       }
       // Log the files to delete before deleting
-      // console.log("Files to delete:", filesToDelete);
 
       // Delete only the files that are not in the existingImages list
       if (filesToDelete.length > 0) {
-        // console.log("Deleting files:", filesToDelete);
         await deleteImages(filesToDelete);
       }
 
       // Update the product image
       if (productImage) {
-        // console.log("Updating product image:", productImage);
         existingProduct.productImage = productImage;
       }
 
       // Update the additional images
       if (newImages && newImages.length > 0) {
-        // console.log("Appending new images:", newImages);
         existingProduct.image.push(...newImages); // Append new images
       }
 
       await existingProduct.save();
 
-      // console.log("Updated product:", existingProduct);
       return existingProduct;
     } catch (error) {
-      console.error("Error occurred while editing product images:", error);
       throw error;
     }
   }
@@ -236,10 +213,9 @@ export class ProductService {
     try {
       const existingProduct = await Product.findById(productId);
       if (!existingProduct) {
-        //console.log("Product not found");
         throw httpMessages.NOT_FOUND(`Product with ID: ${productId}`);
       }
-      //console.log("isFeatured:", typeof isFeatured);
+
       existingProduct.isFeatured = isFeatured;
       existingProduct.save();
       return {
