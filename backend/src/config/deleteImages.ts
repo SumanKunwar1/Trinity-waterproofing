@@ -43,7 +43,6 @@ export const DeleteFileFromFiles = async (req: Request): Promise<void> => {
   const filesToDelete: string[] = [];
 
   const files = req.files as FilesField;
-  //console.log(files, "uploaded by multer");
   if (files) {
     Object.keys(files).forEach((key) => {
       const fileArray = files[key];

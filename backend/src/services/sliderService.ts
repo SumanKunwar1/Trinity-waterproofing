@@ -84,7 +84,6 @@ export class SliderService {
       await slider.save();
       return slider;
     } catch (error) {
-      console.log("error in create slider service", error);
       throw error;
     }
   }

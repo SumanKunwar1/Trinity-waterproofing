@@ -24,7 +24,6 @@ export const sendBrevoEmail = async (
   try {
     const { email: senderEmail, name: senderName } = getCachedSenderDetails();
     if (!senderEmail || !senderName) {
-      console.error("Admin email or name not cached properly.");
       return;
     }
     const emailData = {
@@ -36,7 +35,6 @@ export const sendBrevoEmail = async (
     };
 
     const response = await client.sendTransacEmail(emailData);
-    console.log("Email sent successfully:", emailData);
   } catch (error) {
     console.error("Error sending email:", error);
   }

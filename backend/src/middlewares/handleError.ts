@@ -11,7 +11,6 @@ function handleError(
   console.log(`Error while ✌ ${req.originalUrl} ✌`);
   if (err instanceof multer.MulterError) {
     const message = err.field || "File upload error";
-    console.log("multer errror", message);
     DeleteFileFromFiles(req);
     res.status(400).json({ error: message });
     return;
@@ -19,7 +18,6 @@ function handleError(
 
   const statusCode = err.statusCode || 500;
   const message = err.message || "Internal Server Error";
-  console.log(err);
   res.status(statusCode).json({ error: message });
 }
 

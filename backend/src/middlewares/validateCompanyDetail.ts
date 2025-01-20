@@ -49,8 +49,6 @@ const validateCompanyDetails = (
     }),
   }).unknown(true);
 
-  console.log("company details put validation", req.body);
-
   const { error } = schema.validate(req.body, { abortEarly: false });
 
   if (error) {

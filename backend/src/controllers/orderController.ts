@@ -124,7 +124,6 @@ export class OrderController {
   ): Promise<void> {
     try {
       const orderId = req.params.orderId;
-      console.log(req.body);
       const reason = req.body.reason;
       if (!reason) {
         return next(httpMessages.BAD_REQUEST("Reason is required"));

@@ -33,7 +33,6 @@ export class AboutController {
   ): Promise<void> {
     try {
       const aboutData: IAbout = req.body;
-      console.log("in the create about controller", aboutData);
       const about = await this.aboutService.createAbout(aboutData);
       res.locals.responseData = about;
       next();

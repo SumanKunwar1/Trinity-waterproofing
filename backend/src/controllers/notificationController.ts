@@ -95,7 +95,6 @@ export class NotificationController {
   ): Promise<void> {
     try {
       const { userId } = req.params;
-      console.log("IN THE CLEAR ALL NOTIFICATION CONTROLLER", userId);
       await NotificationService.clearAllNotifications(userId);
       res.locals.responseData = { message: "All notifications cleared" };
       next();

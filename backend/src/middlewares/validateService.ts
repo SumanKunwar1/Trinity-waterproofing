@@ -23,8 +23,6 @@ const validateService = (
     }),
   });
 
-  console.log(req.body);
-
   const { error } = schema.validate(req.body, { abortEarly: false });
 
   if (error) {

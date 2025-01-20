@@ -20,9 +20,6 @@ const validateProductImage = (
       "array.base": "ExistingImages must be an array of valid filename",
     }),
   });
-  console.log("edit product imaege", req.body);
-  console.log("productImage?", req.body.productImage);
-  console.log("imaege?", req.body.image);
   const { error } = schema.validate(req.body, { abortEarly: false });
   if (error) {
     const errors = error.details.map((err) => ({

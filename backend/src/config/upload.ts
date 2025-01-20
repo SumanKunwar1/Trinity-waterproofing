@@ -10,16 +10,10 @@ import {
 
 // Add fileFilter to enforce file type restrictions
 const fileFilter = (req: any, file: any, cb: any) => {
-  //console.log("Received file:", file);
-
   if (file.fieldname === "productImage" || file.fieldname === "image") {
     if (allowedImageTypes.includes(file.mimetype)) {
-      //console.log(`Allowed file type: ${file.mimetype}`);
       cb(null, true);
     } else {
-      console.error(
-        `Invalid file type for ${file.fieldname}: ${file.mimetype}`
-      );
       cb(
         new multer.MulterError(
           "LIMIT_UNEXPECTED_FILE",
@@ -29,12 +23,8 @@ const fileFilter = (req: any, file: any, cb: any) => {
     }
   } else if (file.fieldname === "video") {
     if (allowedVideoTypes.includes(file.mimetype)) {
-      //console.log(`Allowed video file type: ${file.mimetype}`);
       cb(null, true);
     } else {
-      console.error(
-        `Invalid video file type for ${file.fieldname}: ${file.mimetype}`
-      );
       cb(
         new multer.MulterError(
           "LIMIT_UNEXPECTED_FILE",
@@ -55,11 +45,8 @@ const fileFilter = (req: any, file: any, cb: any) => {
 const storage: multer.StorageEngine = multer.diskStorage({
   destination: async (req: any, file: any, cb: any) => {
     try {
-      //console.log("Uploading file...");
-      //console.log("Upload folder path:", uploadFolder);
       cb(null, uploadFolder); // Save to the upload folder
     } catch (err) {
-      console.error("Error in destination callback:", err);
       cb(err);
     }
   },
@@ -95,26 +82,21 @@ export const appendSliderDataToBody = (req: any, res: any, next: Function) => {
   // Handle image files
   if (req.files && req.files["image"]) {
     // If there's an image uploaded, assign the filename to req.body.image
-    //console.log("Added image to body:", req.files["image"][0].filename); // Log the image file added
     req.body.image = req.files["image"][0].filename;
   }
 
   // Handle video files
   if (req.files && req.files["video"]) {
     // If there's a video uploaded, assign the filename to req.body.video
-    //console.log("Added video to body:", req.files["video"][0].filename); // Log the video file added
     req.body.video = req.files["video"][0].filename;
   }
 
-  //console.log("Updated Request Body (appendSliderDataToBody):", req.body); // Log final request body
   next();
 };
 
 export const appendFileDataToBody = (req: any, res: any, next: Function) => {
-  //console.log(req.files["image"]);
   if (req.files["productImage"] && req.files["productImage"].length > 0) {
     const productImageFile = req.files["productImage"][0];
-    //console.log("Added product image to body:", productImageFile.filename); // Log the image file added
     req.body.productImage = productImageFile.filename;
   }
 
@@ -127,11 +109,9 @@ export const appendFileDataToBody = (req: any, res: any, next: Function) => {
 
   if (req.files["video"] && req.files["video"].length > 0) {
     const video = req.files["video"][0];
-    //console.log("Added video to body:", video.filename); // Log video added
     req.body.video = video.filename;
   }
 
-  //console.log("Updated Request Body (appendFileDataToBody):", req.body); // Log final request body
   next();
 };
 
@@ -140,7 +120,6 @@ export const appendImageDataToBody = (req: any, res: any, next: Function) => {
     const imageFiles = req.files["image"];
     // If there's at least one image uploaded, assign the filename as a string
     if (imageFiles.length > 0) {
-      //console.log("Added single image to body:", imageFiles[0].filename); // Log the image file added
       req.body.image = imageFiles[0].filename;
     } else {
       // If no images were uploaded, set it to an empty string
@@ -151,7 +130,6 @@ export const appendImageDataToBody = (req: any, res: any, next: Function) => {
     req.body.image = "";
   }
 
-  //console.log("Updated Request Body (appendImageDataToBody):", req.body); // Log final request body
   next();
 };
 

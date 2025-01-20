@@ -52,11 +52,9 @@ export class CartService {
 
         if (existingItemIndex !== -1) {
           // Product with the same color exists; update the quantity
-          console.log("the ditto product in the cart exists! ");
           cart.items[existingItemIndex].quantity += quantity;
         } else {
           // Different variant or new product; add as a new item
-          console.log("the product is not ditto!");
           cart.items.push(cartItem);
         }
 
@@ -134,7 +132,6 @@ export class CartService {
       const products = await Product.find({ _id: { $in: productIds } }).exec();
 
       // Log to ensure products are fetched correctly
-      console.log("Fetched Products:", products);
 
       // Create a map of product _id to product document
       const productMap: { [key: string]: IProduct } = products.reduce(
@@ -146,7 +143,6 @@ export class CartService {
       );
 
       // Log to verify product mapping
-      console.log("Product Map:", productMap);
 
       // Create a modified items array manually
       const modifiedItems = cart.items.map((item) => {
@@ -154,7 +150,6 @@ export class CartService {
         const product = productMap[item.productId.toString()];
 
         if (!product) {
-          console.warn(`Product not found for productId: ${item.productId}`);
           return null; // Handle missing product gracefully
         }
 
@@ -186,7 +181,6 @@ export class CartService {
 
       return cartItems;
     } catch (error) {
-      console.error("Error in getCartByUserId:", error);
       throw error;
     }
   }

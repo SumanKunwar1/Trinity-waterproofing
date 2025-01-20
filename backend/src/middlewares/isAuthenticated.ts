@@ -22,7 +22,6 @@ const isAuthenticated = (
     }
     req.email = decoded.email;
     req.role = decoded.role;
-    console.log("User Authenticated!");
     next();
   } catch (error: any) {
     if (error.name === "TokenExpiredError") {

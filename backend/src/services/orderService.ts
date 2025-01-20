@@ -21,36 +21,28 @@ export class OrderService {
     try {
       const user = await User.findOne({ email: userEmail });
       if (!user) {
-        console.log("User not found.");
         throw httpMessages.NOT_FOUND("User");
       }
-      console.log("User found:", user, "now onto the address of id", addressId);
 
       const address = user.addressBook.find(
         (addr) => addr._id.toString() === addressId.toString()
       );
 
       if (!address) {
-        console.log("Address not found.");
         throw httpMessages.NOT_FOUND("Address");
       }
-      console.log("Address found:", address);
 
       let subtotal = 0;
       const validatedProducts = [];
 
       for (const orderItem of orderData) {
-        console.log("Processing order item:", orderItem);
-
         const { productId, color, quantity } = orderItem;
         const orderItemPrice = orderItem.price;
 
         const product = await Product.findById(productId);
         if (!product) {
-          console.log(`Product not found for ID: ${productId}`);
           throw httpMessages.NOT_FOUND(`Product with ID ${productId}`);
         }
-        console.log("Product found:", product);
 
         const price =
           userRole.toLowerCase() === "b2b"
@@ -62,10 +54,6 @@ export class OrderService {
             ? product.retailDiscountedPrice
             : product.retailPrice; // Use discounted retail price only if it's greater than 0
 
-        console.log(
-          `Price for product '${product.name}' determined as: ${price}`
-        );
-
         if (price !== orderItemPrice) {
           throw httpMessages.BAD_REQUEST(
             `Detected Mismatch between the prices .... for ${product.name}. Price gotten:${orderItemPrice}, price Calculated:${price}`
@@ -73,13 +61,7 @@ export class OrderService {
         }
 
         if (product.colors && product.colors.length > 0) {
-          console.log(
-            "Validating color for product with colors:",
-            product.colors
-          );
-
           if (!color) {
-            console.log("Color is required but not provided.");
             throw httpMessages.BAD_REQUEST(
               `Color is required for product ${
                 product.name
@@ -92,7 +74,6 @@ export class OrderService {
           );
 
           if (!colorExists) {
-            console.log(`Invalid color: ${color}`);
             throw httpMessages.BAD_REQUEST(
               `Invalid color '${color}' for product ${
                 product.name
@@ -104,9 +85,6 @@ export class OrderService {
         }
 
         if (product.inStock < quantity) {
-          console.log(
-            `Insufficient stock for product ${product.name}. Available: ${product.inStock}, Requested: ${quantity}`
-          );
           throw httpMessages.BAD_REQUEST(
             `Insufficient stock for product ${product.name}. Available: ${product.inStock}, Requested: ${quantity}`
           );
@@ -118,18 +96,10 @@ export class OrderService {
           quantity,
           price,
         });
-        console.log("Validated product added:", {
-          productId,
-          color,
-          quantity,
-          price,
-        });
 
         subtotal += price * quantity;
-        console.log("Updated subtotal:", subtotal);
       }
 
-      console.log("All products validated. Creating new order...");
       const newOrder = new Order({
         products: validatedProducts.map((item) => ({
           productId: item.productId,
@@ -142,20 +112,14 @@ export class OrderService {
         subtotal,
         status: OrderStatus.ORDER_REQUESTED,
       });
-      console.log("New Order Object:", newOrder);
 
       await newOrder.save();
-      console.log("Order saved to database.");
 
       for (const { productId, quantity } of validatedProducts) {
-        console.log(
-          `Updating stock for product ID: ${productId}, decrement by: ${quantity}`
-        );
         await Product.findByIdAndUpdate(productId, {
           $inc: { inStock: -quantity },
         });
       }
-      console.log("Product stock updated.");
 
       // **User Notification**
       const formattedDate = moment(newOrder.createdAt).format(
@@ -181,14 +145,9 @@ export class OrderService {
 
       const cart = await Cart.findOne({ userId: user._id });
       if (cart) {
-        console.log("User cart found:", cart);
-
         // Remove only items that match the order
         for (const orderItem of validatedProducts) {
           const { productId, color, quantity } = orderItem;
-          console.log(
-            `Removing cart item for product ID: ${productId}, color: ${color}, quantity: ${quantity}`
-          );
 
           await Cart.updateOne(
             { userId: user._id },
@@ -203,13 +162,10 @@ export class OrderService {
             }
           );
         }
-        console.log("Matching items removed from cart.");
       }
 
-      console.log("Order creation complete.");
       return newOrder;
     } catch (error) {
-      console.error("Error during order creation:", error);
       throw error;
     }
   }
@@ -231,13 +187,9 @@ export class OrderService {
 
       const ordersWithAddresses: any = await Promise.all(
         orders.map(async (order) => {
-          console.log("Order with address:", order);
-          console.log("Product list in the order:", order.products);
-
           order.products = order.products.map((product: any) => {
             if (product.productId) {
               const updatedProduct = product.productId; // Directly use the populated productId
-              console.log("Original product data:", updatedProduct);
 
               // Modify productImage
               updatedProduct.productImage = `/api/image/${updatedProduct.productImage}`;
@@ -247,27 +199,14 @@ export class OrderService {
                 (image: string) => `/api/image/${image}`
               );
 
-              console.log(
-                "Updated product with formatted images:",
-                updatedProduct
-              );
-
               // Return updated product with formatted images
               return { ...product.toObject(), productId: updatedProduct }; // Replace productId with updatedProduct
             }
-            console.log(
-              "Product without productId:",
-              JSON.stringify(product, null, 2)
-            );
             return product;
           });
         })
       );
 
-      console.log(
-        "orderwithaddress in ge orders by id",
-        JSON.stringify(orders, null, 2)
-      );
       return orders;
     } catch (error) {
       throw error;
@@ -287,7 +226,6 @@ export class OrderService {
       order.products = order.products.map((product: any) => {
         if (product.productId) {
           const updatedProduct = product.productId;
-          console.log("Original product data:", updatedProduct);
 
           updatedProduct.productImage = `/api/image/${updatedProduct.productImage}`;
 
@@ -295,15 +233,9 @@ export class OrderService {
             (image: string) => `/api/image/${image}`
           );
 
-          console.log("Updated product with formatted images:", updatedProduct);
-
           return { ...product.toObject(), productId: updatedProduct };
         }
 
-        console.log(
-          "Product without productId:",
-          JSON.stringify(product, null, 2)
-        );
         return product; // If no productId, just return the product
       });
 

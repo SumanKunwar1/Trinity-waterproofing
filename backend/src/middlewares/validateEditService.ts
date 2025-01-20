@@ -24,8 +24,6 @@ const validateEditService = (
       "object.min": "At least one field must be provided to update the service",
     });
 
-  console.log(req.body);
-
   const { error } = schema.validate(req.body, { abortEarly: false });
 
   if (error) {

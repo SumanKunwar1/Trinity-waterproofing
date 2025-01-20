@@ -24,7 +24,6 @@ export class WishListService {
       }
 
       await wishlist.save();
-      console.log("Product added to wishlist:", wishlist);
       return wishlist;
     } catch (error) {
       throw error;
@@ -51,7 +50,6 @@ export class WishListService {
       );
 
       await wishlist.save();
-      console.log("Product removed from wishlist:", wishlist);
       return wishlist;
     } catch (error) {
       throw error;
@@ -76,7 +74,6 @@ export class WishListService {
         productImage: `/api/image/${product.productImage}`,
       }));
 
-      console.log("Wishlist retrieved:", populatedWishlist);
       return populatedWishlist;
     } catch (error) {
       throw error;

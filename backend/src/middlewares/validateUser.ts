@@ -36,7 +36,6 @@ const validateUser = (
   });
 
   // Validate request body
-  console.log("validationg user");
   const { error } = schema.validate(req.body, { abortEarly: false });
 
   if (error) {

@@ -44,17 +44,12 @@ export class UserService {
         throw httpMessages.NOT_FOUND("User");
       }
 
-      console.log(`Stored (hashed) password: ${user.password}`);
-      console.log(`Entered (plain) password: ${password}`);
-
       // Compare the entered password with the stored hashed password
       const isMatch = await bcrypt.compare(password, user.password as string);
 
       if (!isMatch) {
-        console.warn(`Invalid password attempt for email: ${email}`);
         throw httpMessages.INVALID_CREDENTIALS;
       }
-      console.log("Password match successful!");
 
       const token = generateAccessToken(
         user._id.toString(),
@@ -70,7 +65,6 @@ export class UserService {
 
       return { token, user, refreshToken };
     } catch (error) {
-      console.log(error);
       throw error;
     }
   }
@@ -78,7 +72,6 @@ export class UserService {
   public async refreshToken(refreshToken: string) {
     try {
       const decoded: any = verifyToken(refreshToken);
-      console.log(decoded);
       const user = await User.findById(decoded.id);
       if (!user) {
         throw httpMessages.NOT_FOUND("User");
@@ -138,7 +131,6 @@ export class UserService {
         const hashedPassword = await bcrypt.hash(password, salt);
         user.password = hashedPassword;
       }
-      console.log(user);
 
       await user.save();
 
@@ -150,7 +142,6 @@ export class UserService {
         number: user.number,
       };
     } catch (error) {
-      console.log(error);
       throw error;
     }
   }
@@ -171,15 +162,12 @@ export class UserService {
         throw httpMessages.INVALID_CREDENTIALS;
       }
 
-      console.log("user's old password", user.password);
-
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(newPassword, salt);
 
       user.password = hashedPassword;
 
       await user.save();
-      console.log("users new password", user.password);
 
       return {
         message: "Password updated successfully",
@@ -251,7 +239,6 @@ export class UserService {
 
       return user;
     } catch (error) {
-      console.log(error);
       throw error;
     }
   }
@@ -290,7 +277,6 @@ export class UserService {
 
       return user;
     } catch (error) {
-      console.error(error);
       throw error;
     }
   }
@@ -320,22 +306,18 @@ export class UserService {
       await user.save();
       return { message: "AddressBook deleted successfully" };
     } catch (error) {
-      console.error(error);
       throw error;
     }
   }
 
   public async getAddress(userId: string) {
-    console.log("IN THE GET ADDRES FUNCTION");
     try {
       const user = await User.findById(userId);
       if (!user) {
         throw httpMessages.NOT_FOUND("User not found");
       }
-      console.log(user.addressBook);
       return { addressBook: user.addressBook };
     } catch (error) {
-      console.error(error);
       throw error;
     }
   }
@@ -358,7 +340,6 @@ export class UserService {
       await user.save();
       return { message: "AddressBook deleted successfully" };
     } catch (error) {
-      console.error(error);
       throw error;
     }
   }

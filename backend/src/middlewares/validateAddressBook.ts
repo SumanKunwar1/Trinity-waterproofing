@@ -40,8 +40,6 @@ const validateAddressBook = (
     }),
   });
 
-  // Validate request body
-  console.log("validationg ADDRESS", req.body, req.body.formData);
   const { error } = schema.validate(req.body, { abortEarly: false });
 
   if (error) {

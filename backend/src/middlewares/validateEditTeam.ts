@@ -39,7 +39,6 @@ const validateEditTeam = (
       "object.min": "At least one field must be provided to update the Team",
     });
 
-  console.log("validateEditTeam", req.body, { abortEarly: false });
   const { error } = schema.validate(req.body);
   if (error) {
     const errors = error.details.map((err) => ({

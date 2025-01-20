@@ -3,7 +3,6 @@ import path from "path";
 import dotenv from "dotenv";
 dotenv.config();
 
-console.log("image upload folder name:", process.env.IMAGE_UPLOAD);
 const UPLOADS = process.env.IMAGE_UPLOAD || "uploads";
 
 export const uploadFolder = path.join(__dirname, "../../../", UPLOADS);
@@ -25,4 +24,3 @@ export const MAX_IMAGE_SIZE = process.env.IMAGE_SIZE_LIMIT
 export const MAX_VIDEO_SIZE = process.env.VIDEO_SIZE_LIMIT
   ? parseInt(process.env.VIDEO_SIZE_LIMIT) * 1024 * 1024
   : 10 * 1024 * 1024;
-console.log(MAX_IMAGE_SIZE, MAX_VIDEO_SIZE);

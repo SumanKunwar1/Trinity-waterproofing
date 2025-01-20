@@ -11,7 +11,6 @@ const deleteFile = (filePath: string) => {
     setTimeout(() => {
       try {
         fs.unlinkSync(filePath);
-        ////console.log(`Deleted file: ${filePath}`);
       } catch (err) {
         console.error(`Failed to delete file: ${filePath}`, err);
       }
@@ -25,8 +24,6 @@ export const compressAndValidateImage = async (
   imageType: string
 ) => {
   try {
-    //console.log("Starting compression and validation...", imageType);
-
     const validFormats: Record<string, keyof FormatEnum> = {
       ".jpeg": "jpeg",
       ".jpg": "jpeg",
@@ -42,13 +39,11 @@ export const compressAndValidateImage = async (
       throw new Error(`Unsupported image type: ${imageType}`);
     }
 
-    //console.log("Compressing the image...");
     await sharp(filePath)
       .resize()
       .toFormat(format, { quality: 50 })
       .toFile(compressedFilePath);
 
-    //console.log("Compression successful. Validating file size...");
     const compressedStats = fs.statSync(compressedFilePath);
 
     if (compressedStats.size > MAX_IMAGE_SIZE) {
@@ -57,12 +52,10 @@ export const compressAndValidateImage = async (
       );
     }
 
-    //console.log("Image compression/validation completed successfully.");
     return compressedFilePath;
   } catch (err) {
     if (fs.existsSync(compressedFilePath)) {
       fs.unlinkSync(compressedFilePath);
-      //console.log(`Deleted compressed file: ${compressedFilePath}`);
     }
     throw new Error(`Image compression/validation failed: ${err}`);
   }
@@ -89,27 +82,23 @@ export const compressUploadedImages = async (
     };
 
     if (req.body.productImage) {
-      //console.log("Processing productImage...");
       await processImage(req.body.productImage);
     }
 
     if (req.body.image) {
       if (Array.isArray(req.body.image)) {
-        //console.log("Processing multiple images in req.body.image...");
         await Promise.all(
           req.body.image.map(async (imageName: string) => {
             await processImage(imageName);
           })
         );
       } else {
-        //console.log("Processing single image in req.body.image...");
         await processImage(req.body.image);
       }
     }
 
     next();
   } catch (error: any) {
-    console.error("Error in image compression middleware:", error);
     if (req.body.productImage) {
       deleteFile(`${uploadFolder}/${req.body.productImage}`);
     }
