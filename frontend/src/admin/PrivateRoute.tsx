@@ -1,25 +1,38 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 interface PrivateRouteProps {
   children: JSX.Element;
+  requiredRoles?: string[]; // Accept an array of roles
 }
 
-const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
-  // Check if the user is authenticated (i.e., if the token exists in localStorage)
+const PrivateRoute: React.FC<PrivateRouteProps> = ({
+  children,
+  requiredRoles,
+}) => {
+  const navigate = useNavigate();
   const authToken = localStorage.getItem("authToken");
-  const userRole = localStorage.getItem("userRole"); // Assuming the role is stored in localStorage
+  const userRole = localStorage.getItem("userRole");
 
-  // Check if the user is authenticated and has an admin role
   const isAuthenticated = Boolean(authToken);
-  const isAdmin = userRole === "admin";
 
-  if (!isAuthenticated && !isAdmin) {
-    // If not authenticated or not an admin, redirect to the login or other page
-    return <Navigate to="/" />;
+  // If the user is not authenticated, redirect to the login page
+  if (!isAuthenticated) {
+    console.log(
+      "is!authenticated is not correct",
+      Boolean(authToken),
+      authToken
+    );
+    navigate("/");
   }
 
-  // If authenticated and is an admin, render the children (i.e., the protected component)
+  // If specific roles are required, check if the user's role matches any of them
+  if (requiredRoles && !requiredRoles.includes(userRole || "")) {
+    console.log("roles is not correct");
+    navigate("/");
+  }
+
+  // Allow access to the children if authenticated and authorized
   return children;
 };
 

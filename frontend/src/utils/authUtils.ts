@@ -4,6 +4,7 @@ export const useLogout = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    console.log("useLogout - Clearing localStorage keys...");
     const keysToRemove = [
       "authToken",
       "userRole",
@@ -15,11 +16,13 @@ export const useLogout = () => {
       "userNumber",
     ];
 
-    keysToRemove.forEach((key) => localStorage.removeItem(key));
+    keysToRemove.forEach((key) => {
+      console.log(`useLogout - Removing key: ${key}`);
+      localStorage.removeItem(key);
+    });
 
-    // Redirect to login page
-    navigate("/login");
-    window.location.reload();
+    console.log("useLogout - Redirecting to /...");
+    navigate("/");
   };
 
   return handleLogout;

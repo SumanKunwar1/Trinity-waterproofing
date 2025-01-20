@@ -133,66 +133,66 @@ function App() {
                         <Route path="/about" element={<About />} />
                         <Route path="/contact" element={<Contact />} />
 
-                        {/* Protect customer profile pages */}
-                        <Route
-                          path="/customer/dashboard"
-                          element={
-                            <PrivateRoute>
-                              <DashboardPage />
-                            </PrivateRoute>
-                          }
-                        />
-                        <Route
-                          path="/customer/notifications"
-                          element={
-                            <PrivateRoute>
-                              <Notification />
-                            </PrivateRoute>
-                          }
-                        />
-                        <Route
-                          path="/customer/manage-profile"
-                          element={
-                            <PrivateRoute>
-                              <ManageProfilePage />
-                            </PrivateRoute>
-                          }
-                        />
-                        <Route
-                          path="/customer/purchase-history"
-                          element={
-                            <PrivateRoute>
-                              <PurchaseHistoryPage />
-                            </PrivateRoute>
-                          }
-                        />
-                        <Route
-                          path="/customer/address-book"
-                          element={
-                            <PrivateRoute>
-                              <AddressBookPage />
-                            </PrivateRoute>
-                          }
-                        />
-                        <Route
-                          path="/customer/reviews-ratings"
-                          element={
-                            <PrivateRoute>
-                              <RatingsAndReviews />
-                            </PrivateRoute>
-                          }
-                        />
-                        <Route
-                          path="/customer/return-and-cancel"
-                          element={
-                            <PrivateRoute>
-                              <ReturnAndCancelPage />
-                            </PrivateRoute>
-                          }
-                        />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </Suspense>
+                      {/* Protect customer profile pages */}
+                      <Route
+                        path="/customer/dashboard"
+                        element={
+                          <PrivateRoute requiredRoles={["b2c", "b2b"]}>
+                            <DashboardPage />
+                          </PrivateRoute>
+                        }
+                      />
+                      <Route
+                        path="/customer/notifications"
+                        element={
+                          <PrivateRoute requiredRoles={["b2c", "b2b"]}>
+                            <Notification />
+                          </PrivateRoute>
+                        }
+                      />
+                      <Route
+                        path="/customer/manage-profile"
+                        element={
+                          <PrivateRoute requiredRoles={["b2c", "b2b"]}>
+                            <ManageProfilePage />
+                          </PrivateRoute>
+                        }
+                      />
+                      <Route
+                        path="/customer/purchase-history"
+                        element={
+                          <PrivateRoute requiredRoles={["b2c", "b2b"]}>
+                            <PurchaseHistoryPage />
+                          </PrivateRoute>
+                        }
+                      />
+                      <Route
+                        path="/customer/address-book"
+                        element={
+                          <PrivateRoute requiredRoles={["b2c", "b2b"]}>
+                            <AddressBookPage />
+                          </PrivateRoute>
+                        }
+                      />
+                      <Route
+                        path="/customer/reviews-ratings"
+                        element={
+                          <PrivateRoute requiredRoles={["b2c", "b2b"]}>
+                            <RatingsAndReviews />
+                          </PrivateRoute>
+                        }
+                      />
+                      <Route
+                        path="/customer/return-and-cancel"
+                        element={
+                          <PrivateRoute requiredRoles={["b2c", "b2b"]}>
+                            <ReturnAndCancelPage />
+                          </PrivateRoute>
+                        }
+                      />
+
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
                     <ToastContainer />
                   </SocketProvider>
                 </WishlistProvider>
