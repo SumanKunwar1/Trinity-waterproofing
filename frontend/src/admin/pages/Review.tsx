@@ -68,7 +68,7 @@ export default function Reviews() {
         } else {
           toast.error("Failed to delete review");
         }
-        console.error("Error deleting review:", error);
+        // console.error("Error deleting review:", error);
       }
     }
   };

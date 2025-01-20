@@ -40,7 +40,7 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
     return (
       name
         .split(" ")
-        .map((word) => word[0].toUpperCase())
+        .map((word) => word[0])
         .join("")
         .substr(0, 2) || "N/A"
     );
@@ -163,7 +163,7 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
         <h1 className="text-2xl font-semibold">Admin Panel</h1>
       </div>
 
-      <div className="flex items-center space-x-4 justify-end ml-auto">
+      <div className="flex items-center space-x-8 justify-end ml-auto mr-4">
         <NotificationComponent />
 
         <DropdownMenu>
@@ -173,27 +173,26 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
                 {getInitials(userName)}
               </AvatarFallback>
             </Avatar>
-            <span className="ml-2">{userName}</span>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              className="border-b border-gray-200 border-t py-2"
+              className="border-b border-gray-200 border-t py-2 cursor-pointer"
               onSelect={() => setIsProfileDialogOpen(true)}
             >
               <User className="mr-2 h-4 w-4" />
               Profile
             </DropdownMenuItem>
             <DropdownMenuItem
-              className="border-b border-gray-200 py-2"
+              className="border-b border-gray-200 py-2 cursor-pointer"
               onSelect={() => setIsChangePasswordDialogOpen(true)}
             >
               <KeyRound className="mr-2 h-4 w-4" />
               Change Password
             </DropdownMenuItem>
             <DropdownMenuItem
-              className="border-b border-gray-200  py-2"
+              className="border-b border-gray-200  py-2 cursor-pointer"
               onSelect={() => navigate("/admin/settings")}
             >
               <Settings className="mr-2 h-4 w-4" />
@@ -201,7 +200,7 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              className="text-red-600 hover:text-white hover:bg-red-500 py-2 rounded-md transition duration-300"
+              className="text-red-600 hover:text-white cursor-pointer hover:bg-red-500 py-2 rounded-md transition duration-300"
               onSelect={handleLogout}
             >
               <LogOut className="mr-2 h-4 w-4" />

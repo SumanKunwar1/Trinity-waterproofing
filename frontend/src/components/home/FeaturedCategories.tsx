@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { Helmet } from "react-helmet-async";
 import { Category } from "../../types/category";
 import Loader from "../common/Loader";
+import { Button } from "../ui/button";
 
 const FeaturedCategories: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -44,8 +46,23 @@ const FeaturedCategories: React.FC = () => {
     setVisibleCount(categories.length); // Show all items
   };
 
+  const currentMeta = categories.map((category) => category.name).join(", ");
+
   return (
     <section className="py-20 bg-white">
+      {/* Dynamic Meta Tags */}
+      <Helmet>
+        <title>Explore Waterproofing Categories</title>
+        <meta
+          name="description"
+          content={`Discover waterproofing solutions from categories like ${currentMeta}. Protect your property with the best products and services.`}
+        />
+        <meta
+          name="keywords"
+          content={`waterproofing, categories, ${currentMeta}, solutions, leak prevention`}
+        />
+      </Helmet>
+
       <div className="container mx-auto px-4">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
@@ -100,12 +117,9 @@ const FeaturedCategories: React.FC = () => {
 
         {visibleCount < categories.length && (
           <div className="text-center mt-8">
-            <button
-              onClick={handleViewMore}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
+            <Button onClick={handleViewMore} variant="secondary">
               View More
-            </button>
+            </Button>
           </div>
         )}
       </div>

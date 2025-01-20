@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import ProductGrid from "../components/products/ProductGrid";
@@ -10,6 +10,9 @@ import Header from "../components/layout/Header";
 import Loader from "../components/common/Loader";
 import { IProduct } from "../types/product";
 import { Brand } from "../types/brand";
+import { Button } from "../components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "../components/ui/sheet";
+import { FilterIcon, ListOrderedIcon as SortIcon } from "lucide-react";
 const ITEMS_PER_PAGE = 9;
 
 interface Category {
@@ -18,6 +21,7 @@ interface Category {
   description?: string;
   subCategories: SubCategory[];
 }
+
 interface SubCategory {
   _id: string;
   name: string;
@@ -55,6 +59,7 @@ interface Product {
   inStock: number;
   review: IReview[];
 }
+
 interface FilterOptions {
   category: string;
   subcategory: string;
@@ -72,6 +77,8 @@ const ProductListing: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isSortOpen, setIsSortOpen] = useState(false);
 
   const userRole = localStorage.getItem("userRole");
   const isLoggedIn = !!localStorage.getItem("authToken");
@@ -82,7 +89,7 @@ const ProductListing: React.FC = () => {
     try {
       userId = JSON.parse(unParsedUserId);
     } catch (error) {
-      console.error("Error parsing userId:", error);
+      // console.error("Error parsing userId:", error);
     }
   }
 
@@ -165,7 +172,7 @@ const ProductListing: React.FC = () => {
         const avgRating =
           product.review.reduce((acc, review) => acc + review.rating, 0) /
           product.review.length;
-        return filters.rating.includes(Math.floor(avgRating));
+        return filters.rating.some((rating) => avgRating >= rating);
       });
     }
 
@@ -175,6 +182,7 @@ const ProductListing: React.FC = () => {
 
     setFilteredProducts(filtered);
     setCurrentPage(1);
+    setIsFilterOpen(false);
   };
 
   const handleSort = (option: string) => {
@@ -201,10 +209,36 @@ const ProductListing: React.FC = () => {
       case "name_desc":
         sorted.sort((a, b) => b.name.localeCompare(a.name));
         break;
+      case "newest":
+        sorted.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        break;
+      case "discount_desc":
+        sorted.sort((a, b) => {
+          const discountA =
+            userRole === "b2b"
+              ? (a.wholeSalePrice -
+                  (a.wholeSaleDiscountedPrice || a.wholeSalePrice)) /
+                a.wholeSalePrice
+              : (a.retailPrice - (a.retailDiscountedPrice || a.retailPrice)) /
+                a.retailPrice;
+          const discountB =
+            userRole === "b2b"
+              ? (b.wholeSalePrice -
+                  (b.wholeSaleDiscountedPrice || b.wholeSalePrice)) /
+                b.wholeSalePrice
+              : (b.retailPrice - (b.retailDiscountedPrice || b.retailPrice)) /
+                b.retailPrice;
+          return discountB - discountA;
+        });
+        break;
     }
 
     setFilteredProducts(sorted);
     setCurrentPage(1);
+    setIsSortOpen(false);
   };
 
   const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
@@ -230,10 +264,49 @@ const ProductListing: React.FC = () => {
           <h1 className="text-3xl font-bold mb-8">Our Products</h1>
           <div className="flex flex-col md:flex-row">
             <div className="w-full md:w-1/4 mb-8 md:mb-0">
-              <ProductFilter onFilter={handleFilter} categories={categories} />
+              <div className="md:hidden flex justify-between mb-4">
+                <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" className="w-1/2 mr-2">
+                      <FilterIcon className="mr-2 h-4 w-4" /> Filter
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="left"
+                    className="w-full sm:w-[380px] border-0 p-6"
+                  >
+                    <ProductFilter
+                      onFilter={handleFilter}
+                      categories={categories}
+                    />
+                  </SheetContent>
+                </Sheet>
+                <Sheet open={isSortOpen} onOpenChange={setIsSortOpen}>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" className="w-1/2 ml-2">
+                      <SortIcon className="mr-2 h-4 w-4" /> Sort
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full sm:w-[380px] border-0 p-6"
+                  >
+                    <ProductSort onSort={handleSort} />
+                  </SheetContent>
+                </Sheet>
+              </div>
+              <div className="hidden md:block">
+                <ProductFilter
+                  onFilter={handleFilter}
+                  categories={categories}
+                />
+              </div>
             </div>
-            <div className="w-full md:w-3/4 md:pl-5">
-              <ProductSort onSort={handleSort} />
+
+            <div className="w-full  md:pl-5">
+              <div className="hidden md:block mb-8">
+                <ProductSort onSort={handleSort} />
+              </div>
               <ProductGrid products={currentItems} />
               <Pagination
                 currentPage={currentPage}

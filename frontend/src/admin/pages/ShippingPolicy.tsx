@@ -76,7 +76,6 @@ const ShippingPolicy = () => {
       }
 
       const data = await response.json();
-      console.log("Shipping Policies:", data);
       setPolicies(data || []);
     } catch (error: any) {
       toast.error(error.message || "Failed to fetch policies");

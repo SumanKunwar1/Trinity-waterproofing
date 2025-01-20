@@ -61,7 +61,7 @@ const CustomerNotifications: React.FC = () => {
       const data = await response.json();
       setNotifications(data);
     } catch (error) {
-      console.error("Error fetching notifications:", error);
+      // console.error("Error fetching notifications:", error);
       toast.error("Failed to load notifications");
     }
   };
@@ -83,7 +83,7 @@ const CustomerNotifications: React.FC = () => {
         prev.map((n) => (n._id === notificationId ? { ...n, read: true } : n))
       );
     } catch (error) {
-      console.error("Error marking notification as read:", error);
+      // console.error("Error marking notification as read:", error);
       toast.error("Failed to mark notification as read");
     }
   };
@@ -104,7 +104,7 @@ const CustomerNotifications: React.FC = () => {
       setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
       toast.success("Notification deleted");
     } catch (error) {
-      console.error("Error deleting notification:", error);
+      // console.error("Error deleting notification:", error);
       toast.error("Failed to delete notification");
     }
   };
@@ -123,7 +123,7 @@ const CustomerNotifications: React.FC = () => {
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
       toast.success("All notifications marked as read");
     } catch (error) {
-      console.error("Error marking all notifications as read:", error);
+      // console.error("Error marking all notifications as read:", error);
       toast.error("Failed to mark all notifications as read");
     }
   };
@@ -144,15 +144,15 @@ const CustomerNotifications: React.FC = () => {
       setNotifications([]);
       toast.success("All notifications cleared");
     } catch (error) {
-      console.error("Error clearing all notifications:", error);
+      // console.error("Error clearing all notifications:", error);
       toast.error("Failed to clear all notifications");
     }
   };
 
   const playNotificationSound = () => {
     if (audioRef.current) {
-      audioRef.current.play().catch((error) => {
-        console.error("Error playing notification sound:", error);
+      audioRef.current.play().catch(() => {
+        // console.error("Error playing notification sound:", error);
       });
     }
   };
@@ -173,26 +173,32 @@ const CustomerNotifications: React.FC = () => {
 
   return (
     <Card className="w-full max-w-4xl mx-auto">
-      <CardContent className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold flex items-center">
+      <CardContent className="p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
+          <h1 className="text-xl sm:text-3xl font-bold flex items-center">
             <FaBell className="mr-2 text-primary" />
             Notifications
           </h1>
-          <div className="space-x-2">
-            <Button variant="outline" onClick={markAllAsRead}>
+          <div className="space-x-2 mt-2 sm:mt-0">
+            <Button variant="outline" size="sm" onClick={markAllAsRead}>
               Mark All as Read
             </Button>
-            <Button variant="destructive" onClick={clearAllNotifications}>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={clearAllNotifications}
+            >
               Clear All
             </Button>
           </div>
         </div>
         <Separator className="my-4" />
         {notifications.length === 0 ? (
-          <p className="text-center text-gray-500 my-8">No notifications</p>
+          <p className="text-center text-gray-500 my-8">
+            No notifications available
+          </p>
         ) : (
-          <ScrollArea className="h-[600px] pr-4">
+          <ScrollArea className="h-screen pr-2">
             <AnimatePresence>
               {notifications.map((notification) => (
                 <motion.div
@@ -207,43 +213,41 @@ const CustomerNotifications: React.FC = () => {
                       notification.read ? "bg-gray-50" : "bg-white"
                     }`}
                   >
-                    <CardContent className="p-4">
-                      <div className="flex items-start">
-                        <div className="flex-shrink-0 mr-4">
-                          {getNotificationIcon(notification.type)}
-                        </div>
-                        <div className="flex-grow">
-                          <p
-                            className={`mb-2 ${
-                              notification.read ? "text-gray-600" : "text-black"
-                            }`}
-                          >
-                            {notification.message}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {new Date(notification.createdAt).toLocaleString()}
-                          </p>
-                        </div>
-                        <div className="flex-shrink-0 ml-4 space-x-2">
-                          {!notification.read && (
-                            <Badge
-                              variant="secondary"
-                              className="cursor-pointer"
-                              onClick={() => markAsRead(notification._id)}
-                            >
-                              Mark as Read
-                            </Badge>
-                          )}
+                    <CardContent className="p-4 flex flex-col md:flex-row items-start">
+                      <div className="flex-shrink-0 mr-4">
+                        {getNotificationIcon(notification.type)}
+                      </div>
+                      <div className="flex-grow">
+                        <p
+                          className={`${
+                            notification.read ? "text-gray-600" : "text-black"
+                          } mb-2`}
+                        >
+                          {notification.message}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {new Date(notification.createdAt).toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="flex-shrink-0 mt-4 md:mt-0 md:ml-4 space-x-2">
+                        {!notification.read && (
                           <Badge
-                            variant="destructive"
+                            variant="secondary"
                             className="cursor-pointer"
-                            onClick={() => deleteNotification(notification._id)}
+                            onClick={() => markAsRead(notification._id)}
                           >
-                            <Button variant="outline" size="sm">
-                              <FaTrash className="mr-1" /> Delete
-                            </Button>
+                            Mark as Read
                           </Badge>
-                        </div>
+                        )}
+                        <Badge
+                          variant="destructive"
+                          className="cursor-pointer"
+                          onClick={() => deleteNotification(notification._id)}
+                        >
+                          <Button variant="outline" size="sm">
+                            <FaTrash className="mr-1" /> Delete
+                          </Button>
+                        </Badge>
                       </div>
                     </CardContent>
                   </Card>

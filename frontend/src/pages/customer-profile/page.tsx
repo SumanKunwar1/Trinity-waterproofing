@@ -1,4 +1,6 @@
 import { CustomerProfile } from "../../customer-profile/customer-profile";
-export const CustomerProfilePage = () => {
+const CustomerProfilePage = () => {
   return <CustomerProfile />;
 };
+
+export default CustomerProfilePage;

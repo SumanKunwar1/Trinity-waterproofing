@@ -42,7 +42,7 @@ const PrivacyPolicyForm: React.FC = () => {
         setIsEditing(false);
       }
     } catch (error: any) {
-      console.error("Error fetching policy:", error);
+      // console.error("Error fetching policy:", error);
       toast.error(error.message || "Failed to fetch policy");
       setEditorContent("");
       setIsEditing(false);

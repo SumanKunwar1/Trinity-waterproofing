@@ -85,7 +85,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
 
   return (
     <aside
-      className={`fixed z-50 top-0 left-0 h-full bg-white shadow-md transform transition-transform ${
+      className={`fixed z-50 top-0 left-0 min-h-screen  bg-white shadow-md transform transition-transform ${
         isOpen ? "translate-x-0" : "-translate-x-full"
       } md:translate-x-0 md:relative md:w-64`}
     >
@@ -99,7 +99,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         </button>
       </div>
 
-      <nav className="mt-6 overflow-y-auto h-full">
+      <nav className="mt-6 overflow-y-auto max-h-[calc(100vh-8rem)] h-lvh">
         {menuItems.map((item, index) => (
           <Link
             key={index}

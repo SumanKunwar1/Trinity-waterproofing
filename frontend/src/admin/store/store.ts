@@ -4,7 +4,7 @@ import reviewsReducer from "./reviewsSlice";
 import newslettersReducer from "./newslettersSlice";
 import faqSlice from "./faqSlice";
 import companyDetailsReducer from "./companyDetailsSlice";
-
+import productReducer from "./productsSlice";
 export const store = configureStore({
   reducer: {
     orders: ordersReducer,
@@ -12,6 +12,7 @@ export const store = configureStore({
     newsletters: newslettersReducer,
     faqs: faqSlice,
     companyDetails: companyDetailsReducer,
+    product: productReducer,
   },
 });
 

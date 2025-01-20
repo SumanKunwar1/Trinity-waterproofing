@@ -51,7 +51,7 @@ const ContentForm: React.FC<ContentFormProps> = ({
         const data = await response.json();
         setAboutContent(data);
       } catch (error: any) {
-        console.error(error.message || "Error fetching about content:", error);
+        // console.error(error.message || "Error fetching about content:", error);
       }
     };
 

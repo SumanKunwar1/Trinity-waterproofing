@@ -20,7 +20,7 @@ const Contact: React.FC = () => {
     { setSubmitting, resetForm }: any
   ) => {
     try {
-      console.log("Submitting values:", values);
+      // console.log("Submitting values:", values);
       const response = await fetch("/api/enquiry", {
         method: "POST",
         headers: {
@@ -28,7 +28,7 @@ const Contact: React.FC = () => {
         },
         body: JSON.stringify(values),
       });
-      console.log(response);
+      // console.log(response);
       if (!response.ok) {
         const errorData = await response.json(); // Parse error details from response
         throw new Error(errorData.message || "Failed to submit enquiry");
@@ -39,7 +39,7 @@ const Contact: React.FC = () => {
       );
       resetForm();
     } catch (error: any) {
-      console.error("Error submitting enquiry:", error);
+      // console.error("Error submitting enquiry:", error);
       toast.error(`Failed to submit enquiry: ${error.message}`);
     } finally {
       setSubmitting(false);

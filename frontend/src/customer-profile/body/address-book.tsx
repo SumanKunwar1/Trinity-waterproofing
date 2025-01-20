@@ -45,15 +45,14 @@ export const AddressBook = () => {
   const [addressToDelete, setAddressToDelete] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchAddresses().catch((error) => {
-      console.error("Error in useEffect:", error);
+    fetchAddresses().catch(() => {
+      // console.error("Error in useEffect:", error);
       toast.error("Failed to load addresses");
     });
   }, []);
 
   const fetchAddresses = async () => {
     setIsLoading(true);
-    console.log("IN THE FETCH ADRDRESSES FUNCTION");
     try {
       const userId = JSON.parse(localStorage.getItem("userId") || "");
       if (!userId) {
@@ -67,16 +66,15 @@ export const AddressBook = () => {
       if (!response.ok) throw new Error("Failed to fetch addresses");
 
       const data = await response.json();
-      console.log("Fetched data:", data);
 
       if (data && Array.isArray(data.addressBook)) {
         setAddresses(data.addressBook);
       } else {
-        console.error("Invalid data structure:", data);
+        // console.error("Invalid data structure:", data);
         setAddresses([]);
       }
     } catch (error) {
-      console.error("Error fetching addresses:", error);
+      // console.error("Error fetching addresses:", error);
       toast.error("Failed to load addresses");
       setAddresses([]);
     } finally {
@@ -96,7 +94,6 @@ export const AddressBook = () => {
     e.preventDefault();
     try {
       const userId = JSON.parse(localStorage.getItem("userId") || "");
-      console.log("Submitting Form Data:", JSON.stringify(formData, null, 2));
       const response = await fetch(`/api/users/addressBook/${userId}`, {
         method: "PATCH",
         headers: {
@@ -111,7 +108,7 @@ export const AddressBook = () => {
       setIsAddEditOpen(false);
       toast.success("Address added successfully");
     } catch (error) {
-      console.error("Error adding address:", error);
+      // console.error("Error adding address:", error);
       toast.error("Failed to add address");
     }
   };
@@ -132,7 +129,7 @@ export const AddressBook = () => {
       await fetchAddresses();
       toast.success("Default address updated");
     } catch (error) {
-      console.error("Error setting default address:", error);
+      // console.error("Error setting default address:", error);
       toast.error("Failed to set default address");
     }
   };
@@ -159,7 +156,7 @@ export const AddressBook = () => {
       await fetchAddresses();
       toast.success("Address deleted successfully");
     } catch (error) {
-      console.error("Error deleting address:", error);
+      // console.error("Error deleting address:", error);
       toast.error("Failed to delete address");
     } finally {
       setIsDeleteDialogOpen(false);
@@ -186,9 +183,9 @@ export const AddressBook = () => {
     e.preventDefault();
     if (!selectedAddress) return;
     try {
-      console.log("IN THE HANDLE UPDATE FUNCTION ");
+      // console.log("IN THE HANDLE UPDATE FUNCTION ");
       const userId = JSON.parse(localStorage.getItem("userId") || "");
-      console.log("Submitting Form Data:", JSON.stringify(formData, null, 2));
+      // console.log("Submitting Form Data:", JSON.stringify(formData, null, 2));
       const response = await fetch(
         `/api/users/addressBook/${userId}/${selectedAddress._id}`,
         {
@@ -206,7 +203,7 @@ export const AddressBook = () => {
       setIsAddEditOpen(false);
       toast.success("Address updated successfully");
     } catch (error) {
-      console.error("Error updating address:", error);
+      // console.error("Error updating address:", error);
       toast.error("Failed to update address");
     }
   };
@@ -231,8 +228,10 @@ export const AddressBook = () => {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">Address Book</h1>
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-gray-800">
+        Address Book
+      </h1>
       <Dialog open={isAddEditOpen} onOpenChange={setIsAddEditOpen}>
         <DialogTrigger asChild>
           <Button
@@ -241,13 +240,13 @@ export const AddressBook = () => {
               resetForm();
               setIsAddEditOpen(true);
             }}
-            className="mb-6"
+            className="mb-4 sm:mb-6 w-full sm:w-auto"
           >
             <FaPlus className="mr-2" /> Add New Address
           </Button>
         </DialogTrigger>
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {isLoading ? (
             <p className="text-center text-gray-500">Loading addresses...</p>
           ) : addresses.length > 0 ? (
@@ -330,11 +329,16 @@ export const AddressBook = () => {
               onChange={handleInputChange}
             />
             <DialogFooter>
-              <Button type="submit">
+              <Button type="submit" className="w-full sm:w-auto">
                 {isEditing ? "Update Address" : "Save Address"}
               </Button>
               <DialogClose asChild>
-                <Button type="button" variant="outline" onClick={resetForm}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={resetForm}
+                  className="w-full sm:w-auto mt-2 sm:mt-0"
+                >
                   Cancel
                 </Button>
               </DialogClose>
@@ -349,7 +353,7 @@ export const AddressBook = () => {
             <DialogTitle>Address Details</DialogTitle>
           </DialogHeader>
           {selectedAddress && (
-            <div className="mt-4">
+            <div className="mt-4 space-y-2">
               <p>
                 <strong>Street:</strong> {selectedAddress.street}
               </p>
@@ -371,7 +375,12 @@ export const AddressBook = () => {
             </div>
           )}
           <DialogFooter>
-            <Button onClick={() => setIsDetailsOpen(false)}>Close</Button>
+            <Button
+              onClick={() => setIsDetailsOpen(false)}
+              className="w-full sm:w-auto"
+            >
+              Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -385,13 +394,18 @@ export const AddressBook = () => {
               be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button onClick={confirmDeleteAddress} variant="destructive">
+          <DialogFooter className="flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-2">
+            <Button
+              onClick={confirmDeleteAddress}
+              variant="destructive"
+              className="w-full sm:w-auto"
+            >
               Delete
             </Button>
             <Button
               onClick={() => setIsDeleteDialogOpen(false)}
               variant="outline"
+              className="w-full sm:w-auto"
             >
               Cancel
             </Button>
@@ -422,8 +436,8 @@ const AddressCard: React.FC<AddressCardProps> = ({
   <Card
     className={`overflow-hidden ${isDefault ? "ring-2 ring-blue-500" : ""}`}
   >
-    <CardContent className="p-6">
-      <div className="flex justify-between items-start">
+    <CardContent className="p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
         <div className="space-y-1">
           <h3 className="font-semibold text-lg flex items-center">
             <FaMapMarkerAlt className="mr-2 text-blue-500" />
@@ -434,11 +448,12 @@ const AddressCard: React.FC<AddressCardProps> = ({
           </p>
           <p className="text-gray-600">{address.country}</p>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             variant={isDefault ? "default" : "outline"}
             size="sm"
             onClick={() => onSetDefault(address._id)}
+            className="w-full sm:w-auto"
           >
             {isDefault ? (
               <>
@@ -448,20 +463,27 @@ const AddressCard: React.FC<AddressCardProps> = ({
               "Set Default"
             )}
           </Button>
-          <Button variant="outline" size="sm" onClick={() => onEdit(address)}>
-            <FaEdit className="text-blue-500" />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onEdit(address)}
+            className="w-full sm:w-auto"
+          >
+            <FaEdit className="text-blue-500 mr-2" /> Edit
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => onDelete(address._id)}
+            className="w-full sm:w-auto"
           >
-            <FaTrashAlt className="text-red-500" />
+            <FaTrashAlt className="text-red-500 mr-2" /> Delete
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => onViewDetails(address)}
+            className="w-full sm:w-auto"
           >
             View Details
           </Button>
@@ -493,6 +515,9 @@ const AddressFormField: React.FC<AddressFormFieldProps> = ({
       value={value}
       onChange={onChange}
       required
+      className="w-full"
     />
   </div>
 );
+
+export default AddressBook;

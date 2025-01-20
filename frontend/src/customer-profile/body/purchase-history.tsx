@@ -137,7 +137,7 @@ export const PurchaseHistory: React.FC = () => {
       setIsReviewDialogOpen(false);
       navigate("/customer/reviews-ratings");
     } catch (error) {
-      console.error("Error submitting review:", error);
+      // console.error("Error submitting review:", error);
     }
   };
 
@@ -160,7 +160,7 @@ export const PurchaseHistory: React.FC = () => {
       toast.success("Return request submitted successfully");
       setIsReturnDialogOpen(false);
     } catch (error) {
-      console.error("Error submitting return request:", error);
+      // console.error("Error submitting return request:", error);
       toast.error("Failed to submit return request");
     }
   };
@@ -198,41 +198,41 @@ export const PurchaseHistory: React.FC = () => {
 
   return (
     <motion.div
-      className="w-full max-w-4xl mx-auto p-6 space-y-8"
+      className="w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="flex justify-between items-center">
-        <Label className="text-3xl font-bold text-gray-800">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+        <Label className="text-2xl sm:text-3xl font-bold text-gray-800">
           Purchase History
         </Label>
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <Input
             type="text"
             placeholder="Search purchases..."
             value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="pl-10 pr-4 py-2 rounded-full border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+            onChange={(e: any) => setFilter(e.target.value)}
+            className="w-full sm:w-64 pl-10 pr-4 py-2 rounded-full border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
           />
           <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
         {Object.entries(statusIcons).map(([status, icon]) => (
           <Card
             key={status}
-            className={`bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer ${
+            className={`bg-white shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer ${
               statusFilter === status ? "ring-2 ring-blue-500" : ""
             }`}
             onClick={() =>
               setStatusFilter(statusFilter === status ? "" : status)
             }
           >
-            <CardContent className="p-4 flex items-center space-x-3">
-              <div className="text-2xl">{icon}</div>
-              <Label className="text-lg capitalize">
+            <CardContent className="p-2 sm:p-4 flex items-center space-x-2 sm:space-x-3">
+              <div className="text-xl sm:text-2xl">{icon}</div>
+              <Label className="text-sm sm:text-lg capitalize">
                 {status.split("-")[1]}
               </Label>
             </CardContent>
@@ -246,7 +246,7 @@ export const PurchaseHistory: React.FC = () => {
           setStatusFilter("");
           setFilter("");
         }}
-        className="mt-4"
+        className="w-full sm:w-auto"
       >
         Clear Filters
       </Button>
@@ -260,105 +260,94 @@ export const PurchaseHistory: React.FC = () => {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
-            {filteredHistory.map(
-              (order: Order) => (
-                console.log("Get order by id?", order),
-                (
-                  <Card
-                    key={order._id}
-                    className="bg-white shadow-md hover:shadow-lg transition-shadow duration-300"
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center space-x-3">
-                          <div className="text-2xl">
-                            {statusIcons[
-                              order.status as keyof typeof statusIcons
-                            ] || <FaRegClock className="text-gray-500" />}
-                          </div>
-                          <div>
-                            <p className="font-semibold text-lg">
-                              Order #{order._id}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              {new Date(order.createdAt).toLocaleDateString()}
-                            </p>
-                            <p className="text-md mt-2 flex flex-col space-y-2">
-                              <strong>Products:</strong>
-                              <ul className="list-disc pl-5">
-                                {order.products.map(
-                                  (product) => (
-                                    console.log(
-                                      "Product:",
-                                      product.productId,
-                                      product.productId?.productImage
-                                    ),
-                                    (
-                                      <li
-                                        key={product.productId?._id}
-                                        className="flex justify-between items-center"
-                                      >
-                                        <div className="flex items-center">
-                                          <img
-                                            src={
-                                              product.productId?.productImage
-                                            }
-                                            alt={product.productId?.name}
-                                            className="w-auto max-w-36 h-24 object-contain rounded-sm mr-2"
-                                          />
-                                          <span>{product.productId?.name}</span>
-                                        </div>
-                                      </li>
-                                    )
-                                  )
-                                )}
-                              </ul>
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right flex items-center">
-                          <p className="font-bold text-lg mr-4">
-                            Rs {order.subtotal.toFixed(2)}
-                          </p>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <FaEllipsisV />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              <DropdownMenuItem
-                                onSelect={() => setSelectedPurchase(order)}
-                              >
-                                View Details
-                              </DropdownMenuItem>
-                              {order.status === "order-delivered" && (
-                                <DropdownMenuItem
-                                  onSelect={() => {
-                                    setSelectedPurchase(order);
-                                    setIsReturnDialogOpen(true);
-                                  }}
-                                >
-                                  Return
-                                </DropdownMenuItem>
-                              )}
-                              <DropdownMenuItem
-                                onSelect={() => {
-                                  setSelectedPurchase(order);
-                                  setIsCancelDialogOpen(true);
-                                }}
-                              >
-                                Cancel
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
+            {filteredHistory.map((order: Order) => (
+              <Card
+                key={order._id}
+                className="bg-white shadow-md hover:shadow-lg transition-shadow duration-300"
+              >
+                <CardContent className="p-4">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+                    <div className="flex items-start space-x-3">
+                      <div className="text-2xl">
+                        {statusIcons[
+                          order.status as keyof typeof statusIcons
+                        ] || <FaRegClock className="text-gray-500" />}
                       </div>
-                    </CardContent>
-                  </Card>
-                )
-              )
-            )}
+                      <div>
+                        <p className="font-semibold text-sm sm:text-lg">
+                          Order #{order._id}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {new Date(order.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <p className="font-bold text-lg">
+                        Rs {order.subtotal.toFixed(2)}
+                      </p>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <FaEllipsisV />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem
+                            onSelect={() => setSelectedPurchase(order)}
+                          >
+                            View Details
+                          </DropdownMenuItem>
+                          {order.status === "order-delivered" && (
+                            <DropdownMenuItem
+                              onSelect={() => {
+                                setSelectedPurchase(order);
+                                setIsReturnDialogOpen(true);
+                              }}
+                            >
+                              Return
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem
+                            onSelect={() => {
+                              setSelectedPurchase(order);
+                              setIsCancelDialogOpen(true);
+                            }}
+                          >
+                            Cancel
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <p className="text-md font-semibold">Products:</p>
+                    <ul className="list-disc pl-5 mt-2 space-y-2">
+                      {order.products.map((product) => (
+                        <li
+                          key={product.productId?._id}
+                          className="flex flex-col sm:flex-row justify-between items-start sm:items-center"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <img
+                              src={
+                                product.productId?.productImage ||
+                                "/placeholder.svg"
+                              }
+                              alt={product.productId?.name}
+                              className="w-16 h-16 object-contain rounded-sm"
+                            />
+                            <span className="text-sm">
+                              {product.productId?.name}
+                            </span>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </motion.div>
         ) : (
           <motion.div
@@ -417,16 +406,18 @@ export const PurchaseHistory: React.FC = () => {
             <ul className="list-disc pl-5">
               {selectedPurchase?.products.map((product) => (
                 <li
-                  key={product.productId._id}
+                  key={product.productId?._id}
                   className="flex justify-between items-center"
                 >
                   <div className="flex items-center">
                     <img
-                      src={product.productId.productImage || "/placeholder.svg"}
-                      alt={product.productId.name}
+                      src={
+                        product.productId?.productImage || "/placeholder.svg"
+                      }
+                      alt={product.productId?.name}
                       className="w-8 h-8 object-cover rounded-full mr-2"
                     />
-                    <span>{product.productId.name}</span>
+                    <span>{product.productId?.name}</span>
                   </div>
 
                   {selectedPurchase.status === "order-delivered" && (

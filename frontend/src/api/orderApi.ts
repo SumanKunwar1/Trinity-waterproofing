@@ -6,6 +6,7 @@ export const createOrder = async (
 ): Promise<{ success: boolean; orderId?: string; error?: string }> => {
   try {
     const userId = JSON.parse(localStorage.getItem("userId") || "");
+    // console.log("orderData", orderData);
     const response = await fetch(`/api/order/${userId}`, {
       method: "POST",
       headers: {
@@ -21,11 +22,11 @@ export const createOrder = async (
     }
 
     const data = await response.json();
-    console.log(data);
+    // console.log(data);
     return { success: true, orderId: data._id };
   } catch (error: any) {
     // Type assertion for error
-    console.error("Error creating order:", error);
+    // console.error("Error creating order:", error);
     return { success: false, error: error.message };
   }
 };

@@ -236,10 +236,15 @@ export class ProductService {
     try {
       const existingProduct = await Product.findById(productId);
       if (!existingProduct) {
+        //console.log("Product not found");
         throw httpMessages.NOT_FOUND(`Product with ID: ${productId}`);
       }
+      //console.log("isFeatured:", typeof isFeatured);
       existingProduct.isFeatured = isFeatured;
       existingProduct.save();
+      return {
+        message: "Product isFeatured updated successfully",
+      };
     } catch (error) {
       throw error;
     }
@@ -299,10 +304,15 @@ export class ProductService {
 
   public async getProductById(productId: string) {
     try {
-      const product = await Product.findById(productId).populate({
-        path: "review",
-        model: "Review",
-      });
+      const product = await Product.findById(productId)
+        .populate({
+          path: "brand",
+          model: "Brand",
+        })
+        .populate({
+          path: "review",
+          model: "Review",
+        });
 
       if (!product) {
         return null;

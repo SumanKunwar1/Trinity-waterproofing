@@ -31,12 +31,12 @@ const Wishlist: React.FC = () => {
         if (!response.ok) throw new Error("Failed to fetch wishlist");
 
         const data = await response.json();
-        console.log("Fetch wishlist response:", data); // Debug log
+        // console.log("Fetch wishlist response:", data); // Debug log
 
         // Assuming transformApiData is a function that transforms the data to the correct format
         setProducts(data);
       } catch (error) {
-        console.error("Error fetching wishlist:", error);
+        // console.error("Error fetching wishlist:", error);
         toast.error("Failed to fetch wishlist. Please try again.");
         setProducts([]); // Empty products list in case of error
       } finally {
@@ -52,7 +52,7 @@ const Wishlist: React.FC = () => {
       await removeFromWishlist(productId);
       toast.info(`${productName} removed from your wishlist.`);
     } catch (error) {
-      console.error("Error removing product:", error);
+      // console.error("Error removing product:", error);
       toast.error("Failed to remove product. Please try again.");
     }
   };

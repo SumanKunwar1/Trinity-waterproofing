@@ -100,7 +100,7 @@ const Reports: React.FC = () => {
       setReportData(data);
       toast.success("Report data fetched successfully");
     } catch (error) {
-      console.error("Error fetching report data:", error);
+      // console.error("Error fetching report data:", error);
       toast.error("Failed to fetch report data");
     }
     setIsLoading(false);
@@ -152,108 +152,48 @@ const Reports: React.FC = () => {
     const products = await fetchProducts();
     const productSalesMap = new Map();
 
-    console.log("Initial orders:", JSON.stringify(orders, null, 2));
-    console.log("Initial products:", JSON.stringify(products, null, 2));
-    console.log(
-      "productSalesMap before processing orders:",
-      Array.from(productSalesMap.entries())
-    );
-
     // Iterate over each order
-    orders.forEach((order: any, orderIndex: number) => {
+    orders.forEach((order: any) => {
       const orderDate = new Date(order.createdAt);
-      console.log(`\nProcessing Order ${orderIndex + 1}:`);
-      console.log(`Order Date: ${orderDate.toISOString()}`);
 
       // Filter by selectedDate if needed
       if (
         selectedDate &&
         orderDate.toDateString() !== selectedDate.toDateString()
       ) {
-        console.log(
-          `Order ${
-            orderIndex + 1
-          } does not match the selected date, skipping...`
-        );
         return; // Skip this order if the date doesn't match
       }
 
       // Iterate over each product in the order
-      order.products.forEach((product: any, productIndex: number) => {
+      order.products.forEach((product: any) => {
         const totalProductSales = product.price * product.quantity;
-        const productId = product.productId._id; // Use `productId._id` consistently as the key
-
-        console.log(
-          `\nProcessing Product ${productIndex + 1} in Order ${orderIndex + 1}:`
-        );
-        console.log(`Product ID: ${productId}`);
-        console.log(`Product Price: ${product.price}`);
-        console.log(`Product Quantity: ${product.quantity}`);
-        console.log(
-          `Total Sales for this product in the current order: ${totalProductSales}`
-        );
+        const productId = product.productId?._id; // Use `productId._id` consistently as the key
 
         // Check if the product already exists in the map
         if (productSalesMap.has(productId)) {
           const existingProductData = productSalesMap.get(productId);
-          console.log(`Product ${productId} already exists in the map.`);
-          console.log(
-            `Existing Data:`,
-            JSON.stringify(existingProductData, null, 2)
-          );
 
           // Update sales and last sale date
           existingProductData.sales += totalProductSales;
           existingProductData.lastDate = orderDate;
-
-          console.log(
-            `Updated Data:`,
-            JSON.stringify(existingProductData, null, 2)
-          );
         } else {
-          console.log(
-            `Product ${productId} does not exist in the map, adding new entry.`
-          );
           // If the product doesn't exist, add it to the map with initial values
           const newEntry = {
             sales: totalProductSales,
             lastDate: orderDate,
           };
           productSalesMap.set(productId, newEntry); // Store using `productId` as key
-          console.log(
-            `New Entry for Product ${productId}:`,
-            JSON.stringify(newEntry, null, 2)
-          );
         }
       });
-
-      console.log(
-        `productSalesMap after processing Order ${orderIndex + 1}:`,
-        Array.from(productSalesMap.entries())
-      );
     });
-
-    console.log(
-      "\nFinal productSalesMap after processing all orders:",
-      Array.from(productSalesMap.entries())
-    );
 
     // Sort the products by sales in descending order
     const sortedProducts = Array.from(productSalesMap.entries())
       .map(([productId, data]) => ({ productId, ...data }))
       .sort((a: any, b: any) => b.sales - a.sales);
 
-    console.log(
-      "\nSorted Products by Sales (Descending):",
-      JSON.stringify(sortedProducts, null, 2)
-    );
-
     // Get the top 10 selling products
     const topSellingProducts = sortedProducts.slice(0, 10);
-    console.log(
-      "\nTop 10 Selling Products:",
-      JSON.stringify(topSellingProducts, null, 2)
-    );
 
     // Map labels and data for the report
     const labels = topSellingProducts.map((product: any) => {
@@ -263,30 +203,18 @@ const Reports: React.FC = () => {
       const label = `${productData?.name || `Product ${product.productId}`} (${
         product.lastDate.toISOString().split("T")[0]
       })`;
-      console.log(`Label for Product ${product.productId}: ${label}`);
       return label;
     });
 
     const data = topSellingProducts.map((product: any) => {
-      console.log(`Sales for Product ${product.productId}: ${product.sales}`);
       return product.sales;
     });
-
-    console.log(
-      "\nLabels for Top Selling Products:",
-      JSON.stringify(labels, null, 2)
-    );
-    console.log(
-      "Sales Data for Top Selling Products:",
-      JSON.stringify(data, null, 2)
-    );
 
     // Prepare insights
     const totalSales = data.reduce(
       (sum: number, value: number) => sum + value,
       0
     );
-    console.log("\nTotal Sales for Top Selling Products:", totalSales);
 
     return {
       labels,
@@ -439,36 +367,43 @@ const Reports: React.FC = () => {
         );
       case "categories":
         return (
-          <Pie
-            data={{
-              labels: reportData.labels,
-              datasets: [
-                {
-                  data: reportData.data,
-                  backgroundColor: [
-                    "rgba(255, 99, 132, 0.6)",
-                    "rgba(54, 162, 235, 0.6)",
-                    "rgba(255, 206, 86, 0.6)",
-                    "rgba(75, 192, 192, 0.6)",
-                    "rgba(153, 102, 255, 0.6)",
-                  ],
+          <div
+            className="relative w-full"
+            style={{ maxWidth: "400px", height: "auto", paddingBottom: "100%" }}
+          >
+            <Pie
+              data={{
+                labels: reportData.labels,
+                datasets: [
+                  {
+                    data: reportData.data,
+                    backgroundColor: [
+                      "rgba(255, 99, 132, 0.6)",
+                      "rgba(54, 162, 235, 0.6)",
+                      "rgba(255, 206, 86, 0.6)",
+                      "rgba(75, 192, 192, 0.6)",
+                      "rgba(153, 102, 255, 0.6)",
+                    ],
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                plugins: {
+                  legend: {
+                    position: "right",
+                  },
+                  title: {
+                    display: true,
+                    text: "Categories Distribution",
+                  },
                 },
-              ],
-            }}
-            options={{
-              responsive: true,
-              plugins: {
-                legend: {
-                  position: "right",
-                },
-                title: {
-                  display: true,
-                  text: "Categories Distribution",
-                },
-              },
-            }}
-          />
+                aspectRatio: 1, // Ensures the chart remains circular
+              }}
+            />
+          </div>
         );
+
       case "customers":
         return (
           <Bar
@@ -512,6 +447,7 @@ const Reports: React.FC = () => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
     const margin = 10;
+
     // Add the company logo
     const logoUrl = "/assets/logo.png"; // Update with your logo's path or base64
     const logoWidth = 30; // Width of the logo in mm
@@ -540,39 +476,52 @@ const Reports: React.FC = () => {
       60
     );
 
+    // Adding a little more space before the chart
+    const chartTopMargin = 75; // Add margin before chart
+
     // Adding chart to PDF
     const canvas = document.querySelector("canvas");
     if (canvas) {
       const imgData = canvas.toDataURL("image/png");
-      doc.addImage(imgData, "PNG", 14, 75, 180, 100);
+
+      // Create a square container for the pie chart in the PDF to maintain the circular appearance
+      const chartWidth = 120; // Width of the pie chart in PDF
+      const chartHeight = 120; // Height of the pie chart in PDF (should be same as width for circular shape)
+
+      // Add the image to the PDF (make sure the height and width are equal to maintain the circular aspect)
+      doc.addImage(imgData, "PNG", 14, chartTopMargin, chartWidth, chartHeight);
     }
 
-    // Adding details
-    doc.text("Report Details:", 14, 185);
+    // Add space after the chart to separate it from the following content
+    const chartBottomMargin = 20; // Space after the chart
+    const contentTopMargin = chartTopMargin + 100 + chartBottomMargin; // Y position for next content
+
+    // Adding details after the chart
+    doc.text("Report Details:", 12, contentTopMargin);
     doc.text(
       `Report Type: ${
         selectedReport.charAt(0).toUpperCase() + selectedReport.slice(1)
       }`,
-      14,
-      195
+      12,
+      contentTopMargin + 10
     );
     doc.text(
       `Selected Date: ${
         selectedDate ? selectedDate.toLocaleDateString() : "Not selected"
       }`,
-      14,
-      205
+      12,
+      contentTopMargin + 20
     );
 
     // Adding key insights
-    doc.text("Key Insights:", 14, 215);
+    doc.text("Key Insights:", 12, contentTopMargin + 30);
     doc.autoTable({
       head: [["Insight", "Value"]],
       body: reportData.insights.map((insight) => [
         insight.label,
         insight.value,
       ]),
-      startY: 220,
+      startY: contentTopMargin + 40,
     });
 
     // Save PDF

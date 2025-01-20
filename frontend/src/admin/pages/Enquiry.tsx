@@ -75,7 +75,6 @@ const Enquiries: React.FC = () => {
       const data = await response.json();
       setEnquiries(data);
     } catch (error: any) {
-      console.error("Error fetching enquiries:", error);
       toast.error(error.message || "Failed to fetch enquiries");
     } finally {
       setIsLoading(false);
@@ -113,7 +112,7 @@ const Enquiries: React.FC = () => {
         fetchEnquiries(); // Refetch to update the list and total count
       }
     } catch (error: any) {
-      console.error("Error deleting enquiry:", error);
+      // console.error("Error deleting enquiry:", error);
       toast.error(error.message || "Failed to delete enquiry");
     }
   };

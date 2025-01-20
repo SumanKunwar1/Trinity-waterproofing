@@ -1,10 +1,17 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Formik, Form, Field } from "formik";
 import Slider from "rc-slider";
+import "rc-slider/assets/index.css";
 import { Checkbox } from "../ui/checkbox";
 import { Input } from "../ui/input";
-
-import "rc-slider/assets/index.css";
+import { Button } from "../ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 import { Brand } from "../../types/brand";
 
 interface Category {
@@ -127,65 +134,75 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
           };
 
           return (
-            <Form>
+            <Form className="space-y-4">
               {/* Category Dropdown */}
-              <div className="mb-4">
+              <div>
                 <label
                   htmlFor="category"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
                   Category
                 </label>
-                <Field
-                  as="select"
-                  name="category"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                    handleCategoryChange(e.target.value)
-                  }
+                <Select
+                  onValueChange={(value) => handleCategoryChange(value)}
+                  value={values.category}
                 >
-                  <option value="">All Categories</option>
-                  {categories.map((category) => (
-                    <option key={category._id} value={category._id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </Field>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category._id} value={category._id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Subcategory Dropdown */}
               {values.category && (
-                <div className="mb-4">
+                <div>
                   <label
                     htmlFor="subcategory"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
                     Subcategory
                   </label>
-                  <Field
-                    as="select"
-                    name="subcategory"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  <Select
+                    onValueChange={(value) =>
+                      setFieldValue("subcategory", value)
+                    }
+                    value={values.subcategory}
                   >
-                    <option value="">All Subcategories</option>
-                    {filteredSubcategories.map((subcategory) => (
-                      <option key={subcategory._id} value={subcategory._id}>
-                        {subcategory.name}
-                      </option>
-                    ))}
-                  </Field>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Subcategories" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Subcategories</SelectItem>
+                      {filteredSubcategories.map((subcategory) => (
+                        <SelectItem
+                          key={subcategory._id}
+                          value={subcategory._id}
+                        >
+                          {subcategory.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
 
               {/* Price Range */}
-              <div className="mb-4">
+              <div>
                 <label
                   htmlFor="priceRange"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
                   Price Range
                 </label>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 mb-2">
                   <Field
                     as={Input}
                     type="number"
@@ -208,10 +225,9 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
                 </div>
                 <Slider
                   range
-                  value={[values.minPrice, values.maxPrice]}
                   min={0}
                   max={maxPriceForCategory}
-                  step={10}
+                  value={[values.minPrice, values.maxPrice]}
                   onChange={(value: number | number[]) => {
                     if (Array.isArray(value)) {
                       setFieldValue("minPrice", value[0]);
@@ -223,7 +239,7 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
               </div>
 
               {/* Rating Filters */}
-              <div className="mb-4">
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Rating
                 </label>
@@ -243,38 +259,33 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
                       htmlFor={`rating-${rating}`}
                       className="ml-2 text-sm text-gray-700"
                     >
-                      {rating} {rating === 1 ? "star" : "stars"} & up
+                      {rating} {rating === 1 ? "star" : "stars"} or up
                     </label>
                   </div>
                 ))}
               </div>
 
               {/* In Stock Filter */}
-              <div className="mb-4">
-                <div className="flex items-center">
-                  <Checkbox
-                    id="inStock"
-                    checked={values.inStock}
-                    onCheckedChange={(checked) =>
-                      setFieldValue("inStock", checked)
-                    }
-                  />
-                  <label
-                    htmlFor="inStock"
-                    className="ml-2 text-sm font-medium text-gray-700"
-                  >
-                    In Stock Only
-                  </label>
-                </div>
+              <div className="flex items-center">
+                <Checkbox
+                  id="inStock"
+                  checked={values.inStock}
+                  onCheckedChange={(checked) =>
+                    setFieldValue("inStock", checked)
+                  }
+                />
+                <label
+                  htmlFor="inStock"
+                  className="ml-2 text-sm font-medium text-gray-700"
+                >
+                  In Stock Only
+                </label>
               </div>
 
               {/* Submit Button */}
-              <button
-                type="submit"
-                className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-300"
-              >
+              <Button type="submit" className="w-full">
                 Apply Filters
-              </button>
+              </Button>
             </Form>
           );
         }}

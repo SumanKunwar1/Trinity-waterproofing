@@ -1,9 +1,16 @@
 import { useState, useEffect } from "react";
-import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
+import {
+  FaFacebook,
+  FaInstagram,
+  FaLinkedin,
+  FaTwitter,
+  FaAngleRight,
+} from "react-icons/fa";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import Newsletter from "./Newsletter";
 import BackToTopButton from "../../components/common/BackToTopButton";
+
 export interface ICompanyDetail {
   name: string;
   description: string;
@@ -29,7 +36,7 @@ const Footer: React.FC = () => {
         const response = await axios.get<ICompanyDetail>("/api/company-detail");
         setCompanyDetails(response.data);
       } catch (error) {
-        console.error("Error fetching company details:", error);
+        // console.error("Error fetching company details:", error);
       }
     };
 
@@ -91,7 +98,7 @@ const Footer: React.FC = () => {
             <h3 className="text-white text-lg font-semibold mb-4">
               Quick Links
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-2 ">
               {[
                 "products",
                 "about",
@@ -102,10 +109,14 @@ const Footer: React.FC = () => {
                 "wishlist",
                 "contact",
               ].map((link) => (
-                <li key={link}>
+                <li
+                  key={link}
+                  className="flex items-center space-x-2  hover:text-secondary hover:tracking-wider transform duration-300"
+                >
+                  <FaAngleRight className="" />
                   <Link
                     to={`/${link}`}
-                    className="hover:text-white transition-colors"
+                    className=" transition-colors text-center"
                   >
                     {link.charAt(0).toUpperCase() + link.slice(1)}
                   </Link>
@@ -123,11 +134,12 @@ const Footer: React.FC = () => {
                 "return-policy",
                 "privacy-policy",
               ].map((link) => (
-                <li key={link}>
-                  <Link
-                    to={`/${link}`}
-                    className="hover:text-white transition-colors"
-                  >
+                <li
+                  key={link}
+                  className="flex items-center space-x-2  hover:text-secondary hover:tracking-wider transform duration-300"
+                >
+                  <FaAngleRight className="" />
+                  <Link to={`/${link}`} className=" transition-colors">
                     {link
                       .split("-")
                       .map(

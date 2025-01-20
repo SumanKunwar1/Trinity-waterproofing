@@ -10,7 +10,6 @@ import AddressCard from "../components/common/AddressCard";
 import { Address } from "../types/address";
 import { createOrder } from "../api/orderApi";
 import { OrderItem } from "../types/order";
-import { ICartItem } from "../types/cart"; // Import this if not already imported
 
 const Checkout: React.FC = () => {
   const location = useLocation();
@@ -25,7 +24,7 @@ const Checkout: React.FC = () => {
 
   // Checkout data: If it's from direct buy now, it will be passed via location state; otherwise, fallback to cart.
   const checkoutData = location.state?.checkoutData || cart;
-
+  // console.log("checkoutData", checkoutData);
   useEffect(() => {
     fetchAddresses();
   }, []);
@@ -61,11 +60,11 @@ const Checkout: React.FC = () => {
           setSelectedAddressId(defaultAddress._id);
         }
       } else {
-        console.error("Invalid data structure:", data);
+        // console.error("Invalid data structure:", data);
         setAddresses([]);
       }
     } catch (error: any) {
-      console.error("Error fetching addresses:", error);
+      // console.error("Error fetching addresses:", error);
       toast.error(error.message || "Failed to load addresses");
       setAddresses([]);
     } finally {
@@ -98,7 +97,7 @@ const Checkout: React.FC = () => {
       await fetchAddresses();
       toast.success("Default address updated");
     } catch (error: any) {
-      console.error("Error setting default address:", error);
+      // console.error("Error setting default address:", error);
       toast.error(error.message || "Failed to set default address");
     }
   };
@@ -115,7 +114,7 @@ const Checkout: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const orderData: OrderItem[] = checkoutData.map((item: ICartItem) => {
+      const orderData: OrderItem[] = checkoutData.map((item: any) => {
         const productId = item.product?._id || item.productId; // Normalize productId
         if (!productId) {
           throw new Error(
@@ -126,18 +125,18 @@ const Checkout: React.FC = () => {
         // Build the order data for placing an order
         return {
           productId,
-          color: item.color || null,
-          // name: item.name,
+          color: item.selectedColor,
           quantity: item.quantity,
           price: item.price,
         };
       });
+      // console.log("orderData in checkout", orderData);
 
       if (orderData.length === 0) {
         throw new Error("No valid items to order");
       }
 
-      console.log("Order Data:", JSON.stringify(orderData, null, 2)); // Debugging
+      // console.log("Order Data:", JSON.stringify(orderData, null, 2)); // Debugging
 
       // Call the API to create an order
       const response = await createOrder(orderData, selectedAddressId);
@@ -150,7 +149,7 @@ const Checkout: React.FC = () => {
         });
       }
     } catch (error: any) {
-      console.error("Error placing order:", error);
+      // console.error("Error placing order:", error);
       toast.error(error.message || "Failed to place order");
       navigate("/order-failure", {
         state: { error: error.message || "Failed to place order" },

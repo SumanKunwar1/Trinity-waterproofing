@@ -19,6 +19,7 @@ export interface IProduct {
   subCategory: SubCategory;
   pdfUrl: string;
   features: string;
+  isFeatured: boolean;
   brand: Brand;
   createdAt: string;
   colors?: IColor[];

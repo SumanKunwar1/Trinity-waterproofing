@@ -34,7 +34,7 @@ const transformApiData = (data: any): WishlistItem[] => {
   }
 
   if (!Array.isArray(data)) {
-    console.error("Expected array response from API, received:", data);
+    // console.error("Expected array response from API, received:", data);
     return [];
   }
 
@@ -86,7 +86,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({
       const errorMessage =
         error?.response?.data?.error ||
         "Failed to add product to wishlist. Please try again.";
-      console.error("Error adding to wishlist:", error);
+      // console.error("Error adding to wishlist:", error);
       toast.error(errorMessage);
     }
   };
@@ -121,7 +121,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({
       const errorMessage =
         error?.response?.data?.error ||
         "Failed to remove product from wishlist. Please try again.";
-      console.error("Error removing from wishlist:", error);
+      // console.error("Error removing from wishlist:", error);
       toast.error(errorMessage);
     }
   };

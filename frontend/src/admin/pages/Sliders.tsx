@@ -128,11 +128,9 @@ const Sliders: React.FC = () => {
         throw new Error(errorData.error || "Failed to fetch sliders");
       }
       const data = await response.json();
-      console.log("sliderData", data);
       setSliders(data);
     } catch (error: any) {
-      console.error(error.message || "Error fetching sliders:", error);
-      toast.info("No sliders available at the moment");
+      toast.info(error.message || "No sliders available at the moment");
     } finally {
       setIsLoading(false);
     }

@@ -29,7 +29,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
     if (isLoggedIn && unParsedUserId) {
       const userId = JSON.parse(unParsedUserId);
-      console.log("user is logged in and now onto the socket connection");
 
       // Create the socket connection
       const socketInstance = io(SOCKET_URL, {
@@ -46,8 +45,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       setSocket(socketInstance);
 
       // Listen for notifications
-      socketInstance.on("notification", (data) => {
-        console.log("Received notification:", data);
+      socketInstance.on("notification", () => {
         playNotificationSound(); // Play the notification sound
       });
 
@@ -56,18 +54,15 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         socketInstance.disconnect();
       };
     } else {
-      console.log("User is not logged in or no user ID found.");
       return () => {}; // Return an empty cleanup function
     }
   }, []); // Empty dependency array to ensure the effect runs only once on mount
   const playNotificationSound = () => {
     if (audioRef.current) {
-      console.log("the adudioRef.current came as true i guess");
       audioRef.current.play().catch((error: Error) => {
         console.error("Error playing notification sound:", error);
       });
     }
-    console.log("the adudioRef.current came as false i guess");
   };
 
   return (

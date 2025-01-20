@@ -64,7 +64,7 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({
       const data = await response.json();
       setNotifications(data);
     } catch (error) {
-      console.error("Error fetching notifications:", error);
+      // console.error("Error fetching notifications:", error);
     }
   };
 
@@ -85,7 +85,7 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({
         prev.map((n) => (n._id === notificationId ? { ...n, read: true } : n))
       );
     } catch (error) {
-      console.error("Error marking notification as read:", error);
+      // console.error("Error marking notification as read:", error);
     }
   };
 
@@ -104,7 +104,7 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({
       if (!response.ok) throw new Error("Failed to delete notification");
       setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
     } catch (error) {
-      console.error("Error deleting notification:", error);
+      // console.error("Error deleting notification:", error);
     }
   };
 
@@ -121,7 +121,7 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({
         throw new Error("Failed to mark all notifications as read");
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     } catch (error) {
-      console.error("Error marking all notifications as read:", error);
+      // console.error("Error marking all notifications as read:", error);
     }
   };
 
@@ -140,7 +140,7 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({
       if (!response.ok) throw new Error("Failed to clear all notifications");
       setNotifications([]);
     } catch (error) {
-      console.error("Error clearing all notifications:", error);
+      // console.error("Error clearing all notifications:", error);
     }
   };
 

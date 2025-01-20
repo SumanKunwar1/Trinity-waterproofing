@@ -1,15 +1,21 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 import Button from "../common/Button";
 import Carousel from "../common/Carousel";
-import { toast } from "react-toastify"; // Assuming you're using this for toast notifications
-import { Link } from "react-router-dom";
+
+interface SliderItem {
+  mediaType: "video" | "image";
+  media: string;
+  title: string;
+  description: string;
+}
 
 const HeroSection: React.FC = () => {
-  const [sliders, setSliders] = useState<any[]>([]); // Store the fetched sliders
-  const [isLoading, setIsLoading] = useState<boolean>(true); // Handle loading state
+  const [sliders, setSliders] = useState<SliderItem[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Fetch the sliders data
   const fetchSliders = async () => {
     try {
       const response = await fetch("/api/slider/user", {
@@ -21,98 +27,91 @@ const HeroSection: React.FC = () => {
       if (!response.ok) throw new Error("Failed to fetch sliders");
 
       const data = await response.json();
-      console.log("sliderData", data);
       setSliders(data);
     } catch (error) {
-      console.error("Error fetching sliders:", error);
+      // console.error("Error fetching sliders:", error);
       toast.info("No sliders available at the moment");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Fetch sliders when the component mounts
   useEffect(() => {
     fetchSliders();
   }, []);
 
   const carouselItems = sliders.map((item, index) => {
-    // If mediaType is 'video', render the video element
+    const content = (
+      <motion.div
+        key={index}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="relative z-10 text-center"
+      >
+        <h1 className="text-4xl md:text-6xl font-bold mb-4">{item.title}</h1>
+        <p className="text-xl md:text-2xl mb-8">{item.description}</p>
+        <Link
+          to="/products"
+          className="inline-block"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          <Button
+            size="lg"
+            className="cursor-pointer hover:bg-secondary transition-colors duration-300"
+          >
+            Discover More
+          </Button>
+        </Link>
+      </motion.div>
+    );
+
     if (item.mediaType === "video") {
       return (
-        <div key={index} className="relative h-[90vh]">
-          {/* Video Background */}
+        <div key={index} className="relative h-[60vh] md:h-[90vh]">
           <video
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute top-0 left-0 w-full h-full object-cover"
             autoPlay
             loop
             muted
             playsInline
           >
             <source src={item.media} type="video/mp4" />
-            {/* You can add additional source types if needed */}
             Your browser does not support the video tag.
           </video>
-
-          {/* Overlay content on top of the video */}
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-center text-white">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <h1 className="text-4xl md:text-6xl font-bold mb-4">
-                {item.title}
-              </h1>
-              <p className="text-xl md:text-2xl mb-8">{item.description}</p>
-              <Link to="/products">
-                {" "}
-                <Button size="lg">Discover More</Button>
-              </Link>
-            </motion.div>
+          <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center text-white">
+            {content}
           </div>
         </div>
       );
     }
 
-    // If mediaType is 'image', render the image background
     return (
       <div
         key={index}
-        className="relative h-[90vh] bg-cover bg-center"
-        style={{ backgroundImage: `url(${item.media})` }} // Assuming 'media' is the image URL
+        className="relative h-[70vh] md:h-[90vh] bg-cover bg-center"
+        style={{ backgroundImage: `url(${item.media})` }}
       >
-        {/* Overlay content on top of the image */}
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-center text-white">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <h1 className="text-4xl md:text-6xl font-bold mb-4">
-              {item.title}
-            </h1>
-            <p className="text-xl md:text-2xl mb-8">{item.description}</p>
-            <Link to="/products">
-              {" "}
-              <Button size="lg" className="cursor-pointer">
-                Discover More
-              </Button>
-            </Link>
-          </motion.div>
+        <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center text-white">
+          {content}
         </div>
       </div>
     );
   });
 
   if (isLoading) {
-    return <div>Loading...</div>; // Optional: You can replace this with a loading spinner
+    return (
+      <div className="flex justify-center items-center h-[90vh]">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+      </div>
+    );
   }
 
   return (
-    <section>
-      <Carousel items={carouselItems} autoPlay interval={5000} />{" "}
-      {/* Adjust interval as needed */}
+    <section className="relative">
+      <Carousel items={carouselItems} autoPlay interval={5000} />
     </section>
   );
 };

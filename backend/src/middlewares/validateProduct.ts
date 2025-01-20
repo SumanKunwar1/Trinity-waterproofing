@@ -8,6 +8,9 @@ const validateProduct = (
   res: Response,
   next: NextFunction
 ): void => {
+  if (req.body.pdfUrl === "") {
+    delete req.body.pdfUrl;
+  }
   const colorSchema = Joi.object({
     name: Joi.string().required().messages({
       "string.base": "Color name must be a string",
@@ -89,7 +92,7 @@ const validateProduct = (
       "date.base": "Updated_at must be a valid date",
     }),
   });
-  console.log(req.body);
+  console.log("validate product /post body", req.body);
   const { error } = schema.validate(req.body, { abortEarly: false });
   if (error) {
     const errors = error.details.map((err) => ({

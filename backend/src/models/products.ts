@@ -38,7 +38,7 @@ const productSchema: Schema = new Schema(
     retailDiscountedPrice: { type: Number, default: 0 }, // Optional field
     wholeSaleDiscountedPrice: { type: Number, default: 0 }, // Optional field
     productImage: { type: String, required: true },
-    pdfUrl: { type: String, required: true },
+    pdfUrl: { type: String, required: false },
     image: [String],
     features: [String],
     brand: { type: Types.ObjectId, ref: "Brand", required: true },

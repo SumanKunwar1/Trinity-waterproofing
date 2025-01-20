@@ -33,7 +33,7 @@ const TeamPage = () => {
       const data = await response.json();
       setTeamMembers(data);
     } catch (error) {
-      console.error("Error fetching team members:", error);
+      // console.error("Error fetching team members:", error);
     } finally {
       setIsLoading(false);
     }

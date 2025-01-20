@@ -23,7 +23,7 @@ const CartItem: React.FC<CartItemProps> = ({ item }) => {
     try {
       await updateQuantity(item._id!, newQuantity);
     } catch (error) {
-      console.error("Failed to update quantity:", error);
+      // console.error("Failed to update quantity:", error);
     }
   };
 
@@ -31,7 +31,7 @@ const CartItem: React.FC<CartItemProps> = ({ item }) => {
     try {
       await removeFromCart(item._id!);
     } catch (error) {
-      console.error("Failed to remove item:", error);
+      // console.error("Failed to remove item:", error);
     }
   };
 

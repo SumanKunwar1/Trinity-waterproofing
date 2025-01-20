@@ -98,7 +98,7 @@ const Users: React.FC = () => {
       setUsers(data);
       setFilteredUsers(data);
     } catch (error: any) {
-      console.error("Error fetching users:", error);
+      // console.error("Error fetching users:", error);
       toast.error(error.message || "An unexpected error occurred!");
     }
   };
@@ -155,7 +155,7 @@ const Users: React.FC = () => {
       setIsDialogOpen(false);
       resetForm();
     } catch (error: any) {
-      console.error("Error submitting user:", error);
+      // console.error("Error submitting user:", error);
       toast.error(error.message || "An unexpected error occurred!");
     }
   };
@@ -178,7 +178,7 @@ const Users: React.FC = () => {
       setFilteredUsers(updatedUsers);
       toast.success("User deleted successfully");
     } catch (error: any) {
-      console.error("Error deleting user:", error);
+      // console.error("Error deleting user:", error);
       toast.error(error.message || "An unexpected error occurred!");
     }
   };

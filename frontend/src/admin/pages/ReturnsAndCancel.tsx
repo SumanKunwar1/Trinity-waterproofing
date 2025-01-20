@@ -249,7 +249,7 @@ function AdminReturnsAndCancellations() {
                         <TableCell>{item._id}</TableCell>
                         <TableCell>
                           {item.products
-                            .map((product) => product.productId.name)
+                            .map((product) => product.productId?.name)
                             .join(", ")}
                         </TableCell>
                         <TableCell>
@@ -298,7 +298,9 @@ function AdminReturnsAndCancellations() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem
-                                onClick={() => setSelectedItem(item)}
+                                onClick={() => {
+                                  setSelectedItem(item);
+                                }}
                               >
                                 View Details
                               </DropdownMenuItem>
@@ -368,7 +370,7 @@ function AdminReturnsAndCancellations() {
             <p>
               <strong>Products:</strong>{" "}
               {selectedItem?.products
-                .map((product) => product.productId.name)
+                .map((product) => product.productId?.name)
                 .join(", ")}
             </p>
             <p>

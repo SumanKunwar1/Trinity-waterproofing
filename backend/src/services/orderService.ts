@@ -164,7 +164,8 @@ export class OrderService {
 
       const userNotificationData: INotification = {
         userId: new mongoose.Types.ObjectId(user._id),
-        message: `Your order placed on ${formattedDate} has been successfully placed. Total: $${subtotal}.`,
+        orderId: newOrder._id as mongoose.Types.ObjectId,
+        message: `Your order ${newOrder._id} placed on ${formattedDate} has been successfully placed. Total: $${subtotal}.`,
         type: "success",
       };
       await NotificationService.createNotification(userNotificationData);
@@ -174,7 +175,7 @@ export class OrderService {
         type: "info",
       };
       await NotificationService.createAdminNotification(
-        `New order created by ${user.fullName} (${user.email}) on ${formattedDate}. Subtotal: Rs ${subtotal}.`,
+        `New order created by ${user.fullName} (${user.email}) on ${formattedDate}. Subtotal: Rs ${subtotal} given by orderId:${newOrder._id}.`,
         "info"
       );
 
@@ -273,7 +274,7 @@ export class OrderService {
     }
   }
 
-  public async getOrderById(orderId: string) {
+  public static async getOrderById(orderId: string) {
     try {
       const order = await Order.findById(orderId).populate(
         "products.productId"
@@ -369,7 +370,8 @@ export class OrderService {
 
       const userNotificationData: INotification = {
         userId: new mongoose.Types.ObjectId(existingOrder.userId),
-        message: `Your order placed on ${existingOrder.createdAt} has been successfully placed.`,
+        orderId: updatedOrder._id as mongoose.Types.ObjectId,
+        message: `Your order ${updatedOrder._id}placed on ${existingOrder.createdAt} has been successfully placed.`,
         type: "success",
       };
       await NotificationService.createNotification(userNotificationData);
@@ -409,7 +411,8 @@ export class OrderService {
       }
       const userNotificationData: INotification = {
         userId: new mongoose.Types.ObjectId(existingOrder.userId),
-        message: `Your order placed on ${existingOrder.createdAt} has been cancelled due to ${reason} Please Contact Us to Know the details.`,
+        orderId: updatedOrder._id as mongoose.Types.ObjectId,
+        message: `Your order ${updatedOrder._id} placed on ${existingOrder.createdAt} has been cancelled due to ${reason} Please Contact Us to Know the details.`,
         type: "error",
       };
       await NotificationService.createNotification(userNotificationData);
@@ -444,7 +447,8 @@ export class OrderService {
 
       const userNotificationData: INotification = {
         userId: new mongoose.Types.ObjectId(existingOrder.userId),
-        message: `Your order placed on ${existingOrder.createdAt} has been set to return.Confirmation require 24-48 hours.`,
+        orderId: updatedOrder._id as mongoose.Types.ObjectId,
+        message: `Your order ${updatedOrder._id} placed on ${existingOrder.createdAt} has been set to return.Confirmation require 24-48 hours.`,
         type: "info",
       };
       await NotificationService.createAdminNotification(
@@ -486,7 +490,8 @@ export class OrderService {
       }
       const userNotificationData: INotification = {
         userId: new mongoose.Types.ObjectId(existingOrder.userId),
-        message: `Your order placed on ${existingOrder.createdAt} has been shipped. PLease contact Us for more details.`,
+        orderId: updatedOrder._id as mongoose.Types.ObjectId,
+        message: `Your order ${updatedOrder._id} placed on ${existingOrder.createdAt} has been shipped. PLease contact Us for more details.`,
         type: "info",
       };
       await NotificationService.createNotification(userNotificationData);
@@ -524,7 +529,8 @@ export class OrderService {
       }
       const userNotificationData: INotification = {
         userId: new mongoose.Types.ObjectId(existingOrder.userId),
-        message: `Your order placed on ${existingOrder.createdAt} has been Delivered. Please confirm.`,
+        orderId: updatedOrder._id as mongoose.Types.ObjectId,
+        message: `Your order ${updatedOrder._id} placed on ${existingOrder.createdAt} has been Delivered. Please confirm.`,
         type: "info",
       };
       await NotificationService.createNotification(userNotificationData);
@@ -562,7 +568,8 @@ export class OrderService {
       }
       const userNotificationData: INotification = {
         userId: new mongoose.Types.ObjectId(existingOrder.userId),
-        message: `Your order placed on ${existingOrder.createdAt} has been approved for Return. PLease contact Us for more details.`,
+        orderId: updatedOrder._id as mongoose.Types.ObjectId,
+        message: `Your order ${updatedOrder._id} placed on ${existingOrder.createdAt} has been approved for Return. PLease contact Us for more details.`,
         type: "info",
       };
       await NotificationService.createNotification(userNotificationData);
@@ -598,7 +605,11 @@ export class OrderService {
       // Notify user about the disapproval
       const userNotificationData: INotification = {
         userId: new mongoose.Types.ObjectId(existingOrder.userId),
-        message: `Your return request for the order placed on ${existingOrder.createdAt} has been disapproved.Reason:${reason} Please contact support for more details.`,
+        orderId: updatedOrder._id as mongoose.Types.ObjectId,
+        message:
+          `Your return request for the order ` +
+          existingOrder._id +
+          ` placed on ${existingOrder.createdAt} has been disapproved.Reason:${reason} Please contact support for more details.`,
         type: "error",
       };
       await NotificationService.createNotification(userNotificationData);

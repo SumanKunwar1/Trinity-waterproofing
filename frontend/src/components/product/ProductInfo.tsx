@@ -27,6 +27,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
   const isLoggedIn = !!localStorage.getItem("authToken");
 
   useEffect(() => {
+    // Check if selectedColor is still undefined and set it to the first color if available
     if (!selectedColor && colors.length > 0) {
       setSelectedColor(colors[0].hex);
     }
@@ -96,6 +97,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
           price: displayedPrice,
         },
       ];
+      // console.log("checkoutData", checkoutData, "selectedColor", selectedColor);
 
       navigate("/checkout", {
         state: { checkoutData: [...checkoutData] },
@@ -157,6 +159,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
       </div>
 
       <p className="text-gray-600 mb-2">{product.description}</p>
+      <p className="text-gray-600 mb-2">Brand: {product.brand.name}</p>
       <p className="text-gray-500 mb-2">In Stock: {product.inStock}</p>
 
       {colors && colors.length > 0 && (
@@ -181,10 +184,10 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
                   className="hidden"
                 />
                 <span
-                  className={`w-8 h-8 rounded-full ${
+                  className={`w-8 h-8 rounded-full  ${
                     selectedColor === color.hex
                       ? "ring-0 border border-blue-500"
-                      : "ring-0"
+                      : "ring-0 border border-gray-500"
                   }`}
                   style={{ backgroundColor: color.hex }}
                   title={color.name}

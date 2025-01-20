@@ -1,3 +1,12 @@
+import React from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+
 interface ProductSortProps {
   onSort: (option: string) => void;
 }
@@ -11,21 +20,20 @@ const ProductSort: React.FC<ProductSortProps> = ({ onSort }) => {
       >
         Sort by:
       </label>
-      <select
-        id="sort"
-        className="w-full md:w-auto px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        onChange={(e) => onSort(e.target.value)}
-      >
-        <option value="">Default</option>
-        <option value="price_asc">Price: Low to High</option>
-        <option value="price_desc">Price: High to Low</option>
-        <option value="name_asc">Name: A to Z</option>
-        <option value="name_desc">Name: Z to A</option>
-        <option value="rating_desc">Highest Rated</option>
-        <option value="popularity_desc">Most Popular</option>
-        <option value="newest">Newest Arrivals</option>
-        <option value="discount_desc">Biggest Discount</option>
-      </select>
+      <Select onValueChange={onSort}>
+        <SelectTrigger className="w-full md:w-[200px]">
+          <SelectValue placeholder="Default" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="default">Default</SelectItem>
+          <SelectItem value="price_asc">Price: Low to High</SelectItem>
+          <SelectItem value="price_desc">Price: High to Low</SelectItem>
+          <SelectItem value="name_asc">Name: A to Z</SelectItem>
+          <SelectItem value="name_desc">Name: Z to A</SelectItem>
+          <SelectItem value="newest">Newest Arrivals</SelectItem>
+          <SelectItem value="discount_desc">Biggest Discount</SelectItem>
+        </SelectContent>
+      </Select>
     </div>
   );
 };

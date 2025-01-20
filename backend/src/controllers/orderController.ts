@@ -49,20 +49,20 @@ export class OrderController {
     }
   }
 
-  public async getOrderById(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
-    try {
-      const orderId = req.params.orderId;
-      const result = await this.orderService.getOrderById(orderId);
-      res.locals.responseData = result;
-      next();
-    } catch (error: any) {
-      next(error);
-    }
-  }
+  // public async getOrderById(
+  //   req: Request,
+  //   res: Response,
+  //   next: NextFunction
+  // ): Promise<void> {
+  //   try {
+  //     const orderId = req.params.orderId;
+  //     const result = await this.orderService.getOrderById(orderId);
+  //     res.locals.responseData = result;
+  //     next();
+  //   } catch (error: any) {
+  //     next(error);
+  //   }
+  // }
 
   public async updateOrderStatus(
     req: Request,

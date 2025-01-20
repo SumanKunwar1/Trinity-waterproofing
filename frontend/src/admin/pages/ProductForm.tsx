@@ -88,13 +88,11 @@ const validationSchema = Yup.object().shape({
       hex: Yup.string().required("Color hex is required"),
     })
   ),
-  image: Yup.array().min(1, "At least one image is required"),
-  pdfUrl: Yup.string().url("Invalid PDF URL"),
+  pdfUrl: Yup.string().url("Invalid PDF URL").nullable(),
 });
 
 const ProductForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  console.log("Product ID:", id);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -114,7 +112,7 @@ const ProductForm: React.FC = () => {
     colors: [],
     inStock: 0,
     subCategory: "",
-    pdfUrl: "",
+    pdfUrl: "", // Added pdfUrl to initialFormData
   });
   const [colorInput, setColorInput] = useState("");
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -127,7 +125,7 @@ const ProductForm: React.FC = () => {
           await fetchProduct(id);
         }
       } catch (error) {
-        console.error("Error initializing form:", error);
+        // console.error("Error initializing form:", error);
         toast.error("Failed to initialize form");
       } finally {
         setLoading(false);
@@ -151,7 +149,7 @@ const ProductForm: React.FC = () => {
       const data = await response.json();
       setBrands(data);
     } catch (error: any) {
-      console.error("Error fetching brands:", error);
+      // console.error("Error fetching brands:", error);
       throw error;
     }
   };
@@ -167,7 +165,7 @@ const ProductForm: React.FC = () => {
       const data = await response.json();
       setSubCategories(data);
     } catch (error) {
-      console.error("Error fetching subcategories:", error);
+      // console.error("Error fetching subcategories:", error);
       throw error;
     }
   };
@@ -219,6 +217,93 @@ const ProductForm: React.FC = () => {
     }
   };
 
+  const addProduct = async (values: ProductFormData) => {
+    const productFormData = new FormData();
+
+    Object.entries(values).forEach(([key, value]) => {
+      if (key === "colors") {
+        productFormData.append(key, JSON.stringify(value));
+      } else if (key === "productImage" && value instanceof File) {
+        productFormData.append(key, value);
+      } else if (key === "image" && Array.isArray(value)) {
+        value.forEach((file) => {
+          productFormData.append(`image`, file);
+        });
+      } else if (key === "pdfUrl") {
+        productFormData.append(key, String(value));
+      } else {
+        productFormData.append(key, String(value));
+      }
+    });
+
+    try {
+      const response = await fetch("/api/product", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+        body: productFormData,
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(responseData.error || "Failed to create product");
+      }
+
+      toast.success("Product created successfully");
+      navigate("/admin/products");
+    } catch (error) {
+      // console.error("Error adding product:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to add product"
+      );
+      throw error;
+    }
+  };
+
+  const updateProduct = async (values: ProductFormData) => {
+    const requestBody = {
+      name: values.name,
+      description: values.description,
+      retailPrice: values.retailPrice,
+      wholeSalePrice: values.wholeSalePrice,
+      retailDiscountedPrice: values.retailDiscountedPrice || 0,
+      wholeSaleDiscountedPrice: values.wholeSaleDiscountedPrice || 0,
+      inStock: Number.parseInt(values.inStock.toString(), 10),
+      brand: values.brand,
+      subCategory: values.subCategory,
+      features: values.features,
+      colors: values.colors,
+      pdfUrl: values.pdfUrl,
+    };
+
+    try {
+      const response = await fetch(`/api/product/${id}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(responseData.error || "Failed to update product");
+      }
+
+      toast.success("Product updated successfully");
+      navigate("/admin/products");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update product"
+      );
+      throw error;
+    }
+  };
+
   const handleSubmit = async (
     values: ProductFormData,
     { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }
@@ -226,86 +311,13 @@ const ProductForm: React.FC = () => {
     setSubmitting(true);
 
     try {
-      const url = id ? `/api/product/${id}` : "/api/product";
-      const method = id ? "PATCH" : "POST";
-
-      if (method === "PATCH") {
-        const requestBody = {
-          name: values.name,
-          description: values.description,
-          retailPrice: values.retailPrice,
-          wholeSalePrice: values.wholeSalePrice,
-          retailDiscountedPrice: values.retailDiscountedPrice,
-          wholeSaleDiscountedPrice: values.wholeSaleDiscountedPrice,
-          inStock: parseInt(values.inStock.toString(), 10),
-          brand: values.brand,
-          subCategory: values.subCategory,
-          features: values.features,
-          colors: values.colors,
-          pdfUrl: values.pdfUrl,
-        };
-
-        console.log("Request Body for PATCH:", requestBody);
-
-        const response = await fetch(url, {
-          method,
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBody),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Failed to update product");
-        }
+      if (id) {
+        await updateProduct(values);
       } else {
-        const productFormData = new FormData();
-
-        Object.entries(values).forEach(([key, value]) => {
-          if (key === "colors") {
-            productFormData.append(key, JSON.stringify(value));
-          } else if (key === "productImage" && value instanceof File) {
-            productFormData.append(key, value);
-          } else if (key === "image" && Array.isArray(value)) {
-            value.forEach((file) => {
-              productFormData.append(`image`, file);
-            });
-          } else {
-            productFormData.append(key, String(value));
-          }
-        });
-
-        for (let pair of productFormData.entries()) {
-          console.log("data in productFormData", pair[0], pair[1]);
-        }
-
-        const response = await fetch(url, {
-          method,
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-          body: productFormData,
-        });
-
-        if (!response.ok) {
-          console.log("the response is not okay", response);
-          const errorData = await response.json();
-          console.log("we got the error", errorData);
-          throw new Error(errorData.error || "Failed to create product");
-        }
+        await addProduct(values);
       }
-
-      toast.success(
-        id ? "Product updated successfully" : "Product created successfully"
-      );
-      navigate("/admin/products");
     } catch (error) {
-      console.error("Error submitting product:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to submit product"
-      );
+      // console.error("Error submitting product:", error);
     } finally {
       setSubmitting(false);
     }
@@ -349,6 +361,7 @@ const ProductForm: React.FC = () => {
                 >
                   {({ values, setFieldValue, isSubmitting }) => (
                     <Form className="space-y-4">
+                      {}
                       <div>
                         <Label htmlFor="name">Name</Label>
                         <Field name="name" as={Input} />
@@ -420,6 +433,7 @@ const ProductForm: React.FC = () => {
                           className="text-red-500"
                         />
                       </div>
+
                       <div>
                         <Label htmlFor="pdfUrl">PDF URL</Label>
                         <Field name="pdfUrl" type="url" as={Input} />

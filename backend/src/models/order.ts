@@ -36,6 +36,7 @@ const orderSchema: Schema = new Schema(
       default: { type: Boolean, default: false },
     },
     subtotal: { type: Number, required: true },
+    paymentMethod: { type: String, default: "Cash On Delivery" },
     status: {
       type: String,
       enum: Object.values(OrderStatus),

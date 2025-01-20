@@ -46,7 +46,11 @@ const FeaturedProductsCarousel = () => {
         } else {
           response = await axios.get("/api/product");
         }
-        setFeaturedProducts(response.data);
+        const allProducts = response.data;
+        const featured = allProducts.filter(
+          (product: IProduct) => product.isFeatured
+        );
+        setFeaturedProducts(featured);
       } catch (err: any) {
         const errorMessage =
           err.response?.data?.error || "Failed to fetch featured products.";
