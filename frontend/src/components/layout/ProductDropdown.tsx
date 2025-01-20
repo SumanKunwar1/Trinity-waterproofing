@@ -5,7 +5,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { ChevronDown } from "lucide-react";
 import { Helmet } from "react-helmet-async";
-import { IProduct } from "../../types/product";
+import type { IProduct } from "../../types/product";
 
 interface ProductDropdownProps {
   isOpen: boolean;
@@ -94,7 +94,7 @@ export const ProductDropdown: React.FC<ProductDropdownProps> = ({
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
-        className="absolute left-0 right-0 top-full bg-hover shadow-md z-50"
+        className="absolute left-0 right-0 top-full bg-gray-200 shadow-md z-50 min-h-screen"
       >
         <div className="container mx-auto px-4 py-8">
           <div className="flex justify-between items-center mb-4">
@@ -120,7 +120,7 @@ export const ProductDropdown: React.FC<ProductDropdownProps> = ({
                     setHoveredSubCategory(null);
                   }}
                 >
-                  <div className="flex items-center justify-between p-2 hover:bg-gray-100 rounded-md cursor-pointer group">
+                  <div className="flex items-center justify-between p-2  rounded-md cursor-pointer group">
                     <h3 className="text-md sm:text-md text-brand font-semibold">
                       {category.name}
                     </h3>
@@ -139,55 +139,22 @@ export const ProductDropdown: React.FC<ProductDropdownProps> = ({
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className="absolute left-0 top-full w-full bg-white shadow-lg rounded-md mt-1 z-10"
+                        className="w-full shadow-lg rounded-md mt-1 z-10"
                       >
                         {category.subCategories.map((sub) => (
                           <div
                             key={sub._id}
-                            className="relative"
+                            className="relative hover:bg-secondary"
                             onMouseEnter={() => setHoveredSubCategory(sub)}
                             onMouseLeave={() => setHoveredSubCategory(null)}
                           >
-                            <div className="p-3 hover:bg-gray-50 cursor-pointer flex items-center justify-between">
-                              <span className="text-gray-700">{sub.name}</span>
-                              <ChevronDown
-                                className={`w-4 h-4 transition-transform duration-200 ${
-                                  hoveredSubCategory?._id === sub._id
-                                    ? "rotate-180"
-                                    : ""
-                                }`}
-                              />
+                            <div className="p-3  cursor-pointer flex items-center justify-between">
+                              <Link to="/products">
+                                <span className="text-gray-700 ">
+                                  {sub.name}
+                                </span>
+                              </Link>
                             </div>
-
-                            <AnimatePresence>
-                              {hoveredSubCategory?._id === sub._id && (
-                                <motion.div
-                                  initial={{ opacity: 0, y: -5 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  exit={{ opacity: 0, y: -5 }}
-                                  className="w-full bg-white shadow-lg rounded-md mt-1 z-10"
-                                >
-                                  {sub.products.length > 0 ? (
-                                    <div className="py-2">
-                                      {sub.products.map((product) => (
-                                        <Link
-                                          key={product._id}
-                                          to={`/product/${product._id}`}
-                                          onClick={onClose}
-                                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                                        >
-                                          {product.name}
-                                        </Link>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <div className="p-4 text-sm text-gray-500">
-                                      No products available
-                                    </div>
-                                  )}
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
                           </div>
                         ))}
                       </motion.div>

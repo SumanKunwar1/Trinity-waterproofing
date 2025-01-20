@@ -1,5 +1,7 @@
+import type React from "react";
 import { useState } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import ImageDialog from "./ImageDialog";
 
 interface ProductGalleryProps {
   images: string[];
@@ -8,6 +10,7 @@ interface ProductGalleryProps {
 const ProductGallery: React.FC<ProductGalleryProps> = ({ images }) => {
   const [selectedImage, setSelectedImage] = useState(images?.[0] || "");
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const itemsPerPage = 4; // Number of thumbnails to show at once
 
   if (!images || images.length === 0) {
@@ -29,9 +32,12 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ images }) => {
   return (
     <div className="flex flex-col items-center">
       {/* Main Selected Image */}
-      <div className="mb-4">
+      <div
+        className="mb-4 cursor-zoom-in"
+        onClick={() => setIsDialogOpen(true)}
+      >
         <img
-          src={selectedImage}
+          src={selectedImage || "/placeholder.svg"}
           alt="Selected"
           className="w-full h-64 object-cover rounded-md"
         />
@@ -56,7 +62,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ images }) => {
             .map((image, index) => (
               <img
                 key={index}
-                src={image}
+                src={image || "/placeholder.svg"}
                 alt={`Thumbnail ${index + 1}`}
                 className={`w-24 h-24 object-cover rounded-md cursor-pointer ${
                   selectedImage === image ? "border-2 border-blue-600" : ""
@@ -76,6 +82,13 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ images }) => {
           </button>
         )}
       </div>
+
+      {/* Image Dialog */}
+      <ImageDialog
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        imageSrc={selectedImage}
+      />
     </div>
   );
 };

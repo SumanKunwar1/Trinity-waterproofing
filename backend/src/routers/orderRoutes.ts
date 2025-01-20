@@ -41,12 +41,12 @@ router.get(
 );
 
 // Get order by ID
-router.get(
-  "/:orderId",
-  isAuthenticated,
-  orderController.getOrderById.bind(orderController),
-  handleResponse
-);
+// router.get(
+//   "/:orderId",
+//   isAuthenticated,
+//   orderController.getOrderById.bind(orderController),
+//   handleResponse
+// );
 
 // Confirm an order (admin only)
 router.patch(

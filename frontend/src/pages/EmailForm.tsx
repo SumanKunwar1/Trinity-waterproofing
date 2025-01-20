@@ -6,7 +6,7 @@ import Button from "../components/common/Button";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 
-// Validation schema for email
+// Validation schema for email input
 const emailValidationSchema = Yup.object().shape({
   email: Yup.string().email("Invalid email").required("Email is required"),
 });
@@ -14,9 +14,8 @@ const emailValidationSchema = Yup.object().shape({
 const EmailForm: React.FC = () => {
   const handleSubmit = async (values: { email: string }) => {
     try {
-      // Mock API call to send the reset email
-      const response = await fetch("/api/users/send-reset-email", {
-        method: "POST",
+      const response = await fetch(`api/users/forgot/password`, {
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
@@ -24,7 +23,7 @@ const EmailForm: React.FC = () => {
       });
 
       if (response.ok) {
-        toast.success("Reset email sent successfully!");
+        toast.success("Reset email sent successfully! Check your inbox.");
       } else {
         const errorData = await response.json();
         toast.error(
@@ -63,15 +62,24 @@ const EmailForm: React.FC = () => {
                 validationSchema={emailValidationSchema}
                 onSubmit={handleSubmit}
               >
-                {() => (
+                {({ isSubmitting }) => (
                   <Form>
                     <Input label="Email" name="email" type="email" />
                     <Button type="submit" className="w-full mt-4">
-                      Send Reset Email
+                      {isSubmitting ? "Sending..." : "Send Reset Email"}
                     </Button>
                   </Form>
                 )}
               </Formik>
+
+              <Button
+                className="w-full mt-4"
+                onClick={() => {
+                  window.location.href = "/login";
+                }}
+              >
+                Back to Login
+              </Button>
             </div>
           </div>
         </div>

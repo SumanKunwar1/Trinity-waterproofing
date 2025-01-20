@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
@@ -28,15 +28,34 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../components/ui/dialog";
-// import {
-//   Pagination,
-//   PaginationContent,
-//   PaginationItem,
-//   PaginationLink,
-//   PaginationPrevious,
-//   PaginationNext,
-// } from "../components/ui/pagination";
-import { IProduct } from "../../types/product";
+import { Switch } from "../components/ui/switch";
+
+interface Color {
+  name: string;
+  hex: string;
+}
+
+interface Brand {
+  _id: string;
+  name: string;
+}
+
+interface IProduct {
+  _id: string;
+  name: string;
+  description: string;
+  retailPrice: number;
+  wholeSalePrice: number;
+  brand: Brand;
+  colors: Color[];
+  inStock: number;
+  productImage: string;
+  image: string[];
+  features: string;
+  pdfUrl: string;
+  isFeatured: boolean;
+  createdAt: string;
+}
 
 const Products: React.FC = () => {
   const [products, setProducts] = useState<IProduct[]>([]);
@@ -45,18 +64,13 @@ const Products: React.FC = () => {
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<IProduct | null>(null);
-  // const [currentPage, setCurrentPage] = useState(1);
-  // const itemsPerPage = 10;
+  const [isUpdating, setIsUpdating] = useState<{ [key: string]: boolean }>({});
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       const response = await fetch("/api/product", {
         headers: {
@@ -64,20 +78,26 @@ const Products: React.FC = () => {
         },
       });
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to fetch products");
+        throw new Error("Failed to fetch products");
       }
-      const data = await response.json();
-      // Sort products by createdAt in descending order (latest first)
+      const data: IProduct[] = await response.json();
       const sortedProducts = data.sort(
-        (a: IProduct, b: IProduct) =>
+        (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
       setProducts(sortedProducts);
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "An error occurred while fetching products"
+      );
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   const handleDelete = (id: string) => {
     setProductToDelete(id);
@@ -94,35 +114,74 @@ const Products: React.FC = () => {
           },
         });
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Failed to delete product");
+          throw new Error("Failed to delete product");
         }
         toast.success("Product deleted successfully");
         fetchProducts();
-      } catch (error: any) {
-        toast.error(error.message);
+      } catch (error) {
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "An error occurred while deleting the product"
+        );
       }
     }
     setIsDeleteDialogOpen(false);
     setProductToDelete(null);
   };
-  // Pagination logic
-  // const indexOfLastReview = currentPage * itemsPerPage;
-  // const indexOfFirstReview = indexOfLastReview - itemsPerPage;
-  // const currentProducts = products.slice(indexOfFirstReview, indexOfLastReview);
 
-  // const totalPages = Math.ceil(products.length / itemsPerPage);
-
-  // const handlePageChange = (page: number) => {
-  //   setCurrentPage(page);
-  // };
-
-  const handleViewDetails = (product: IProduct, e?: React.MouseEvent) => {
-    if (e) {
-      e.stopPropagation();
-    }
+  const handleViewDetails = (product: IProduct) => {
     setSelectedProduct(product);
     setIsDetailModalOpen(true);
+  };
+
+  const handleToggleFeatured = async (
+    productId: string,
+    currentFeaturedState: boolean
+  ) => {
+    if (isUpdating[productId]) return;
+
+    // Mark the product as being updated
+    setIsUpdating((prev) => ({ ...prev, [productId]: true }));
+
+    try {
+      const response = await fetch(`/api/product/isFeatured/${productId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+        body: JSON.stringify({ isFeatured: !currentFeaturedState }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update featured status");
+      }
+
+      const updatedProduct: IProduct = await response.json();
+
+      // Update the product list with the new `isFeatured` state
+      setProducts((prevProducts) =>
+        prevProducts.map((product) =>
+          product._id === productId
+            ? { ...product, isFeatured: updatedProduct.isFeatured }
+            : product
+        )
+      );
+
+      // Show success message based on the updated state
+      toast.success(`Product featured status updated  successfully`);
+    } catch (error: any) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "An error occurred while updating featured status"
+      );
+    } finally {
+      // Clear the updating state for this product
+      setIsUpdating((prev) => ({ ...prev, [productId]: false }));
+    }
   };
 
   const columns = [
@@ -164,6 +223,18 @@ const Products: React.FC = () => {
       ),
     },
     {
+      header: "Featured",
+      accessor: "isFeatured",
+      cell: (row: IProduct) => (
+        <Switch
+          id={`featured-${row._id}`}
+          checked={row.isFeatured}
+          onCheckedChange={() => handleToggleFeatured(row._id, row.isFeatured)}
+          disabled={isUpdating[row._id]}
+        />
+      ),
+    },
+    {
       header: "Actions",
       accessor: "actions",
       cell: (row: IProduct) => (
@@ -175,7 +246,7 @@ const Products: React.FC = () => {
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
                 fill="currentColor"
-                className="size-6"
+                className="size-6 "
               >
                 <path
                   fillRule="evenodd"
@@ -185,9 +256,9 @@ const Products: React.FC = () => {
               </svg>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+          <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={(e) => handleViewDetails(row, e)}>
+            <DropdownMenuItem onClick={() => handleViewDetails(row)}>
               <FaEye className="mr-2" /> View
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
@@ -228,34 +299,7 @@ const Products: React.FC = () => {
                 </Link>
               </CardHeader>
               <CardContent>
-                <Table
-                  columns={columns}
-                  data={products}
-                  onRowClick={(item: IProduct) => handleViewDetails(item)}
-                  itemsPerPage={10}
-                />
-                {/* <Pagination className="mt-4">
-                  <PaginationPrevious
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                  />
-                  <PaginationContent>
-                    {Array.from({ length: totalPages }, (_, index) => (
-                      <PaginationItem key={index}>
-                        <PaginationLink
-                          isActive={index + 1 === currentPage}
-                          onClick={() => handlePageChange(index + 1)}
-                        >
-                          {index + 1}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ))}
-                  </PaginationContent>
-                  <PaginationNext
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                  />
-                </Pagination> */}
+                <Table columns={columns} data={products} itemsPerPage={10} />
               </CardContent>
             </Card>
           </motion.div>
@@ -305,7 +349,7 @@ const Products: React.FC = () => {
             </p>
             <p>
               <strong>PDF URL:</strong>
-              {selectedProduct?.pdfUrl}
+              {selectedProduct?.pdfUrl || " No PDF available"}
             </p>
             <p>
               <strong>In Stock:</strong> {selectedProduct?.inStock}
@@ -332,7 +376,7 @@ const Products: React.FC = () => {
             <div>
               <strong>Product Thumbnail: </strong>
               <img
-                src={selectedProduct?.productImage}
+                src={selectedProduct?.productImage || "/placeholder.svg"}
                 alt={selectedProduct?.name}
                 className="w-24 h-24 object-cover"
               />
@@ -343,14 +387,13 @@ const Products: React.FC = () => {
                 {(selectedProduct?.image || []).map((image, index) => (
                   <img
                     key={index}
-                    src={image}
+                    src={image || "/placeholder.svg"}
                     alt={`Product ${index + 1}`}
                     className="w-24 h-24 object-cover"
                   />
                 ))}
               </div>
             </div>
-
             <div>
               <strong>Features:</strong>
               <div

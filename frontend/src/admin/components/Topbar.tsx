@@ -40,7 +40,7 @@ const Topbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
     return (
       name
         .split(" ")
-        .map((word) => word[0].toUpperCase())
+        .map((word) => word[0])
         .join("")
         .substr(0, 2) || "N/A"
     );

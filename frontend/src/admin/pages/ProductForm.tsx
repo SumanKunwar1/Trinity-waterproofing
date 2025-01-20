@@ -88,7 +88,7 @@ const validationSchema = Yup.object().shape({
       hex: Yup.string().required("Color hex is required"),
     })
   ),
-  pdfUrl: Yup.string().url("Invalid PDF URL"),
+  pdfUrl: Yup.string().url("Invalid PDF URL").nullable(),
 });
 
 const ProductForm: React.FC = () => {
@@ -112,7 +112,7 @@ const ProductForm: React.FC = () => {
     colors: [],
     inStock: 0,
     subCategory: "",
-    pdfUrl: "",
+    pdfUrl: "", // Added pdfUrl to initialFormData
   });
   const [colorInput, setColorInput] = useState("");
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -229,6 +229,8 @@ const ProductForm: React.FC = () => {
         value.forEach((file) => {
           productFormData.append(`image`, file);
         });
+      } else if (key === "pdfUrl") {
+        productFormData.append(key, String(value));
       } else {
         productFormData.append(key, String(value));
       }
@@ -268,7 +270,7 @@ const ProductForm: React.FC = () => {
       wholeSalePrice: values.wholeSalePrice,
       retailDiscountedPrice: values.retailDiscountedPrice || 0,
       wholeSaleDiscountedPrice: values.wholeSaleDiscountedPrice || 0,
-      inStock: parseInt(values.inStock.toString(), 10),
+      inStock: Number.parseInt(values.inStock.toString(), 10),
       brand: values.brand,
       subCategory: values.subCategory,
       features: values.features,
@@ -295,7 +297,6 @@ const ProductForm: React.FC = () => {
       toast.success("Product updated successfully");
       navigate("/admin/products");
     } catch (error) {
-      // console.error("Error updating product:", error);
       toast.error(
         error instanceof Error ? error.message : "Failed to update product"
       );

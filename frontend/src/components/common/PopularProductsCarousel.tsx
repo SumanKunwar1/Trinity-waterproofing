@@ -7,7 +7,7 @@ import axios from "axios";
 import ProductCard from "./ProductCard";
 import { IProduct } from "../../types/product";
 
-const FeaturedProductsCarousel = () => {
+const PopularProductsCarousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [featuredProducts, setFeaturedProducts] = useState<IProduct[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -28,7 +28,7 @@ const FeaturedProductsCarousel = () => {
     try {
       userId = JSON.parse(unParsedUserId);
     } catch (error) {
-      console.error("Error parsing userId:", error);
+      // console.error("Error parsing userId:", error);
     }
   }
 
@@ -46,11 +46,7 @@ const FeaturedProductsCarousel = () => {
         } else {
           response = await axios.get("/api/product");
         }
-        const allProducts = response.data;
-        const featured = allProducts.filter(
-          (product: IProduct) => product.isFeatured
-        );
-        setFeaturedProducts(featured);
+        setFeaturedProducts(response.data);
       } catch (err: any) {
         const errorMessage =
           err.response?.data?.error || "Failed to fetch featured products.";
@@ -163,4 +159,4 @@ const FeaturedProductsCarousel = () => {
   );
 };
 
-export default FeaturedProductsCarousel;
+export default PopularProductsCarousel;

@@ -78,7 +78,7 @@ export class CategoryService {
         })
       );
 
-      console.log(JSON.stringify(categoryResponse, null, 2));
+      //console.log(JSON.stringify(categoryResponse, null, 2));
       return categoryResponse;
     } catch (error) {
       throw error; // Rethrow error if any occurs
@@ -90,7 +90,7 @@ export class CategoryService {
     updateData: Partial<ICategory>
   ) {
     try {
-      console.log(categoryId);
+      //console.log(categoryId);
       const updatedCategory = await Category.findById(categoryId);
       const { name, description } = updateData;
 
@@ -141,10 +141,10 @@ export class CategoryService {
             // Call deleteImages function to remove the files
             if (filesToDelete.length > 0) {
               await deleteImages(filesToDelete);
-              console.log(
-                `Successfully deleted files for product ${product._id}:`,
-                filesToDelete
-              );
+              //console.log(
+              //   `Successfully deleted files for product ${product._id}:`,
+              //   filesToDelete
+              // );
             }
 
             // Delete the product from the database

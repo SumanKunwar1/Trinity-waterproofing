@@ -132,6 +132,7 @@ function App() {
                         <Route path="/faq" element={<FAQPage />} />
                         <Route path="/about" element={<About />} />
                         <Route path="/contact" element={<Contact />} />
+
                         {/* Protect customer profile pages */}
                         <Route
                           path="/customer/dashboard"

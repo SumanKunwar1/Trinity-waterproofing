@@ -9,7 +9,10 @@ import {
   generatePasswordResetToken,
 } from "../config/tokenUtils";
 import { sendBrevoEmail } from "../config/sendBrevoEmail";
+import dotenv from "dotenv";
+dotenv.config();
 
+const BASE_URL = process.env.BASE_URL;
 export class UserService {
   public async createUser(userData: IUser) {
     try {
@@ -41,10 +44,17 @@ export class UserService {
         throw httpMessages.NOT_FOUND("User");
       }
 
-      const isMatch = bcrypt.compare(password, user.password as string);
+      console.log(`Stored (hashed) password: ${user.password}`);
+      console.log(`Entered (plain) password: ${password}`);
+
+      // Compare the entered password with the stored hashed password
+      const isMatch = await bcrypt.compare(password, user.password as string);
+
       if (!isMatch) {
+        console.warn(`Invalid password attempt for email: ${email}`);
         throw httpMessages.INVALID_CREDENTIALS;
       }
+      console.log("Password match successful!");
 
       const token = generateAccessToken(
         user._id.toString(),
@@ -123,7 +133,11 @@ export class UserService {
       if (email) user.email = email;
       if (number) user.number = number;
       if (role) user.role = role;
-      if (password) user.password = password;
+      if (password) {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        user.password = hashedPassword;
+      }
       console.log(user);
 
       await user.save();
@@ -157,12 +171,15 @@ export class UserService {
         throw httpMessages.INVALID_CREDENTIALS;
       }
 
+      console.log("user's old password", user.password);
+
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(newPassword, salt);
 
       user.password = hashedPassword;
 
       await user.save();
+      console.log("users new password", user.password);
 
       return {
         message: "Password updated successfully",
@@ -185,18 +202,7 @@ export class UserService {
         user.role
       );
 
-      const resetLink = `http://yourfrontend.com/reset-password?token=${resetToken}`;
-      const content = {
-        html: `<p>We received a password reset request. <br> Please click <a href="${resetLink}">here</a> to reset your password. The link will be valid for 1 hour.</p>`,
-        text: `We received a password reset request. Please visit the following link to reset your password: ${resetLink}    The link will be valid for 1 hour.`,
-      };
-
-      await sendBrevoEmail(
-        { name: user.fullName, email: user.email },
-        "Password Reset Request",
-        content
-      );
-
+      await sendPasswordResetEmail(user, resetToken);
       return {
         message:
           "Password reset email sent successfully. Please check your inbox.",
@@ -357,3 +363,71 @@ export class UserService {
     }
   }
 }
+
+export const sendPasswordResetEmail = async (
+  user: any,
+  resetToken: string
+): Promise<void> => {
+  const resetLink = `${BASE_URL}/reset-password?token=${resetToken}`;
+
+  const htmlContent = `
+    <div style="font-family: sans-serif; background-color: #f3f4f6; padding: 2rem; color: #111827;">
+      <div style="max-width: 32rem; margin: 0 auto; background-color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-radius: 0.5rem; padding: 1.5rem;">
+        <h2 style="font-size: 1.5rem; font-weight: bold; text-align: center; color: #2563eb;">
+          Password Reset Request
+        </h2>
+        <p style="color: #4b5563; text-align: center; margin-top: 0.5rem;">
+          You have requested to reset your password. Click the button below to set a new password.
+        </p>
+
+        <div style="margin-top: 1.5rem; text-align: center;">
+          <a href="${resetLink}" 
+             style="background-color: #2563eb; color: white; padding: 0.75rem 2rem; border-radius: 0.5rem; font-size: 1.125rem; font-weight: 600; text-decoration: none; display: inline-block;">
+            Reset Your Password
+          </a>
+        </div>
+
+        <div style="margin-top: 1.5rem; color: #4b5563;">
+          <p>If you didn't request a password reset, please ignore this email.</p>
+          <p style="margin-top: 0.5rem; text-align: center;">
+            For further assistance, contact our support team at 
+            <a href="mailto:info@trinitywaterproofing.com.np" style="color: #2563eb; font-weight: 600;">
+              info@trinitywaterproofing.com.np
+            </a>
+          </p>
+        </div>
+
+        <div style="margin-top: 2rem; border-top: 1px solid #e5e7eb; padding-top: 1rem; text-align: center; color: #6b7280; font-size: 0.875rem;">
+          <p>This link will expire in 1 hour for security reasons.</p>
+          <p style="margin-top: 0.5rem;">Thank you for using <strong>Trinity Waterproofing</strong>.</p>
+        </div>
+
+        <div style="margin-top: 1.5rem; font-size: 0.75rem; color: #6b7280; text-align: center;">
+          <p>This is an automated email, please do not reply.</p>
+          <p>&copy; ${new Date().getFullYear()} Trinity Waterproofing, All rights reserved.</p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const textContent = `
+    Password Reset Request
+
+    We received a password reset request for your account. 
+    Please visit the following link to reset your password: ${resetLink}
+
+    This link will expire in 1 hour for security reasons.
+
+    If you didn't request this reset, please ignore this email.
+
+    For assistance, contact: info@trinitywaterproofing.com.np
+
+    Thank you for using Trinity Waterproofing.
+  `;
+
+  await sendBrevoEmail(
+    { name: user.fullName, email: user.email },
+    "Password Reset Request",
+    { html: htmlContent, text: textContent }
+  );
+};

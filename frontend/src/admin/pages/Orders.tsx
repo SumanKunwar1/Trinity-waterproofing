@@ -610,7 +610,8 @@ function Orders() {
                 <ul className="list-disc pl-5">
                   {selectedOrder.products.map((product: any, index: number) => (
                     <li key={index}>
-                      {product.productId.name} (Qty: {product.quantity} x Price:{" "}
+                      {product.productId?.name} (Qty: {product.quantity} x
+                      Price:{" "}
                       {new Intl.NumberFormat("en-US", {
                         style: "currency",
                         currency: "NPR",

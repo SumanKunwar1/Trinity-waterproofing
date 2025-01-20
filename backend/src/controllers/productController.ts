@@ -73,7 +73,7 @@ export class ProductController {
   ): Promise<void> {
     try {
       const productId: string = req.params.productId;
-      const isFeatured: boolean = req.body;
+      const isFeatured: boolean = req.body.isFeatured;
       const result = await this.productService.editProductIsFeatured(
         productId,
         isFeatured
