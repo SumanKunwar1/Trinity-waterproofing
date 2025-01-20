@@ -34,7 +34,14 @@ const Help: React.FC = () => {
           <li>Click "Save" to create the new category.</li>
         </ol>
         <img
-          src="/placeholder.svg?height=300&width=500"
+          src="/assets/category1.png"
+          alt="Adding a category screenshot"
+          width={500}
+          height={300}
+          className="rounded-lg shadow-md"
+        />
+        <img
+          src="/assets/category2.png"
           alt="Adding a category screenshot"
           width={500}
           height={300}

@@ -18,17 +18,11 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({
 
   // If the user is not authenticated, redirect to the login page
   if (!isAuthenticated) {
-    console.log(
-      "is!authenticated is not correct",
-      Boolean(authToken),
-      authToken
-    );
     navigate("/");
   }
 
   // If specific roles are required, check if the user's role matches any of them
   if (requiredRoles && !requiredRoles.includes(userRole || "")) {
-    console.log("roles is not correct");
     navigate("/");
   }
 

@@ -9,14 +9,11 @@ export const socket: Socket = io(SOCKET_URL, {
 
 // Function to connect the socket and join the room based on user ID
 export const connectSocket = (userId: string) => {
-  console.log("Socket connection for user:", userId);
-
   // Connect to the socket server
   socket.connect();
 
   // Listen for successful connection
   socket.on("connect", () => {
-    console.log("Connected to WebSocket server!");
     socket.emit("joinRoom", { roomId: userId }); // Join room with user-specific ID
   });
 };
@@ -24,5 +21,4 @@ export const connectSocket = (userId: string) => {
 // Function to disconnect the socket
 export const disconnectSocket = () => {
   socket.disconnect();
-  console.log("Socket disconnected");
 };

@@ -28,7 +28,6 @@ const ResetPasswordForm: React.FC = () => {
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const resetToken = searchParams.get("token");
-    console.log("reset token in url", resetToken);
 
     if (!resetToken) {
       toast.error("Invalid or missing reset link.");
@@ -63,8 +62,6 @@ const ResetPasswordForm: React.FC = () => {
       setIsLoading(false);
     }
   };
-
-  console.log("User ID:", userId);
 
   const handleSubmit = async (
     values: { newPassword: string },

@@ -168,7 +168,6 @@ const Categories: React.FC = () => {
   ) => {
     try {
       const sanitizedValues = sanitizeData(values);
-      console.log("sanitized values", sanitizedValues);
       if (editingSubcategory) {
         await axios.patch(
           `/api/subcategory/${editingSubcategory._id}`,
