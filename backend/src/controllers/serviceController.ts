@@ -123,4 +123,68 @@ export class ServiceController {
       next(error);
     }
   }
+
+  // ------------------------ Section CRUD ------------------------
+  public async createSection(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const sectionData: IService = req.body;
+      const result = await this.serviceService.createSection(sectionData);
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  public async getSectionsForService(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const result = await this.serviceService.getSectionsForService();
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  public async editSection(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const sectionId = req.params.sectionId;
+      const updateData: Partial<IService> = req.body;
+      const result = await this.serviceService.editSection(
+        sectionId,
+        updateData
+      );
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  public async deleteSection(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const sectionId = req.params.sectionId;
+      const result = await this.serviceService.deleteSection(sectionId);
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
 }

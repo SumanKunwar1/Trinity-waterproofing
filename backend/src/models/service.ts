@@ -13,6 +13,7 @@ export interface IService extends Document {
   description: string;
   image: string;
   cards: ICard[];
+  sections: ICard[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,6 +24,14 @@ const serviceSchema: Schema = new Schema(
     description: { type: String, required: true },
     image: { type: String, required: true },
     cards: [
+      {
+        _id: { type: Schema.Types.ObjectId, auto: true },
+        title: { type: String, required: true },
+        description: { type: String, required: true },
+        image: { type: String, required: true },
+      },
+    ],
+    sections: [
       {
         _id: { type: Schema.Types.ObjectId, auto: true },
         title: { type: String, required: true },
