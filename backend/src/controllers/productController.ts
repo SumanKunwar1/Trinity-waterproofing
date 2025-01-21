@@ -130,6 +130,20 @@ export class ProductController {
     }
   }
 
+  public async getPopularProducts(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const result = await this.productService.getPopularProducts();
+      res.locals.responseData = result;
+      next();
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
   public async deleteProductById(
     req: Request,
     res: Response,

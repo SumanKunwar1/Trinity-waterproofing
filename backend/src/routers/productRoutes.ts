@@ -71,6 +71,12 @@ router.get(
 );
 
 router.get(
+  "/popular-products",
+  productController.getPopularProducts.bind(productController),
+  handleResponse
+);
+
+router.get(
   "/:productId",
   productController.getProductById.bind(productController),
   handleResponse
