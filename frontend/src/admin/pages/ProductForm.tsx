@@ -205,7 +205,7 @@ const ProductForm: React.FC = () => {
         productImage: null,
         image: [],
         features: featuresString || "",
-        brand: productData.brand || "",
+        brand: productData.brand?._id || "",
         colors: formattedColors,
         inStock: Number(productData.inStock) || 0,
         subCategory: productData.subCategory || "",

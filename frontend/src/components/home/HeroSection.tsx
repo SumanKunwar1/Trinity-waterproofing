@@ -29,7 +29,6 @@ const HeroSection: React.FC = () => {
       const data = await response.json();
       setSliders(data);
     } catch (error) {
-      // console.error("Error fetching sliders:", error);
       toast.info("No sliders available at the moment");
     } finally {
       setIsLoading(false);
@@ -47,17 +46,11 @@ const HeroSection: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="relative z-10 text-center"
+        className="relative text-center px-4"
       >
         <h1 className="text-4xl md:text-6xl font-bold mb-4">{item.title}</h1>
         <p className="text-xl md:text-2xl mb-8">{item.description}</p>
-        <Link
-          to="/products"
-          className="inline-block"
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-        >
+        <Link to="/products" className="inline-block">
           <Button
             size="lg"
             className="cursor-pointer hover:bg-secondary transition-colors duration-300"
@@ -68,9 +61,19 @@ const HeroSection: React.FC = () => {
       </motion.div>
     );
 
-    if (item.mediaType === "video") {
-      return (
-        <div key={index} className="relative h-[60vh] md:h-[90vh]">
+    return (
+      <div
+        key={index}
+        className="relative w-full"
+        style={{
+          aspectRatio: "16 / 9",
+          backgroundImage:
+            item.mediaType === "image" ? `url(${item.media})` : "none",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        {item.mediaType === "video" && (
           <video
             className="absolute top-0 left-0 w-full h-full object-cover"
             autoPlay
@@ -81,19 +84,7 @@ const HeroSection: React.FC = () => {
             <source src={item.media} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
-          <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center text-white">
-            {content}
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div
-        key={index}
-        className="relative h-[70vh] md:h-[90vh] bg-cover bg-center"
-        style={{ backgroundImage: `url(${item.media})` }}
-      >
+        )}
         <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center text-white">
           {content}
         </div>
@@ -111,7 +102,13 @@ const HeroSection: React.FC = () => {
 
   return (
     <section className="relative">
-      <Carousel items={carouselItems} autoPlay interval={5000} />
+      {sliders.length > 0 ? (
+        <Carousel items={carouselItems} autoPlay interval={5000} />
+      ) : (
+        <div className="flex justify-center items-center h-[90vh] text-white text-2xl">
+          No sliders available
+        </div>
+      )}
     </section>
   );
 };

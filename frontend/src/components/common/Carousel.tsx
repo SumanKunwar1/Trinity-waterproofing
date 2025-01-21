@@ -1,4 +1,10 @@
-import { useState, useEffect, ReactNode, useRef, TouchEvent } from "react";
+import {
+  useState,
+  useEffect,
+  type ReactNode,
+  useRef,
+  type TouchEvent,
+} from "react";
 import { FaChevronLeft, FaChevronRight, FaPause, FaPlay } from "react-icons/fa";
 import { cn } from "../../lib/utils";
 
@@ -119,7 +125,10 @@ const Carousel: React.FC<CarouselProps> = ({
 
   return (
     <div
-      className={cn("relative overflow-hidden group touch-pan-y", className)}
+      className={cn(
+        "z-20 relative overflow-hidden group touch-pan-y",
+        className
+      )}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
@@ -151,7 +160,7 @@ const Carousel: React.FC<CarouselProps> = ({
       </div>
 
       {/* Controls overlay - appears on hover */}
-      <div className="absolute inset-0 flex items-center justify-between p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="absolute z-20 inset-x-0 top-1/2 transform -translate-y-1/2 flex items-center justify-between p-4 opacity-0 group-hover:opacity-100 transition-opacity">
         {/* Navigation buttons */}
         <button
           onClick={handlePrev}
@@ -171,7 +180,7 @@ const Carousel: React.FC<CarouselProps> = ({
       </div>
 
       {/* Bottom controls */}
-      <div className="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-4">
+      <div className="absolute z-20 bottom-4 left-0 right-0 flex justify-center items-center gap-4">
         {/* Play/Pause button */}
         <button
           onClick={handlePlayPause}

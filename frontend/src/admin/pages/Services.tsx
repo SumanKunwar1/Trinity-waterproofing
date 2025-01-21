@@ -26,22 +26,8 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { MoreVertical, Plus } from "lucide-react";
 import axios from "axios";
-// import * as yup from "yup";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
-
-// // Validation Schema
-// const serviceSchema = yup.object().shape({
-//   title: yup.string().required("Title is required"),
-//   description: yup.string().required("Description is required"),
-//   image: yup.mixed().nullable().optional(),
-// });
-
-// const cardSchema = yup.object().shape({
-//   title: yup.string().required("Title is required"),
-//   description: yup.string().required("Description is required"),
-//   image: yup.mixed().nullable().optional(),
-// });
 
 // Interfaces
 interface IService {
@@ -58,49 +44,26 @@ interface ICard {
   image: string | File | null | undefined;
 }
 
+interface ISection {
+  _id?: string;
+  title: string;
+  description: string;
+  image: string | File | null | undefined;
+}
+
 const authToken = localStorage.getItem("authToken");
 
 // Component
 const ServicePage: React.FC = () => {
   const [service, setService] = useState<IService | null>(null);
   const [cards, setCards] = useState<ICard[]>([]);
+  const [sections, setSections] = useState<ISection[]>([]);
   const [isAddCardDialogOpen, setIsAddCardDialogOpen] = useState(false);
   const [isEditServiceDialogOpen, setIsEditServiceDialogOpen] = useState(false);
+  const [isAddSectionDialogOpen, setIsAddSectionDialogOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<ICard | null>(null);
+  const [editingSection, setEditingSection] = useState<ISection | null>(null);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-
-  // Manual validation function
-  // const validateServiceForm = (data: IService) => {
-  //   const errors: { [key: string]: string } = {};
-
-  //   // Manual validation
-  //   if (!data.title) errors.title = "Title is required";
-  //   if (!data.description) errors.description = "Description is required";
-  //   if (
-  //     data.image &&
-  //     !(data.image instanceof File || typeof data.image === "string")
-  //   ) {
-  //     errors.image = "Invalid image format";
-  //   }
-
-  //   return errors;
-  // };
-
-  // const validateCardForm = (data: ICard) => {
-  //   const errors: { [key: string]: string } = {};
-
-  //   // Manual validation
-  //   if (!data.title) errors.title = "Title is required";
-  //   if (!data.description) errors.description = "Description is required";
-  //   if (
-  //     data.image &&
-  //     !(data.image instanceof File || typeof data.image === "string")
-  //   ) {
-  //     errors.image = "Invalid image format";
-  //   }
-
-  //   return errors;
-  // };
 
   const {
     register,
@@ -120,12 +83,23 @@ const ServicePage: React.FC = () => {
     watch: watchCard,
   } = useForm<ICard>();
 
+  const {
+    register: registerSection,
+    handleSubmit: handleSubmitSection,
+    formState: { errors: sectionErrors },
+    reset: resetSection,
+    setValue: setSectionValue,
+    watch: watchSection,
+  } = useForm<ISection>();
+
   const watchServiceImage = watch("image");
   const watchCardImage = watchCard("image");
+  const watchSectionImage = watchSection("image");
 
   useEffect(() => {
     fetchService();
     fetchCards();
+    fetchSections();
   }, []);
 
   const fetchService = async () => {
@@ -138,7 +112,6 @@ const ServicePage: React.FC = () => {
         reset(response.data);
       }
     } catch (error) {
-      // console.error("Error fetching service:", error);
       toast.error("Failed to load service");
     }
   };
@@ -150,8 +123,18 @@ const ServicePage: React.FC = () => {
       });
       setCards(response.data || []);
     } catch (error) {
-      // console.error("Error fetching cards:", error);
       toast.error("Failed to load cards");
+    }
+  };
+
+  const fetchSections = async () => {
+    try {
+      const response = await axios.get("/api/service/sections", {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      setSections(response.data || []);
+    } catch (error) {
+      toast.error("Failed to load sections");
     }
   };
 
@@ -182,7 +165,6 @@ const ServicePage: React.FC = () => {
       fetchService();
       setIsEditServiceDialogOpen(false);
     } catch (error) {
-      // console.error("Error submitting service:", error);
       toast.error("Failed to submit service");
     }
   };
@@ -204,7 +186,6 @@ const ServicePage: React.FC = () => {
       setIsAddCardDialogOpen(false);
       fetchCards();
     } catch (error) {
-      // console.error("Error adding card:", error);
       toast.error("Failed to add card");
     }
   };
@@ -227,7 +208,6 @@ const ServicePage: React.FC = () => {
         setEditingCard(null);
         fetchCards();
       } catch (error) {
-        // console.error("Error updating card:", error);
         toast.error("Failed to update card");
       }
     }
@@ -241,21 +221,86 @@ const ServicePage: React.FC = () => {
       toast.success("Card deleted successfully");
       fetchCards();
     } catch (error) {
-      // console.error("Error deleting card:", error);
       toast.error("Failed to delete card");
+    }
+  };
+
+  const onAddSection = async (data: ISection) => {
+    try {
+      const formData = new FormData();
+      if (data.image instanceof File) formData.append("image", data.image);
+      formData.append("title", data.title);
+      formData.append("description", data.description);
+
+      await axios.post(`/api/service/sections`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+      toast.success("Section added successfully");
+      setIsAddSectionDialogOpen(false);
+      fetchSections();
+    } catch (error) {
+      toast.error("Failed to add section");
+    }
+  };
+
+  const onEditSection = async (data: ISection) => {
+    if (editingSection) {
+      try {
+        const formData = new FormData();
+        if (data.image instanceof File) formData.append("image", data.image);
+        formData.append("title", data.title);
+        formData.append("description", data.description);
+
+        await axios.patch(
+          `/api/service/sections/${editingSection._id}`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${authToken}`,
+            },
+          }
+        );
+        toast.success("Section updated successfully");
+        setEditingSection(null);
+        fetchSections();
+      } catch (error) {
+        toast.error("Failed to update section");
+      }
+    }
+  };
+
+  const onDeleteSection = async (sectionId: string) => {
+    try {
+      await axios.delete(`/api/service/sections/${sectionId}`, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      toast.success("Section deleted successfully");
+      fetchSections();
+    } catch (error) {
+      toast.error("Failed to delete section");
     }
   };
 
   const handleImageUpload = (
     e: React.ChangeEvent<HTMLInputElement>,
-    isCard: boolean
+    type: "service" | "card" | "section"
   ) => {
     if (e.target.files?.[0]) {
       const file = e.target.files[0];
-      if (isCard) {
-        setCardValue("image", file);
-      } else {
-        setValue("image", file);
+      switch (type) {
+        case "service":
+          setValue("image", file);
+          break;
+        case "card":
+          setCardValue("image", file);
+          break;
+        case "section":
+          setSectionValue("image", file);
+          break;
       }
     }
   };
@@ -318,7 +363,7 @@ const ServicePage: React.FC = () => {
                   <Input
                     type="file"
                     accept="image/*"
-                    onChange={(e) => handleImageUpload(e, false)}
+                    onChange={(e) => handleImageUpload(e, "service")}
                     className="mt-2"
                   />
                   {errors.image && (
@@ -342,6 +387,56 @@ const ServicePage: React.FC = () => {
             </Card>
           )}
 
+          <h2 className="text-xl font-bold mb-4">Sections</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+            {sections.map((section) => (
+              <Card key={section._id}>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>{section.title}</CardTitle>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger>
+                        <MoreVertical className="h-5 w-5" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem
+                          onClick={() => setEditingSection(section)}
+                        >
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            section._id && onDeleteSection(section._id)
+                          }
+                        >
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {section.image && typeof section.image === "string" && (
+                    <img
+                      src={section.image || "/placeholder.svg"}
+                      alt={section.title}
+                      className="w-full h-32 object-cover rounded-md mb-2"
+                    />
+                  )}
+                  <p>{section.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <Button
+            onClick={() => setIsAddSectionDialogOpen(true)}
+            className="mb-8"
+          >
+            <Plus className="mr-2 h-4 w-4" /> Add Section
+          </Button>
+
+          <h2 className="text-xl font-bold mb-4">Cards</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {cards.map((card) => (
               <Card key={card._id}>
@@ -410,7 +505,7 @@ const ServicePage: React.FC = () => {
                 <Input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => handleImageUpload(e, false)}
+                  onChange={(e) => handleImageUpload(e, "service")}
                   className="mt-2"
                 />
                 {errors.image && (
@@ -481,7 +576,7 @@ const ServicePage: React.FC = () => {
                 <Input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => handleImageUpload(e, true)}
+                  onChange={(e) => handleImageUpload(e, "card")}
                   className="mt-2"
                 />
                 {cardErrors.image && (
@@ -504,6 +599,81 @@ const ServicePage: React.FC = () => {
 
                 <Button type="submit">
                   {editingCard ? "Update Card" : "Add Card"}
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog
+            open={isAddSectionDialogOpen || !!editingSection}
+            onOpenChange={(open) => {
+              setIsAddSectionDialogOpen(open);
+              if (!open) {
+                setEditingSection(null);
+                resetSection();
+              }
+            }}
+          >
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>
+                  {editingSection ? "Edit Section" : "Add New Section"}
+                </DialogTitle>
+              </DialogHeader>
+              <form
+                onSubmit={handleSubmitSection(
+                  editingSection ? onEditSection : onAddSection
+                )}
+                className="space-y-4"
+              >
+                <Input
+                  {...registerSection("title")}
+                  placeholder="Title"
+                  defaultValue={editingSection?.title}
+                />
+                {sectionErrors.title && (
+                  <span className="text-red-500">
+                    {sectionErrors.title.message}
+                  </span>
+                )}
+
+                <Textarea
+                  {...registerSection("description")}
+                  placeholder="Description"
+                  defaultValue={editingSection?.description}
+                />
+                {sectionErrors.description && (
+                  <span className="text-red-500">
+                    {sectionErrors.description.message}
+                  </span>
+                )}
+
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e, "section")}
+                  className="mt-2"
+                />
+                {sectionErrors.image && (
+                  <span className="text-red-500">
+                    {sectionErrors.image.message}
+                  </span>
+                )}
+
+                {watchSectionImage && (
+                  <img
+                    src={
+                      watchSectionImage instanceof File
+                        ? URL.createObjectURL(watchSectionImage)
+                        : watchSectionImage
+                    }
+                    alt="Section preview"
+                    className="w-full h-32 object-cover rounded-md mt-2"
+                  />
+                )}
+
+                <Button type="submit">
+                  {editingSection ? "Update Section" : "Add Section"}
                 </Button>
               </form>
             </DialogContent>
