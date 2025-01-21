@@ -3,6 +3,7 @@ import { UserController } from "../controllers";
 import {
   handleResponse,
   validateUser,
+  validateEditUser,
   validateUserLogin,
   handleError,
   isAuthorized,
@@ -40,6 +41,7 @@ router.patch(
   "/edit/:userId",
   isAuthenticated,
   isAuthorizedUser,
+  validateEditUser,
   userController.editUser.bind(userController),
   handleResponse
 );

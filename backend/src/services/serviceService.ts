@@ -168,4 +168,108 @@ export class ServiceService {
       throw error;
     }
   }
+
+  public async createSection(sectionData: any) {
+    try {
+      const service = await Service.findOne();
+      if (!service) {
+        throw httpMessages.NOT_FOUND("Service");
+      }
+
+      service.sections.push(sectionData);
+      await service.save();
+      return service.sections;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // Get all sections for a service
+  public async getSectionsForService() {
+    try {
+      const service = await Service.findOne();
+      if (!service) {
+        throw httpMessages.NOT_FOUND("Service");
+      }
+      const formattedSections = service.sections.map((section) => ({
+        _id: section._id,
+        title: section.title,
+        description: section.description,
+        image: section.image ? `/api/image/${section.image}` : null, // Format image URL
+      }));
+      return formattedSections;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async editSection(sectionId: string, updateData: Partial<IService>) {
+    try {
+      const { title, description, image } = updateData;
+      const service = await Service.findOne();
+      if (!service) {
+        throw httpMessages.NOT_FOUND("Service");
+      }
+
+      const sectionIndex = service.sections.findIndex(
+        (section) => section._id.toString() === sectionId
+      );
+      if (sectionIndex === -1) {
+        throw httpMessages.NOT_FOUND("Section");
+      }
+
+      const section = service.sections[sectionIndex];
+
+      if (image && image !== "") {
+        const filesToDelete: string[] = [];
+        if (section.image && section.image !== image) {
+          filesToDelete.push(section.image);
+        }
+
+        if (filesToDelete.length > 0) {
+          await deleteImages(filesToDelete);
+        }
+        section.image = image;
+      }
+
+      if (title) section.title = title;
+      if (description) section.description = description;
+
+      await service.save();
+
+      return section;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // Delete a specific section
+  public async deleteSection(sectionId: string) {
+    try {
+      const service = await Service.findOne();
+      if (!service) {
+        throw httpMessages.NOT_FOUND("Service");
+      }
+
+      const sectionIndex = service.sections.findIndex(
+        (section) => section._id.toString() === sectionId
+      );
+      if (sectionIndex === -1) {
+        throw httpMessages.NOT_FOUND("Section");
+      }
+
+      const section = service.sections[sectionIndex];
+      service.sections.splice(sectionIndex, 1);
+
+      await service.save();
+
+      if (section.image) {
+        await deleteImages([section.image]);
+      }
+
+      return { message: "Section deleted successfully" };
+    } catch (error) {
+      throw error;
+    }
+  }
 }

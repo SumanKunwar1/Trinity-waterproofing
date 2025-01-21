@@ -86,6 +86,46 @@ router.delete(
   handleResponse
 );
 
+// ------------------------ Section Routes ------------------------
+
+router.post(
+  "/sections",
+  isAuthenticated,
+  isAuthorized("admin"),
+  imageUploadMiddleware,
+  appendImageDataToBody,
+  validateService,
+  compressUploadedImages,
+  serviceController.createSection.bind(serviceController),
+  handleResponse
+);
+
+router.get(
+  "/sections",
+  serviceController.getSectionsForService.bind(serviceController),
+  handleResponse
+);
+
+router.patch(
+  "/sections/:sectionId",
+  isAuthenticated,
+  isAuthorized("admin"),
+  imageUploadMiddleware,
+  appendImageDataToBody,
+  validateEditService,
+  compressUploadedImages,
+  serviceController.editSection.bind(serviceController),
+  handleResponse
+);
+
+router.delete(
+  "/sections/:sectionId",
+  isAuthenticated,
+  isAuthorized("admin"),
+  serviceController.deleteSection.bind(serviceController),
+  handleResponse
+);
+
 router.use(handleError);
 
 export default router;

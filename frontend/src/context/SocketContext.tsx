@@ -59,9 +59,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   }, []); // Empty dependency array to ensure the effect runs only once on mount
   const playNotificationSound = () => {
     if (audioRef.current) {
-      audioRef.current.play().catch((error: Error) => {
-        console.error("Error playing notification sound:", error);
-      });
+      audioRef.current.play().catch(() => {});
     }
   };
 

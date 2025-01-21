@@ -42,7 +42,6 @@ const Login: React.FC = () => {
 
           // console.log(userRole);
 
-          console.log("Store token and role in localStorage");
           localStorage.setItem("authToken", data.token);
           localStorage.setItem("userRole", userRole);
           localStorage.setItem("user", JSON.stringify(data.user));

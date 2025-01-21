@@ -20,6 +20,7 @@ export { handleResponse } from "./handleResponse";
 export { connectToDatabase } from "./databaseConnection";
 export { httpMessages } from "./HttpMessage";
 export { validateUser } from "./validateUser";
+export { validateEditUser } from "./validateEditUser";
 export { validateAddressBook } from "./validateAddressBook";
 export { isAuthenticated } from "./isAuthenticated";
 export { isAuthorized } from "./isAuthorized";
