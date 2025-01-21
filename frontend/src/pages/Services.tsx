@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Card, CardContent } from "../components/ui/card";
+import { Card, CardContent, CardHeader } from "../components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,13 @@ import { toast } from "react-hot-toast";
 import Loader from "../components/common/Loader";
 
 interface ICard {
+  _id?: string;
+  title: string;
+  description: string;
+  image: string;
+}
+
+interface ISection {
   _id?: string;
   title: string;
   description: string;
@@ -41,7 +48,7 @@ const ServiceCard: React.FC<{ card: ICard }> = ({ card }) => {
             <CardContent className="p-6 space-y-4">
               <div className="aspect-video w-full overflow-hidden rounded-lg">
                 <img
-                  src={card.image}
+                  src={card.image || "/placeholder.svg"}
                   alt={card.title}
                   className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-300"
                 />
@@ -61,7 +68,7 @@ const ServiceCard: React.FC<{ card: ICard }> = ({ card }) => {
         <div className="mt-4 space-y-6">
           <div className="aspect-video w-full overflow-hidden rounded-lg">
             <img
-              src={card.image}
+              src={card.image || "/placeholder.svg"}
               alt={card.title}
               className="w-full h-full object-cover"
             />
@@ -88,6 +95,7 @@ const FeatureGrid: React.FC<{ features: ICard[] }> = ({ features }) => {
 const ServicesPage: React.FC = () => {
   const [service, setService] = useState<IService | null>(null);
   const [cards, setCards] = useState<ICard[]>([]);
+  const [sections, setSections] = useState<ISection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const authToken = localStorage.getItem("authToken");
 
@@ -116,9 +124,21 @@ const ServicesPage: React.FC = () => {
     }
   };
 
+  const fetchSections = async () => {
+    try {
+      const response = await axios.get("/api/service/sections", {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      setSections(response.data || []);
+    } catch (error) {
+      toast.error("Failed to load sections");
+    }
+  };
+
   useEffect(() => {
     fetchService();
     fetchCards();
+    fetchSections();
   }, []);
 
   if (isLoading) {
@@ -157,7 +177,7 @@ const ServicesPage: React.FC = () => {
                   <div className="w-full md:w-1/2">
                     <div className="aspect-video rounded-lg overflow-hidden">
                       <img
-                        src={service.image}
+                        src={service.image || "/placeholder.svg"}
                         alt={service.title}
                         className="w-full h-full object-cover"
                       />
@@ -183,6 +203,35 @@ const ServicesPage: React.FC = () => {
             >
               <FeatureGrid features={cards} />
             </motion.div>
+            {sections.map((section, index) => (
+              <Card key={section._id || index} className="my-12">
+                <CardHeader className=" flex justify-center text-center mx-auto text-2xl font-semibold mb-4">
+                  {section.title}
+                </CardHeader>
+                <CardContent className="p-8">
+                  <div
+                    className={`flex flex-col ${
+                      index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
+                    } gap-8 items-center`}
+                  >
+                    <div className="w-full md:w-1/2">
+                      <p className="text-gray-600 dark:text-gray-400">
+                        {section.description}
+                      </p>
+                    </div>
+                    <div className="w-full md:w-1/2">
+                      <div className="aspect-video rounded-lg overflow-hidden">
+                        <img
+                          src={section.image || "/placeholder.svg"}
+                          alt={section.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </motion.section>
         </motion.div>
       </main>

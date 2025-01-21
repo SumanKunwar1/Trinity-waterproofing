@@ -13,7 +13,7 @@ const ProductDescription: React.FC<ProductDescriptionProps> = ({
     <div className="mt-8">
       <h2 className="text-xl font-semibold mb-4">Product Details</h2>
       <div
-        className="text-gray-600"
+        className="text-gray-800 prose max-w-none"
         dangerouslySetInnerHTML={{ __html: features }}
       />
       {pdfUrl && ( // Check if pdfUrl exists before rendering
