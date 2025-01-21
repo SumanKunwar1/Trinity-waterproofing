@@ -1,4 +1,5 @@
 // validateEditProduct.ts
+//we are allowing the pdfurl to be empty  but since from teh frontend the data will be empty string we allow that...
 import Joi from "joi";
 import { Request, Response, NextFunction } from "express";
 import { httpMessages } from "../middlewares";
@@ -41,7 +42,7 @@ const schema = Joi.object({
   features: Joi.string().optional().messages({
     "string.base": "Features must be a string",
   }),
-  pdfUrl: Joi.string().optional().messages({
+  pdfUrl: Joi.string().optional().allow("").messages({
     "string.base": "Features must be a string",
   }),
   brand: Joi.string().optional().messages({
@@ -71,9 +72,6 @@ const validateEditProduct = (
   res: Response,
   next: NextFunction
 ): void => {
-  if (req.body.pdfUrl === "") {
-    delete req.body.pdfUrl;
-  }
   const { error } = schema.validate(req.body, { abortEarly: false });
 
   if (error) {

@@ -9,6 +9,7 @@ const validateProduct = (
   next: NextFunction
 ): void => {
   if (req.body.pdfUrl === "") {
+    //since if the pdfurl is not added...we get the empty string which is why we delete it before the validation
     delete req.body.pdfUrl;
   }
   const colorSchema = Joi.object({
