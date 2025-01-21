@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import { toast } from "../../hooks/use-toast";
+// import { toast } from "../../hooks/use-toast";
 import axios from "axios";
 import ProductCard from "./ProductCard";
 import { IProduct } from "../../types/product";
@@ -55,11 +55,11 @@ const FeaturedProductsCarousel = () => {
         const errorMessage =
           err.response?.data?.error || "Failed to fetch featured products.";
         setError(errorMessage);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: errorMessage,
-        });
+        // toast({
+        //   variant: "destructive",
+        //   title: "Error",
+        //   description: errorMessage,
+        // });
       } finally {
         setLoading(false);
       }

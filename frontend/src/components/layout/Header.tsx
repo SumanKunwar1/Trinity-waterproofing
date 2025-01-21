@@ -209,7 +209,7 @@ const Header: React.FC = () => {
     if (!name || name.trim() === "") return "N/A";
     return name
       .split(" ")
-      .map((word) => word[0].toUpperCase())
+      .map((word) => word[0])
       .join("")
       .substr(0, 2);
   };

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
@@ -9,16 +9,15 @@ import Button from "../components/common/Button";
 
 // Validation schema for resetting the password
 const resetPasswordSchema = Yup.object().shape({
-  newPassword: Yup.string()
+  password: Yup.string()
     .min(6, "Password must be at least 6 characters")
     .required("New password is required"),
   confirmPassword: Yup.string()
-    .oneOf([Yup.ref("newPassword")], "Passwords must match")
+    .oneOf([Yup.ref("password")], "Passwords must match")
     .required("Confirm password is required"),
 });
 
 const ResetPasswordForm: React.FC = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   const [token, setToken] = useState<string>("");
   const [userId, setUserId] = useState<string | null>(null);
@@ -31,13 +30,12 @@ const ResetPasswordForm: React.FC = () => {
 
     if (!resetToken) {
       toast.error("Invalid or missing reset link.");
-      navigate("/login");
       return;
     }
 
     // Verify and decode token
     verifyToken(resetToken);
-  }, [location, navigate]);
+  }, [location]);
 
   const verifyToken = (resetToken: string) => {
     try {
@@ -50,21 +48,19 @@ const ResetPasswordForm: React.FC = () => {
           toast.success("Valid reset link. Please set your new password.");
         } else {
           toast.error("Reset link has expired.");
-          navigate("/login");
         }
       } else {
         throw new Error("Invalid token");
       }
     } catch (error) {
       toast.error("Invalid or expired reset link.");
-      navigate("/login");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleSubmit = async (
-    values: { newPassword: string },
+    values: { password: string },
     { setSubmitting }: any
   ) => {
     if (!userId) {
@@ -80,7 +76,7 @@ const ResetPasswordForm: React.FC = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          newPassword: values.newPassword,
+          password: values.password,
         }),
       });
 
@@ -88,7 +84,6 @@ const ResetPasswordForm: React.FC = () => {
 
       if (response.ok) {
         toast.success("Password reset successfully!");
-        navigate("/login");
       } else {
         toast.error(
           data?.message || "Failed to reset password. Please try again."
@@ -137,7 +132,7 @@ const ResetPasswordForm: React.FC = () => {
                 Please enter your new password below.
               </p>
               <Formik
-                initialValues={{ newPassword: "", confirmPassword: "" }}
+                initialValues={{ password: "", confirmPassword: "" }}
                 validationSchema={resetPasswordSchema}
                 onSubmit={handleSubmit}
               >
@@ -145,7 +140,7 @@ const ResetPasswordForm: React.FC = () => {
                   <Form>
                     <Input
                       label="New Password"
-                      name="newPassword"
+                      name="password"
                       type="password"
                     />
                     <Input

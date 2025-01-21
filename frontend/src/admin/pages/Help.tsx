@@ -28,20 +28,27 @@ const Help: React.FC = () => {
         <h3 className="text-lg font-semibold">Adding a Category</h3>
         <ol className="list-decimal list-inside space-y-2">
           <li>Navigate to the Categories section in your admin panel.</li>
+          <img
+            src="/assets/category1.png"
+            alt="Adding a category screenshot"
+            width={500}
+            height={300}
+            className="rounded-lg shadow-md"
+          />
           <li>Click on the "Add New Category" button.</li>
+
           <li>Enter the category name and description.</li>
-          <li>Upload a category image if required.</li>
-          <li>Click "Save" to create the new category.</li>
+          <img
+            src="/assets/category2.png"
+            alt="Adding a category screenshot"
+            width={500}
+            height={300}
+            className="rounded-lg shadow-md"
+          />
+          <li>Click "Add Category" button to create the new category.</li>
         </ol>
         <img
-          src="/assets/category1.png"
-          alt="Adding a category screenshot"
-          width={500}
-          height={300}
-          className="rounded-lg shadow-md"
-        />
-        <img
-          src="/assets/category2.png"
+          src="/assets/category4.png"
           alt="Adding a category screenshot"
           width={500}
           height={300}
@@ -54,14 +61,27 @@ const Help: React.FC = () => {
         <h3 className="text-lg font-semibold">Adding a Subcategory</h3>
         <ol className="list-decimal list-inside space-y-2">
           <li>Go to the Subcategories section in your admin panel.</li>
+          <img
+            src="/assets/category1.png"
+            alt="Adding a subcategory screenshot"
+            width={500}
+            height={300}
+            className="rounded-lg shadow-md"
+          />
           <li>Click on "Add New Subcategory".</li>
-          <li>Select the parent category from the dropdown.</li>
           <li>Enter the subcategory name and description.</li>
-          <li>Upload a subcategory image if needed.</li>
+          <li>Select the parent category from the dropdown.</li>
+          <img
+            src="/assets/category3.png"
+            alt="Adding a subcategory screenshot"
+            width={500}
+            height={300}
+            className="rounded-lg shadow-md"
+          />
           <li>Click "Save" to create the new subcategory.</li>
         </ol>
         <img
-          src="/placeholder.svg?height=300&width=500"
+          src="/assets/category5.png"
           alt="Adding a subcategory screenshot"
           width={500}
           height={300}
@@ -73,15 +93,29 @@ const Help: React.FC = () => {
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Adding a Brand</h3>
         <ol className="list-decimal list-inside space-y-2">
-          <li>Access the Brands section in your admin dashboard.</li>
+          <li>Go to the Brands section in your admin panel.</li>
+          <img
+            src="/assets/brand1.png"
+            alt="Adding a brand screenshot"
+            width={500}
+            height={300}
+            className="rounded-lg shadow-md"
+          />
           <li>Click on the "Add New Brand" button.</li>
           <li>Enter the brand name, description, and website URL.</li>
           <li>Upload the brand logo.</li>
+          <img
+            src="/assets/brand2.png"
+            alt="Adding a brand screenshot"
+            width={500}
+            height={300}
+            className="rounded-lg shadow-md"
+          />
           <li>Specify any associated categories or products.</li>
           <li>Click "Save" to add the new brand.</li>
         </ol>
         <img
-          src="/placeholder.svg?height=300&width=500"
+          src="/assets/brand3.png"
           alt="Adding a brand screenshot"
           width={500}
           height={300}
@@ -94,15 +128,39 @@ const Help: React.FC = () => {
         <h3 className="text-lg font-semibold">Adding a Product</h3>
         <ol className="list-decimal list-inside space-y-2">
           <li>Go to the Products section in your admin panel.</li>
+          <img
+            src="/assets/product1.png"
+            alt="Adding a product screenshot"
+            width={500}
+            height={300}
+            className="rounded-lg shadow-md"
+          />
           <li>Click on "Add New Product".</li>
           <li>Fill in the product details (name, description, price, etc.).</li>
           <li>Select the category, subcategory, and brand.</li>
           <li>Upload product images.</li>
           <li>Set inventory levels and any variants.</li>
-          <li>Click "Publish" to add the product to your store.</li>
+          <img
+            src="/assets/product2.png"
+            alt="Adding a product screenshot"
+            width={500}
+            height={300}
+            className="rounded-lg shadow-md"
+          />
+          <img
+            src="/assets/product3.png"
+            alt="Adding a product screenshot"
+            width={500}
+            height={300}
+            className="rounded-lg shadow-md"
+          />
+          <li>Click "Create Product" to add the product to your store.</li>
+          <li>
+            Click on switch button to make your product featured product or not.
+          </li>
         </ol>
         <img
-          src="/placeholder.svg?height=300&width=500"
+          src="/assets/product4.png"
           alt="Adding a product screenshot"
           width={500}
           height={300}
@@ -124,7 +182,7 @@ const Help: React.FC = () => {
           <li>Review your changes and click "Save" or "Update".</li>
         </ol>
         <img
-          src="/placeholder.svg?height=300&width=500"
+          src="/assets/brand3.png"
           alt="Editing items screenshot"
           width={500}
           height={300}

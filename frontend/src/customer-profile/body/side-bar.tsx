@@ -29,7 +29,7 @@ interface User {
 const getInitials = (name: string) => {
   return name
     .split(" ")
-    .map((word) => word[0].toUpperCase())
+    .map((word) => word[0])
     .join("")
     .substr(0, 2);
 };

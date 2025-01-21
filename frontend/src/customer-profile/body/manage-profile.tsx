@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion } from "framer-motion";
 import axios from "axios";
@@ -50,7 +50,7 @@ const getInitials = (name?: string) => {
   }
   return name
     .split(" ")
-    .map((word) => word[0].toUpperCase())
+    .map((word) => word[0])
     .join("")
     .substr(0, 2);
 };
@@ -445,8 +445,6 @@ export const ManageProfile = () => {
           </DialogContent>
         </Dialog>
       </motion.div>
-
-      <ToastContainer position="bottom-right" />
     </motion.div>
   );
 };
