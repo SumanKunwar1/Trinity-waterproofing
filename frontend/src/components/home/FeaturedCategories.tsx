@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet-async";
 import { Category } from "../../types/category";
@@ -7,9 +8,10 @@ import { Button } from "../ui/button";
 
 const FeaturedCategories: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [visibleCount, setVisibleCount] = useState<number>(4); // Initially show 4 items
+  const [visibleCount, setVisibleCount] = useState<number>(4);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -39,20 +41,19 @@ const FeaturedCategories: React.FC = () => {
   }
 
   const handleNavigateCategory = (categoryId: string) => {
-    window.location.href = `/products/${categoryId}`;
+    navigate(`/products?category=${categoryId}`);
   };
 
   const handleViewMore = () => {
-    setVisibleCount(categories.length); // Show all items
+    setVisibleCount(categories.length);
   };
 
   const currentMeta = categories.map((category) => category.name).join(", ");
 
   return (
     <section className="py-20 bg-white">
-      {/* Dynamic Meta Tags */}
       <Helmet>
-        <title>Explore Waterproofing Categories</title>
+        <title>Trinity Waterproofing</title>
         <meta
           name="description"
           content={`Discover waterproofing solutions from categories like ${currentMeta}. Protect your property with the best products and services.`}

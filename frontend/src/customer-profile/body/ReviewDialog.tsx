@@ -1,3 +1,4 @@
+import type React from "react";
 import { useState, useEffect } from "react";
 import { DialogHeader, DialogTitle } from "../../components/ui/dialog";
 import { Button } from "../../components/ui/button";
@@ -39,11 +40,16 @@ export const ReviewDialog: React.FC<ReviewDialogProps> = ({
       return;
     }
     if (!content) {
-      toast.error("Content cannot be empty.");
+      toast.error("Please provide a review content before submitting.");
       return;
     }
 
-    await onSubmit(rating, content, images || undefined);
+    try {
+      await onSubmit(rating, content, images || undefined);
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      toast.error("Failed to submit review");
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,7 +71,6 @@ export const ReviewDialog: React.FC<ReviewDialogProps> = ({
         <DialogTitle>Write a Review for {productName}</DialogTitle>
       </DialogHeader>
       <div className="mt-4 space-y-4">
-        {/* Rating Stars */}
         <div className="flex items-center">
           {[1, 2, 3, 4, 5].map((star) => (
             <FaStar
@@ -78,7 +83,6 @@ export const ReviewDialog: React.FC<ReviewDialogProps> = ({
           ))}
         </div>
 
-        {/* Review Content */}
         <Textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
@@ -86,7 +90,6 @@ export const ReviewDialog: React.FC<ReviewDialogProps> = ({
           className="w-full h-32"
         />
 
-        {/* Image Upload */}
         <div>
           <Label htmlFor="image-upload" className="block mb-2">
             Add images (optional)
@@ -107,7 +110,6 @@ export const ReviewDialog: React.FC<ReviewDialogProps> = ({
             <FaUpload className="mr-2" /> Upload Images
           </Button>
 
-          {/* Show selected images */}
           {images && images.length > 0 && (
             <div className="mt-4 space-x-4">
               {images.map((img, index) => (
@@ -131,10 +133,11 @@ export const ReviewDialog: React.FC<ReviewDialogProps> = ({
         </div>
       </div>
 
-      {/* Submit Button */}
       <Button type="submit" className="mt-4 w-full">
         Submit Review
       </Button>
     </form>
   );
 };
+
+export default ReviewDialog;

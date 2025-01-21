@@ -217,7 +217,7 @@ function Orders() {
     doc.text("Order Details", 10, 50);
     doc.setFontSize(10);
     doc.text(`Order ID: ${order._id}`, 10, 60);
-    doc.text(`Customer: ${order.userId.fullName}`, 10, 70);
+    doc.text(`Customer: ${order.userId?.fullName}`, 10, 70);
     doc.text(
       `Order Date: ${format(new Date(order.createdAt), "MMM dd, yyyy")}`,
       10,
@@ -257,7 +257,7 @@ function Orders() {
     const qrCodeData = await generateQRCode(
       JSON.stringify({
         orderId: order._id,
-        customer: order.userId.fullName,
+        customer: order.userId?.fullName,
         total: order.subtotal,
       })
     );
@@ -280,9 +280,9 @@ function Orders() {
         filterable: true,
         cell: (item: Order) => (
           <div>
-            <div className="font-medium">{item.userId.fullName}</div>
+            <div className="font-medium">{item.userId?.fullName}</div>
             <div className="text-sm text-gray-500 capitalize">
-              {item.userId.role}
+              {item.userId?.role}
             </div>
           </div>
         ),
@@ -569,7 +569,7 @@ function Orders() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <h3 className="font-semibold">Customer</h3>
-                  <p>{selectedOrder.userId.fullName}</p>
+                  <p>{selectedOrder.userId?.fullName}</p>
                 </div>
                 <div>
                   <h3 className="font-semibold">Order ID</h3>

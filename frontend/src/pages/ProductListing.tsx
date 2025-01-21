@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import ProductGrid from "../components/products/ProductGrid";
 import ProductFilter from "../components/products/ProductFilter";
@@ -8,11 +8,12 @@ import Pagination from "../components/common/Pagination";
 import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
 import Loader from "../components/common/Loader";
-import { IProduct } from "../types/product";
-import { Brand } from "../types/brand";
+import type { IProduct } from "../types/product";
+import type { Brand } from "../types/brand";
 import { Button } from "../components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "../components/ui/sheet";
 import { FilterIcon, ListOrderedIcon as SortIcon } from "lucide-react";
+
 const ITEMS_PER_PAGE = 9;
 
 interface Category {
@@ -71,6 +72,7 @@ interface FilterOptions {
 
 const ProductListing: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [products, setProducts] = useState<IProduct[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<IProduct[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -79,6 +81,10 @@ const ProductListing: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(
+    null
+  );
 
   const userRole = localStorage.getItem("userRole");
   const isLoggedIn = !!localStorage.getItem("authToken");
@@ -89,7 +95,7 @@ const ProductListing: React.FC = () => {
     try {
       userId = JSON.parse(unParsedUserId);
     } catch (error) {
-      // console.error("Error parsing userId:", error);
+      console.error("Error parsing userId:", error);
     }
   }
 
@@ -130,16 +136,21 @@ const ProductListing: React.FC = () => {
     const category = searchParams.get("category");
     const subcategory = searchParams.get("subcategory");
 
-    if (category || subcategory) {
-      handleFilter({
-        category: category || "",
-        subcategory: subcategory || "",
-        minPrice: 0,
-        maxPrice: 1000,
-        rating: [],
-        inStock: false,
-      });
+    if (category) {
+      setSelectedCategory(category);
     }
+    if (subcategory) {
+      setSelectedSubcategory(subcategory);
+    }
+
+    handleFilter({
+      category: category || "",
+      subcategory: subcategory || "",
+      minPrice: 0,
+      maxPrice: 1000,
+      rating: [],
+      inStock: false,
+    });
   }, [location, products]);
 
   const handleFilter = (filters: FilterOptions) => {
@@ -186,7 +197,7 @@ const ProductListing: React.FC = () => {
   };
 
   const handleSort = (option: string) => {
-    let sorted = [...filteredProducts];
+    const sorted = [...filteredProducts];
 
     switch (option) {
       case "price_asc":
@@ -253,6 +264,19 @@ const ProductListing: React.FC = () => {
     setCurrentPage(pageNumber);
   };
 
+  const handleCategoryChange = (categoryId: string) => {
+    setSelectedCategory(categoryId);
+    setSelectedSubcategory(null);
+    navigate(`/products?category=${categoryId}`);
+  };
+
+  const handleSubcategoryChange = (subcategoryId: string) => {
+    setSelectedSubcategory(subcategoryId);
+    navigate(
+      `/products?category=${selectedCategory}&subcategory=${subcategoryId}`
+    );
+  };
+
   if (loading) return <Loader />;
   if (error) return <div>{error}</div>;
 
@@ -278,6 +302,10 @@ const ProductListing: React.FC = () => {
                     <ProductFilter
                       onFilter={handleFilter}
                       categories={categories}
+                      selectedCategory={selectedCategory}
+                      selectedSubcategory={selectedSubcategory}
+                      onCategoryChange={handleCategoryChange}
+                      onSubcategoryChange={handleSubcategoryChange}
                     />
                   </SheetContent>
                 </Sheet>
@@ -299,11 +327,15 @@ const ProductListing: React.FC = () => {
                 <ProductFilter
                   onFilter={handleFilter}
                   categories={categories}
+                  selectedCategory={selectedCategory}
+                  selectedSubcategory={selectedSubcategory}
+                  onCategoryChange={handleCategoryChange}
+                  onSubcategoryChange={handleSubcategoryChange}
                 />
               </div>
             </div>
 
-            <div className="w-full  md:pl-5">
+            <div className="w-full md:pl-5">
               <div className="hidden md:block mb-8">
                 <ProductSort onSort={handleSort} />
               </div>

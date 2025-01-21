@@ -11,6 +11,7 @@ interface ProductDropdownProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
 export interface SubCategory {
   _id: string;
   name: string;
@@ -64,7 +65,7 @@ export const ProductDropdown: React.FC<ProductDropdownProps> = ({
       <Helmet>
         {hoveredCategory && !hoveredSubCategory && (
           <>
-            <title>{` Trinity Waterproofing`}</title>
+            <title>{`Trinity Waterproofing`}</title>
             <meta
               name="description"
               content={`Explore the best solutions in ${hoveredCategory.name} by Trinity Waterproofing. Protect your property with expert waterproofing services.`}
@@ -77,7 +78,7 @@ export const ProductDropdown: React.FC<ProductDropdownProps> = ({
         )}
         {hoveredSubCategory && (
           <>
-            <title>{` Trinity Waterproofing`}</title>
+            <title>{`Trinity Waterproofing`}</title>
             <meta
               name="description"
               content={`Discover ${hoveredSubCategory.name} products under ${hoveredCategory?.name} at Trinity Waterproofing. Durable and professional solutions for all needs!`}
@@ -106,7 +107,7 @@ export const ProductDropdown: React.FC<ProductDropdownProps> = ({
             </button>
           </div>
 
-          {loading && <>Loading...</>}
+          {loading && <p>Loading...</p>}
 
           {!loading && categories.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -120,7 +121,11 @@ export const ProductDropdown: React.FC<ProductDropdownProps> = ({
                     setHoveredSubCategory(null);
                   }}
                 >
-                  <div className="flex items-center justify-between p-2  rounded-md cursor-pointer group">
+                  <Link
+                    to={`/products?category=${category._id}`}
+                    className="flex items-center justify-between p-2 rounded-md cursor-pointer group"
+                    onClick={onClose}
+                  >
                     <h3 className="text-md sm:text-md text-brand font-semibold">
                       {category.name}
                     </h3>
@@ -131,7 +136,7 @@ export const ProductDropdown: React.FC<ProductDropdownProps> = ({
                           : ""
                       }`}
                     />
-                  </div>
+                  </Link>
 
                   <AnimatePresence>
                     {hoveredCategory?._id === category._id && (
@@ -148,13 +153,13 @@ export const ProductDropdown: React.FC<ProductDropdownProps> = ({
                             onMouseEnter={() => setHoveredSubCategory(sub)}
                             onMouseLeave={() => setHoveredSubCategory(null)}
                           >
-                            <div className="p-3  cursor-pointer flex items-center justify-between">
-                              <Link to="/products">
-                                <span className="text-gray-700 ">
-                                  {sub.name}
-                                </span>
-                              </Link>
-                            </div>
+                            <Link
+                              to={`/products?category=${category._id}&subcategory=${sub._id}`}
+                              className="p-3 cursor-pointer flex items-center justify-between"
+                              onClick={onClose}
+                            >
+                              <span className="text-gray-700">{sub.name}</span>
+                            </Link>
                           </div>
                         ))}
                       </motion.div>
