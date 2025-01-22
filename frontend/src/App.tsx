@@ -45,8 +45,6 @@ const FAQPage = lazy(() => import("./pages/FAQPage"));
 const ShippingPage = lazy(() => import("./pages/ShippingPolicy"));
 const ReturnPolicyPage = lazy(() => import("./pages/ReturnPolicy"));
 const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicy"));
-const OrderSuccess = lazy(() => import("./components/cart/OrderSuccess"));
-const OrderFailure = lazy(() => import("./components/cart/OrderFailure"));
 const RatingsAndReviews = lazy(
   () => import("./pages/customer-profile/rating-review/page")
 );
@@ -113,8 +111,6 @@ function App() {
                     <Route path="/gallery" element={<UserGallery />} />
                     <Route path="/checkout" element={<Checkout />} />
                     <Route path="/login" element={<Login />} />
-                    <Route path="/order-success" element={<OrderSuccess />} />
-                    <Route path="/order-failure" element={<OrderFailure />} />
                     <Route path="/forgot-password" element={<EmailForm />} />
                     <Route
                       path="/reset-password"

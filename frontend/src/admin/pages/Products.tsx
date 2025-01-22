@@ -47,6 +47,7 @@ interface IProduct {
   retailPrice: number;
   wholeSalePrice: number;
   brand: Brand;
+  subCategory: SubCategory;
   colors: Color[];
   inStock: number;
   productImage: string;
@@ -55,6 +56,17 @@ interface IProduct {
   pdfUrl: string;
   isFeatured: boolean;
   createdAt: string;
+}
+
+interface Category {
+  _id: string;
+  name: string;
+}
+
+interface SubCategory {
+  _id: string;
+  name: string;
+  category: Category;
 }
 
 const Products: React.FC = () => {
@@ -335,6 +347,13 @@ const Products: React.FC = () => {
           <div className="space-y-4">
             <p>
               <strong>Description:</strong> {selectedProduct?.description}
+            </p>
+            <p>
+              <strong>Category:</strong>{" "}
+              {selectedProduct?.subCategory.category.name}
+            </p>
+            <p>
+              <strong>Sub Category:</strong> {selectedProduct?.subCategory.name}
             </p>
             <p>
               <strong>Brand:</strong> {selectedProduct?.brand.name}

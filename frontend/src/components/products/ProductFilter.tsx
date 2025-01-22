@@ -30,16 +30,6 @@ interface SubCategory {
   products: Product[];
 }
 
-interface IColor {
-  name: string;
-  hex: string;
-}
-
-interface IReview {
-  rating: number;
-  content: string;
-}
-
 interface Product {
   _id: string;
   name: string;
@@ -60,6 +50,16 @@ interface Product {
   review: IReview[];
 }
 
+interface IColor {
+  name: string;
+  hex: string;
+}
+
+interface IReview {
+  rating: number;
+  content: string;
+}
+
 interface FilterValues {
   category: string;
   subcategory: string;
@@ -67,11 +67,13 @@ interface FilterValues {
   maxPrice: number;
   rating: number[];
   inStock: boolean;
+  brands: string[];
 }
 
 interface ProductFilterProps {
   onFilter: (filters: FilterValues) => void;
   categories: Category[];
+  brands: Brand[];
   selectedCategory: string | null;
   selectedSubcategory: string | null;
   onCategoryChange: (categoryId: string) => void;
@@ -81,6 +83,7 @@ interface ProductFilterProps {
 const ProductFilter: React.FC<ProductFilterProps> = ({
   onFilter,
   categories,
+  brands,
   selectedCategory,
   selectedSubcategory,
   onCategoryChange,
@@ -130,6 +133,7 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
           maxPrice: selectedCategory ? getMaxPrice(selectedCategory) : 1000,
           rating: [],
           inStock: false,
+          brands: [],
         }}
         enableReinitialize
         onSubmit={(values) => {
@@ -213,6 +217,35 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
                   </Select>
                 </div>
               )}
+
+              {/* Brand Checkboxes */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Brands
+                </label>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {brands.map((brand) => (
+                    <div key={brand._id} className="flex items-center">
+                      <Checkbox
+                        id={`brand-${brand._id}`}
+                        checked={values.brands.includes(brand._id)}
+                        onCheckedChange={(checked) => {
+                          const newBrands = checked
+                            ? [...values.brands, brand._id]
+                            : values.brands.filter((id) => id !== brand._id);
+                          setFieldValue("brands", newBrands);
+                        }}
+                      />
+                      <label
+                        htmlFor={`brand-${brand._id}`}
+                        className="ml-2 text-sm text-gray-700"
+                      >
+                        {brand.name}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
               {/* Price Range */}
               <div>
@@ -303,9 +336,11 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
               </div>
 
               {/* Submit Button */}
-              <Button type="submit" className="w-full">
-                Apply Filters
-              </Button>
+              <div className="flex w-full justify-center">
+                <Button type="submit" className="w-full">
+                  Apply Filters
+                </Button>
+              </div>
             </Form>
           );
         }}

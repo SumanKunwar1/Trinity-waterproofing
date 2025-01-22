@@ -195,7 +195,7 @@ export const sendOrderNotificationEmail = async (
 
     const content = {
       html: `
-    <div style="font-family: sans-serif; background-color: #f3f4f6; padding: 2rem; color: #111827;">
+    <div style="font-family: sans-serif; background-color: #f3f4f6; padding: 1rem; color: #111827;">
       <div style="max-width: 48rem; margin: 0 auto; background-color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-radius: 0.5rem; padding: 1.5rem;">
         <h2 style="font-size: 1.5rem; font-weight: bold; text-align: center; color: #2563eb;">
           Thank you for your order, ${fullName}!
@@ -234,7 +234,7 @@ export const sendOrderNotificationEmail = async (
                    <img 
   src="${BASE_URL}${product.productId?.productImage}" 
   alt="${product.productId?.name}" 
-  style="width: 160px; height: 160px; border-radius: 0.375rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"
+  style="width: 140px; height: 140px; border-radius: 0.375rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"
   />
 
                     <div style="margin-left: 1rem;">

@@ -249,7 +249,7 @@ const Header: React.FC = () => {
           <div className="flex items-center space-x-4">
             {/* Desktop Navigation */}
             <nav className="hidden gap-4 md:flex">
-              <Link to="/products" className="gap-4 md:flex">
+              <Link to="/products" className="gap-4 text-lg md:flex">
                 {navigationItems.map((item) =>
                   item.title === "Products" ? (
                     <HoverCard
@@ -280,7 +280,7 @@ const Header: React.FC = () => {
                     <Link
                       key={item.id}
                       to={item.path}
-                      className="text-white font-semibold hover:text-secondary transition-colors"
+                      className="text-white text-lg font-semibold hover:text-secondary transition-colors"
                     >
                       {item.title}
                     </Link>

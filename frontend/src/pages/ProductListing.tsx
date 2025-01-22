@@ -14,7 +14,7 @@ import { Button } from "../components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "../components/ui/sheet";
 import { FilterIcon, ListOrderedIcon as SortIcon } from "lucide-react";
 
-const ITEMS_PER_PAGE = 9;
+const ITEMS_PER_PAGE = 15;
 
 interface Category {
   _id: string;
@@ -68,6 +68,7 @@ interface FilterOptions {
   maxPrice: number;
   rating: number[];
   inStock: boolean;
+  brands: string[];
 }
 
 const ProductListing: React.FC = () => {
@@ -79,6 +80,7 @@ const ProductListing: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -94,9 +96,7 @@ const ProductListing: React.FC = () => {
   if (unParsedUserId) {
     try {
       userId = JSON.parse(unParsedUserId);
-    } catch (error) {
-      console.error("Error parsing userId:", error);
-    }
+    } catch (error) {}
   }
 
   useEffect(() => {
@@ -115,11 +115,19 @@ const ProductListing: React.FC = () => {
           productsRes = await axios.get("/api/product");
         }
 
-        const [categoriesRes] = await Promise.all([axios.get("/api/category")]);
+        const [categoriesRes, brandsRes] = await Promise.all([
+          axios.get("/api/category"),
+          axios.get("/api/brand", {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          }),
+        ]);
 
         setProducts(productsRes.data);
-        setFilteredProducts(productsRes.data);
+        setFilteredProducts(productsRes.data); // Set all products as filtered products initially
         setCategories(categoriesRes.data);
+        setBrands(brandsRes.data);
 
         setLoading(false);
       } catch (error) {
@@ -135,36 +143,70 @@ const ProductListing: React.FC = () => {
     const searchParams = new URLSearchParams(location.search);
     const category = searchParams.get("category");
     const subcategory = searchParams.get("subcategory");
+    const brands = searchParams.getAll("brand");
 
-    if (category) {
+    if (category && category !== "all") {
       setSelectedCategory(category);
+    } else {
+      setSelectedCategory(null);
     }
-    if (subcategory) {
+    if (subcategory && subcategory !== "all") {
       setSelectedSubcategory(subcategory);
+    } else {
+      setSelectedSubcategory(null);
     }
 
-    handleFilter({
-      category: category || "",
-      subcategory: subcategory || "",
-      minPrice: 0,
-      maxPrice: 1000,
-      rating: [],
-      inStock: false,
-    });
+    // Only apply filters if there are actual filter parameters in the URL
+    if (category || subcategory || brands.length > 0) {
+      handleFilter({
+        category: category || "all",
+        subcategory: subcategory || "all",
+        minPrice: 0,
+        maxPrice: 1000,
+        rating: [],
+        inStock: false,
+        brands: brands || [],
+      });
+    } else {
+      // If no filters in URL, show all products
+      setFilteredProducts(products);
+    }
   }, [location, products]);
 
   const handleFilter = (filters: FilterOptions) => {
     let filtered = [...products];
 
-    if (filters.category) {
+    const isFilterApplied =
+      filters.category !== "all" ||
+      filters.subcategory !== "all" ||
+      filters.brands.length > 0 ||
+      filters.minPrice > 0 ||
+      filters.maxPrice < 1000 ||
+      filters.rating.length > 0 ||
+      filters.inStock;
+
+    if (!isFilterApplied) {
+      setFilteredProducts(filtered);
+      setCurrentPage(1);
+      setIsFilterOpen(false);
+      return;
+    }
+
+    if (filters.category && filters.category !== "all") {
       filtered = filtered.filter(
         (product) => product.subCategory.category._id === filters.category
       );
     }
 
-    if (filters.subcategory) {
+    if (filters.subcategory && filters.subcategory !== "all") {
       filtered = filtered.filter(
         (product) => product.subCategory._id === filters.subcategory
+      );
+    }
+
+    if (filters.brands && filters.brands.length > 0) {
+      filtered = filtered.filter((product) =>
+        filters.brands.includes(product.brand._id)
       );
     }
 
@@ -267,13 +309,15 @@ const ProductListing: React.FC = () => {
   const handleCategoryChange = (categoryId: string) => {
     setSelectedCategory(categoryId);
     setSelectedSubcategory(null);
-    navigate(`/products?category=${categoryId}`);
+    navigate(categoryId ? `/products?category=${categoryId}` : "/products");
   };
 
   const handleSubcategoryChange = (subcategoryId: string) => {
     setSelectedSubcategory(subcategoryId);
     navigate(
-      `/products?category=${selectedCategory}&subcategory=${subcategoryId}`
+      subcategoryId
+        ? `/products?category=${selectedCategory}&subcategory=${subcategoryId}`
+        : `/products?category=${selectedCategory}`
     );
   };
 
@@ -302,6 +346,7 @@ const ProductListing: React.FC = () => {
                     <ProductFilter
                       onFilter={handleFilter}
                       categories={categories}
+                      brands={brands}
                       selectedCategory={selectedCategory}
                       selectedSubcategory={selectedSubcategory}
                       onCategoryChange={handleCategoryChange}
@@ -327,6 +372,7 @@ const ProductListing: React.FC = () => {
                 <ProductFilter
                   onFilter={handleFilter}
                   categories={categories}
+                  brands={brands}
                   selectedCategory={selectedCategory}
                   selectedSubcategory={selectedSubcategory}
                   onCategoryChange={handleCategoryChange}

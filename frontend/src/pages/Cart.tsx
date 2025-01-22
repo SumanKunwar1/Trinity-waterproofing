@@ -6,6 +6,8 @@ import { Button } from "../components/ui/button";
 import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
 import Loader from "../components/common/Loader";
+import EmptyState from "../components/common/EmptyState";
+import emptyCartAnimation from "../animations/cart.json";
 
 const Cart: React.FC = () => {
   const { cart, isLoading, clearCart } = useCart();
@@ -39,7 +41,13 @@ const Cart: React.FC = () => {
         <div className="container mx-auto px-4 py-8">
           <h1 className="text-3xl font-bold mb-8">Your Cart</h1>
           {cart.length === 0 ? (
-            <p className="text-gray-600">Your cart is empty.</p>
+            <EmptyState
+              title="Your cart is empty"
+              description="Looks like you haven't added any items to your cart yet. Start shopping and discover amazing products!"
+              buttonText="Start Shopping"
+              buttonAction={() => navigate("/products")}
+              animationData={emptyCartAnimation}
+            />
           ) : (
             <div className="flex flex-col md:flex-row">
               <div className="w-full md:w-2/3 md:pr-8">

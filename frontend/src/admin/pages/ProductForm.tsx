@@ -26,6 +26,7 @@ import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 import { HexColorPicker } from "react-colorful";
 import TinyMCEEditor from "../components/Editor";
+import { Textarea } from "../components/ui/textarea";
 
 interface Color {
   name: string;
@@ -374,7 +375,7 @@ const ProductForm: React.FC = () => {
 
                       <div>
                         <Label htmlFor="description">Description</Label>
-                        <Field name="description" as={Input} />
+                        <Field name="description" as={Textarea} />
                         <ErrorMessage
                           name="description"
                           component="div"

@@ -169,7 +169,7 @@ export const ProductDropdown: React.FC<ProductDropdownProps> = ({
               ))}
             </div>
           ) : (
-            <p>No categories available.</p>
+            <p></p>
           )}
         </div>
       </motion.div>

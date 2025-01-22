@@ -48,13 +48,12 @@ const HeroSection: React.FC = () => {
         transition={{ duration: 0.8 }}
         className="relative text-center px-4"
       >
-        <h1 className="text-4xl md:text-6xl font-bold mb-4">{item.title}</h1>
-        <p className="text-xl md:text-2xl mb-8">{item.description}</p>
+        <h1 className="text-2xl md:text-6xl font-bold mb-2 md:mb-4">
+          {item.title}
+        </h1>
+        <p className="text-lg md:text-2xl mb-4 md:mb-8">{item.description}</p>
         <Link to="/products" className="inline-block">
-          <Button
-            size="lg"
-            className="cursor-pointer hover:bg-secondary transition-colors duration-300"
-          >
+          <Button className="cursor-pointer hover:bg-secondary transition-colors duration-300">
             Discover More
           </Button>
         </Link>

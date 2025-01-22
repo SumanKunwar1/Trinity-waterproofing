@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation, useNavigate, Link } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import OrderSummary from "../components/cart/OrderSummary";
 import { useCart } from "../hooks/useCart";
@@ -7,13 +7,13 @@ import { toast } from "react-hot-toast";
 import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
 import AddressCard from "../components/common/AddressCard";
-import { Address } from "../types/address";
+import type { Address } from "../types/address";
 import { createOrder } from "../api/orderApi";
-import { OrderItem } from "../types/order";
+import type { OrderItem } from "../types/order";
+import OrderStatusDialog from "../components/cart/OrderStatusDialog";
 
 const Checkout: React.FC = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const { cart } = useCart();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -21,10 +21,15 @@ const Checkout: React.FC = () => {
     null
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderStatus, setOrderStatus] = useState<{
+    success: boolean;
+    orderId?: string;
+    error?: string;
+  } | null>(null);
 
   // Checkout data: If it's from direct buy now, it will be passed via location state; otherwise, fallback to cart.
   const checkoutData = location.state?.checkoutData || cart;
-  // console.log("checkoutData", checkoutData);
+
   useEffect(() => {
     fetchAddresses();
   }, []);
@@ -60,11 +65,9 @@ const Checkout: React.FC = () => {
           setSelectedAddressId(defaultAddress._id);
         }
       } else {
-        // console.error("Invalid data structure:", data);
         setAddresses([]);
       }
     } catch (error: any) {
-      // console.error("Error fetching addresses:", error);
       toast.error(error.message || "Failed to load addresses");
       setAddresses([]);
     } finally {
@@ -97,7 +100,6 @@ const Checkout: React.FC = () => {
       await fetchAddresses();
       toast.success("Default address updated");
     } catch (error: any) {
-      // console.error("Error setting default address:", error);
       toast.error(error.message || "Failed to set default address");
     }
   };
@@ -115,14 +117,13 @@ const Checkout: React.FC = () => {
     setIsSubmitting(true);
     try {
       const orderData: OrderItem[] = checkoutData.map((item: any) => {
-        const productId = item.product?._id || item.productId; // Normalize productId
+        const productId = item.product?._id || item.productId;
         if (!productId) {
           throw new Error(
             `Invalid product ID for item: ${JSON.stringify(item)}`
           );
         }
 
-        // Build the order data for placing an order
         return {
           productId,
           color: item.selectedColor,
@@ -130,29 +131,25 @@ const Checkout: React.FC = () => {
           price: item.price,
         };
       });
-      // console.log("orderData in checkout", orderData);
 
       if (orderData.length === 0) {
         throw new Error("No valid items to order");
       }
 
-      // console.log("Order Data:", JSON.stringify(orderData, null, 2)); // Debugging
-
-      // Call the API to create an order
       const response = await createOrder(orderData, selectedAddressId);
 
       if (response.success && response.orderId) {
-        navigate("/order-success", { state: { orderId: response.orderId } });
+        setOrderStatus({ success: true, orderId: response.orderId });
       } else {
-        navigate("/order-failure", {
-          state: { error: response.error || "Failed to create order" },
+        setOrderStatus({
+          success: false,
+          error: response.error || "Failed to create order",
         });
       }
     } catch (error: any) {
-      // console.error("Error placing order:", error);
-      toast.error(error.message || "Failed to place order");
-      navigate("/order-failure", {
-        state: { error: error.message || "Failed to place order" },
+      setOrderStatus({
+        success: false,
+        error: error.message || "Failed to place order",
       });
     } finally {
       setIsSubmitting(false);
@@ -209,6 +206,13 @@ const Checkout: React.FC = () => {
         </div>
       </main>
       <Footer />
+      {orderStatus && (
+        <OrderStatusDialog
+          success={orderStatus.success}
+          orderId={orderStatus.orderId}
+          error={orderStatus.error}
+        />
+      )}
     </div>
   );
 };

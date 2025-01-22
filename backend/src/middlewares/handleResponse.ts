@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 
 function handleResponse(req: Request, res: Response, next: NextFunction): void {
-  console.log(`✌ ${req.originalUrl} ✌`);
+  // console.log(`✌ ${req.originalUrl} ✌`);
 
   const results = res.locals.responseData;
 

@@ -5,11 +5,11 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "../../hooks/use-toast";
 import axios from "axios";
 import ProductCard from "./ProductCard";
-import { IProduct } from "../../types/product";
+import type { IProduct } from "../../types/product";
 
 const PopularProductsCarousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [featuredProducts, setFeaturedProducts] = useState<IProduct[]>([]);
+  const [popularProducts, setPopularProducts] = useState<IProduct[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,36 +20,14 @@ const PopularProductsCarousel = () => {
     dragFree: false,
   });
 
-  const isLoggedIn = !!localStorage.getItem("authToken");
-  const unParsedUserId = localStorage.getItem("userId");
-  let userId = null;
-
-  if (unParsedUserId) {
-    try {
-      userId = JSON.parse(unParsedUserId);
-    } catch (error) {
-      // console.error("Error parsing userId:", error);
-    }
-  }
-
   useEffect(() => {
-    const fetchFeaturedProducts = async () => {
+    const fetchPopularProducts = async () => {
       try {
-        let response;
-        if (isLoggedIn && userId) {
-          const authToken = localStorage.getItem("authToken");
-          response = await axios.get(`/api/product/user/${userId}`, {
-            headers: {
-              Authorization: `Bearer ${authToken}`,
-            },
-          });
-        } else {
-          response = await axios.get("/api/product");
-        }
-        setFeaturedProducts(response.data);
+        const response = await axios.get("/api/product/popular-products");
+        setPopularProducts(response.data);
       } catch (err: any) {
         const errorMessage =
-          err.response?.data?.error || "Failed to fetch featured products.";
+          err.response?.data?.error || "Failed to fetch popular products.";
         setError(errorMessage);
         toast({
           variant: "destructive",
@@ -61,8 +39,8 @@ const PopularProductsCarousel = () => {
       }
     };
 
-    fetchFeaturedProducts();
-  }, [isLoggedIn, userId]);
+    fetchPopularProducts();
+  }, []);
 
   // Embla carousel setup
   useEffect(() => {
@@ -101,17 +79,15 @@ const PopularProductsCarousel = () => {
     return <div className="text-center py-8 text-red-500">{error}</div>;
   }
 
-  if (!featuredProducts.length) {
-    return (
-      <div className="text-center py-8">No featured products available</div>
-    );
+  if (!popularProducts.length) {
+    return <></>;
   }
 
   return (
     <div className="relative w-full max-w-6xl mx-auto px-4">
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex">
-          {featuredProducts.map((product) => (
+          {popularProducts.map((product) => (
             <div
               key={product._id}
               className="flex-[0_0_100%] min-w-0 sm:flex-[0_0_50%] lg:flex-[0_0_25%] pl-4"
@@ -133,7 +109,7 @@ const PopularProductsCarousel = () => {
         </button>
 
         <div className="flex gap-2">
-          {Array.from({ length: Math.ceil(featuredProducts.length / 4) }).map(
+          {Array.from({ length: Math.ceil(popularProducts.length / 4) }).map(
             (_, idx) => (
               <button
                 key={idx}

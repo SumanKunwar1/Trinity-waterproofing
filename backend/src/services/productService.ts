@@ -204,7 +204,8 @@ export class ProductService {
       if (features) existingProduct.features = features;
       if (brand) existingProduct.brand = brand;
       if (inStock) existingProduct.inStock = inStock;
-      if (pdfUrl) existingProduct.pdfUrl = pdfUrl;
+      if (pdfUrl !== undefined && pdfUrl !== null)
+        existingProduct.pdfUrl = pdfUrl;
       if (isFeatured !== undefined && isFeatured !== null)
         existingProduct.isFeatured = isFeatured;
 
@@ -328,10 +329,7 @@ export class ProductService {
 
   public async getPopularProducts(limit: number = 10) {
     try {
-      console.log("Fetching popular products...");
-
       // Step 1: Get the count of orders for each product
-      console.log("Step 1: Aggregating order counts for each product...");
 
       const orderCounts = await Order.aggregate([
         { $unwind: "$products" }, // Unwinds the products array to count individual products
@@ -343,21 +341,15 @@ export class ProductService {
         },
       ]);
 
-      console.log("Order counts:", orderCounts); // Log the order counts data
-
       // Step 2: Calculate average ratings for each product based on the reviews
-      console.log("Step 2: Calculating average ratings for each product...");
 
       const productPopularityData = await Promise.all(
         orderCounts.map(async (orderCount) => {
           // Step 2.1: Get the product details by ID
-          console.log(
-            `Fetching product for order count with productId: ${orderCount._id}`
-          );
+
           const product: any = await Product.findById(orderCount._id).populate(
             "review"
           ); // Populate the review array
-          console.log(`Found product: ${product}`);
 
           // Step 2.2: Calculate the average rating for this product from its reviews
           let avgRating = 0;
@@ -374,9 +366,6 @@ export class ProductService {
           }
 
           // Step 2.3: Combine order count and average rating
-          console.log(
-            `For productId: ${orderCount._id}, order count: ${orderCount.count}, avgRating: ${avgRating}`
-          );
 
           return {
             product: product, // Full product data
@@ -386,35 +375,24 @@ export class ProductService {
         })
       );
 
-      console.log("Combined product popularity data:", productPopularityData);
-
       // Step 3: Sort products by the combination of order count and average rating
-      console.log(
-        "Step 3: Sorting products by order count and average rating..."
+
+      const filteredProductPopularityData = productPopularityData.filter(
+        (item) => item.product !== null && item.product !== undefined
       );
 
-      productPopularityData.sort((a, b) => {
+      filteredProductPopularityData.sort((a, b) => {
         const scoreA = a.orderCount * 0.7 + a.avgRating * 0.3;
         const scoreB = b.orderCount * 0.7 + b.avgRating * 0.3;
-        console.log(
-          `Score for productA (productId: ${a.product._id}): ${scoreA}`
-        );
-        console.log(
-          `Score for productB (productId: ${b.product._id}): ${scoreB}`
-        );
+
         return scoreB - scoreA; // Sort in descending order
       });
 
-      console.log("Sorted product popularity data:", productPopularityData);
-
       // Step 4: Return the top products based on the given limit
-      console.log(`Step 4: Returning top ${limit} popular products...`);
 
-      const popularProducts = productPopularityData
+      const popularProducts = filteredProductPopularityData
         .slice(0, limit)
         .map((data) => data.product);
-
-      console.log("Top popular products:", popularProducts);
 
       const formattedPopularProducts = popularProducts.map((product: any) => {
         return {
@@ -426,7 +404,6 @@ export class ProductService {
 
       return formattedPopularProducts;
     } catch (error) {
-      console.error("Error in getPopularProducts method:", error);
       throw error;
     }
   }

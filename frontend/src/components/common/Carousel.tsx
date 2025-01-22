@@ -188,9 +188,9 @@ const Carousel: React.FC<CarouselProps> = ({
           aria-label={isPlaying ? "Pause" : "Play"}
         >
           {isPlaying ? (
-            <FaPause className="h-4 w-4" />
+            <FaPause className="h-2 w-2 md:h-4 md:w-4" />
           ) : (
-            <FaPlay className="h-4 w-4" />
+            <FaPlay className="h-2 w-2 md:h-4 md:w-4" />
           )}
         </button>
 
@@ -200,7 +200,7 @@ const Carousel: React.FC<CarouselProps> = ({
             <button
               key={index}
               className={cn(
-                "w-3 h-3 rounded-full transition-all duration-300 transform",
+                "w-2 h-2 md:h-3 md:w-3 rounded-full transition-all duration-300 transform",
                 currentIndex === index
                   ? "bg-white scale-110"
                   : "bg-white/50 hover:bg-white/70"

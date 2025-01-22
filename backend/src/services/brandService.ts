@@ -51,7 +51,7 @@ export class BrandService {
 
   public async getBrands() {
     try {
-      const brands = await Brand.find();
+      const brands = await Brand.find().sort({ createdAt: 1 });
       if (!brands || brands.length === 0) {
         return [];
       }
