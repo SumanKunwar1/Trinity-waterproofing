@@ -24,9 +24,11 @@ export class ProductService {
       }
 
       const newProduct = new Product(productData);
-      isPresent.product.push(newProduct._id);
+      if (!isPresent.product.includes(newProduct._id)) {
+        isPresent.product.push(newProduct._id);
+        await isPresent.save();
+      }
 
-      await isPresent.save();
       await newProduct.save();
       return newProduct;
     } catch (error) {
@@ -171,14 +173,16 @@ export class ProductService {
           if (oldSubCategory) {
             // Remove the product ID from the old subcategory
             oldSubCategory.product = oldSubCategory.product.filter(
-              (id) => id !== existingProduct._id
+              (id) => id.toString() !== existingProduct._id.toString()
             );
             await oldSubCategory.save();
           }
 
-          // Add the product ID to the new subcategory
-          isNewSubCategoryPresent.product.push(existingProduct._id);
-          await isNewSubCategoryPresent.save();
+          // Add the product ID to the new subcategory, but check for duplicates
+          if (!isNewSubCategoryPresent.product.includes(existingProduct._id)) {
+            isNewSubCategoryPresent.product.push(existingProduct._id);
+            await isNewSubCategoryPresent.save();
+          }
         }
 
         existingProduct.subCategory = subCategory;

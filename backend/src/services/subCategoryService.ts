@@ -17,7 +17,10 @@ export class SubCategoryService {
         category: categoryId,
       });
 
-      isPresent.subCategory.push(newSubCategory._id);
+      if (!isPresent.subCategory.includes(newSubCategory._id)) {
+        isPresent.subCategory.push(newSubCategory._id);
+        await isPresent.save();
+      }
       await newSubCategory.save();
       return newSubCategory;
     } catch (error) {
@@ -90,12 +93,13 @@ export class SubCategoryService {
 
       const { categoryId, name, description } = updateData;
       if (categoryId) {
+        // Check if the new category exists
         const isCategoryPresent = await Category.findById(categoryId);
         if (!isCategoryPresent) {
           throw httpMessages.NOT_FOUND("Category");
         }
 
-        // If the category is changing, we need to remove this subcategory from the previous category's subcategory array
+        // If the category is changing, remove from the old category's subcategory array
         const oldCategoryId = updatedSubCategory.category;
         if (oldCategoryId !== categoryId) {
           const oldCategory = await Category.findById(oldCategoryId);
@@ -106,14 +110,17 @@ export class SubCategoryService {
             await oldCategory.save();
           }
 
-          // Add the subcategory to the new category's subcategory array
-          isCategoryPresent.subCategory.push(updatedSubCategory._id);
-          await isCategoryPresent.save();
+          // Add the subcategory to the new category's subcategory array, only if not already there
+          if (!isCategoryPresent.subCategory.includes(updatedSubCategory._id)) {
+            isCategoryPresent.subCategory.push(updatedSubCategory._id);
+            await isCategoryPresent.save();
+          }
         }
 
         // Update the subcategory's category
         updatedSubCategory.category = categoryId;
       }
+
       if (name) updatedSubCategory.name = name;
       if (description) updatedSubCategory.description = description;
       updatedSubCategory.save();

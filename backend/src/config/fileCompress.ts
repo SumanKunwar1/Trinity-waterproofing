@@ -12,7 +12,7 @@ const deleteFile = (filePath: string) => {
       try {
         fs.unlinkSync(filePath);
       } catch (err) {
-        console.error(`Failed to delete file: ${filePath}`, err);
+        // Handle file deletion error if necessary
       }
     }, 100);
   }
@@ -102,6 +102,7 @@ export const compressUploadedImages = async (
     if (req.body.productImage) {
       deleteFile(`${uploadFolder}/${req.body.productImage}`);
     }
+
     if (req.body.image) {
       if (Array.isArray(req.body.image)) {
         req.body.image.forEach((imageName: string) =>
@@ -111,6 +112,7 @@ export const compressUploadedImages = async (
         deleteFile(`${uploadFolder}/${req.body.image}`);
       }
     }
+
     deleteProductImages(req);
     return next(httpMessages.BAD_REQUEST(error));
   }
