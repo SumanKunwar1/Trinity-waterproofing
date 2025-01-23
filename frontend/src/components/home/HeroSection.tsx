@@ -46,7 +46,7 @@ const HeroSection: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="relative text-center px-4"
+        className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 bg-black/10 text-[#FEC615]"
       >
         <h1 className="text-2xl md:text-6xl font-bold mb-2 md:mb-4">
           {item.title}
@@ -61,50 +61,39 @@ const HeroSection: React.FC = () => {
     );
 
     return (
-      <div
-        key={index}
-        className="relative w-full"
-        style={{
-          aspectRatio: "16 / 9",
-          backgroundImage:
-            item.mediaType === "image" ? `url(${item.media})` : "none",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        {item.mediaType === "video" && (
-          <video
-            className="absolute top-0 left-0 w-full h-full object-cover"
-            autoPlay
-            loop
-            muted
-            playsInline
-          >
+      <div key={index} className="relative w-full h-full">
+        {item.mediaType === "image" ? (
+          <img
+            src={item.media}
+            alt={item.title}
+            className="w-full h-full"
+            style={{ objectPosition: "center" }}
+          />
+        ) : (
+          <video className="w-full h-full" autoPlay loop muted playsInline>
             <source src={item.media} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         )}
-        <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center text-white">
-          {content}
-        </div>
+        {content}
       </div>
     );
   });
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-[90vh]">
+      <div className="flex justify-center items-center h-[600px]">
         <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
       </div>
     );
   }
 
   return (
-    <section className="relative">
+    <section className="w-full flex justify-center">
       {sliders.length > 0 ? (
         <Carousel items={carouselItems} autoPlay interval={5000} />
       ) : (
-        <div className="flex justify-center items-center h-[90vh] text-white text-2xl">
+        <div className="flex justify-center items-center h-[600px] text-white text-2xl max-w-[1920px] w-full">
           No sliders available
         </div>
       )}

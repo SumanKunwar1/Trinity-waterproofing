@@ -4,7 +4,6 @@ import axios from "axios";
 import ProductGrid from "../components/products/ProductGrid";
 import ProductFilter from "../components/products/ProductFilter";
 import ProductSort from "../components/products/ProductSort";
-import Pagination from "../components/common/Pagination";
 import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
 import Loader from "../components/common/Loader";
@@ -14,7 +13,7 @@ import { Button } from "../components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "../components/ui/sheet";
 import { FilterIcon, ListOrderedIcon as SortIcon } from "lucide-react";
 
-const ITEMS_PER_PAGE = 15;
+const ITEMS_PER_LOAD = 15;
 
 interface Category {
   _id: string;
@@ -76,7 +75,7 @@ const ProductListing: React.FC = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState<IProduct[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<IProduct[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [displayedProducts, setDisplayedProducts] = useState<IProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
@@ -87,6 +86,7 @@ const ProductListing: React.FC = () => {
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(
     null
   );
+  const [hasMore, setHasMore] = useState(true);
 
   const userRole = localStorage.getItem("userRole");
   const isLoggedIn = !!localStorage.getItem("authToken");
@@ -125,9 +125,11 @@ const ProductListing: React.FC = () => {
         ]);
 
         setProducts(productsRes.data);
-        setFilteredProducts(productsRes.data); // Set all products as filtered products initially
+        setFilteredProducts(productsRes.data);
+        setDisplayedProducts(productsRes.data.slice(0, ITEMS_PER_LOAD));
         setCategories(categoriesRes.data);
         setBrands(brandsRes.data);
+        setHasMore(productsRes.data.length > ITEMS_PER_LOAD);
 
         setLoading(false);
       } catch (error) {
@@ -156,7 +158,6 @@ const ProductListing: React.FC = () => {
       setSelectedSubcategory(null);
     }
 
-    // Only apply filters if there are actual filter parameters in the URL
     if (category || subcategory || brands.length > 0) {
       handleFilter({
         category: category || "all",
@@ -168,8 +169,9 @@ const ProductListing: React.FC = () => {
         brands: brands || [],
       });
     } else {
-      // If no filters in URL, show all products
       setFilteredProducts(products);
+      setDisplayedProducts(products.slice(0, ITEMS_PER_LOAD));
+      setHasMore(products.length > ITEMS_PER_LOAD);
     }
   }, [location, products]);
 
@@ -187,7 +189,8 @@ const ProductListing: React.FC = () => {
 
     if (!isFilterApplied) {
       setFilteredProducts(filtered);
-      setCurrentPage(1);
+      setDisplayedProducts(filtered.slice(0, ITEMS_PER_LOAD));
+      setHasMore(filtered.length > ITEMS_PER_LOAD);
       setIsFilterOpen(false);
       return;
     }
@@ -234,7 +237,8 @@ const ProductListing: React.FC = () => {
     }
 
     setFilteredProducts(filtered);
-    setCurrentPage(1);
+    setDisplayedProducts(filtered.slice(0, ITEMS_PER_LOAD));
+    setHasMore(filtered.length > ITEMS_PER_LOAD);
     setIsFilterOpen(false);
   };
 
@@ -290,20 +294,19 @@ const ProductListing: React.FC = () => {
     }
 
     setFilteredProducts(sorted);
-    setCurrentPage(1);
+    setDisplayedProducts(sorted.slice(0, ITEMS_PER_LOAD));
+    setHasMore(sorted.length > ITEMS_PER_LOAD);
     setIsSortOpen(false);
   };
 
-  const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
-  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
-  const currentItems = filteredProducts.slice(
-    indexOfFirstItem,
-    indexOfLastItem
-  );
-  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
-
-  const handlePageChange = (pageNumber: number) => {
-    setCurrentPage(pageNumber);
+  const handleLoadMore = () => {
+    const currentLength = displayedProducts.length;
+    const nextBatch = filteredProducts.slice(
+      currentLength,
+      currentLength + ITEMS_PER_LOAD
+    );
+    setDisplayedProducts([...displayedProducts, ...nextBatch]);
+    setHasMore(currentLength + ITEMS_PER_LOAD < filteredProducts.length);
   };
 
   const handleCategoryChange = (categoryId: string) => {
@@ -385,12 +388,12 @@ const ProductListing: React.FC = () => {
               <div className="hidden md:block mb-8">
                 <ProductSort onSort={handleSort} />
               </div>
-              <ProductGrid products={currentItems} />
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-              />
+              <ProductGrid products={displayedProducts} />
+              {hasMore && (
+                <div className="mt-8 flex justify-center">
+                  <Button onClick={handleLoadMore}>Load More</Button>
+                </div>
+              )}
             </div>
           </div>
         </div>

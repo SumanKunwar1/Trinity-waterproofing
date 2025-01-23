@@ -144,7 +144,7 @@ const About: React.FC = () => {
                               <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-4">
                                 {tab.title}
                               </h2>
-                              <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                              <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-justify">
                                 {tab.description}
                               </p>
                             </div>
@@ -177,7 +177,7 @@ const About: React.FC = () => {
                       <h3 className="text-2xl font-semibold mb-4">
                         {value.title}
                       </h3>
-                      <p className="text-gray-600 dark:text-gray-400">
+                      <p className="text-gray-600 dark:text-gray-400 text-justify">
                         {value.description}
                       </p>
                     </div>
@@ -204,7 +204,7 @@ const About: React.FC = () => {
                   imageUrl={about?.image || "/assets/waterproofing-1.png"}
                   content={
                     <div>
-                      <p className="text-gray-600 dark:text-gray-400 mb-4">
+                      <p className="text-gray-600 dark:text-gray-400 mb-4 text-justify">
                         {about?.description ||
                           "We stand out by delivering exceptional service and unwavering commitment to quality. Trust us to be your go-to experts, ensuring your property is protected and secure every step of the way."}
                       </p>

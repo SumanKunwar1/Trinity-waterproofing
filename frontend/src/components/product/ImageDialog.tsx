@@ -68,7 +68,7 @@ const ImageDialog: React.FC<ImageDialogProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[90vw] max-h-[90vh] p-0 overflow-auto">
-        <div className="relative w-full h-full">
+        <div className="relative w-screen h-screen">
           <button
             onClick={onClose}
             className="absolute top-2 right-2 z-10 p-2 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-75 transition-colors"
@@ -77,7 +77,7 @@ const ImageDialog: React.FC<ImageDialogProps> = ({
           </button>
           <div
             id="zoomable-image"
-            className="w-full h-full overflow-hidden cursor-zoom-in"
+            className="w-full h-screen overflow-hidden cursor-zoom-in"
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
@@ -87,7 +87,7 @@ const ImageDialog: React.FC<ImageDialogProps> = ({
             <img
               src={imageSrc || "/placeholder.svg"}
               alt="Zoomed product"
-              className="w-full h-full object-contain transition-transform"
+              className="w-full h-screen object-contain transition-transform"
               style={{
                 transform: `scale(${scale}) translate(${
                   position.x / scale

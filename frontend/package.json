@@ -47,6 +47,7 @@
     "class-variance-authority": "^0.7.1",
     "classnames": "^2.5.1",
     "clsx": "^2.1.1",
+    "color-thief-browser": "^2.0.2",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.5.1",
     "embla-carousel-vue": "^8.5.1",
