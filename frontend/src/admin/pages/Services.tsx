@@ -185,6 +185,7 @@ const ServicePage: React.FC = () => {
       toast.success("Card added successfully");
       setIsAddCardDialogOpen(false);
       fetchCards();
+      resetCard();
     } catch (error) {
       toast.error("Failed to add card");
     }
@@ -207,6 +208,7 @@ const ServicePage: React.FC = () => {
         toast.success("Card updated successfully");
         setEditingCard(null);
         fetchCards();
+        resetCard();
       } catch (error) {
         toast.error("Failed to update card");
       }
@@ -241,6 +243,7 @@ const ServicePage: React.FC = () => {
       toast.success("Section added successfully");
       setIsAddSectionDialogOpen(false);
       fetchSections();
+      resetSection();
     } catch (error) {
       toast.error("Failed to add section");
     }
@@ -267,6 +270,7 @@ const ServicePage: React.FC = () => {
         toast.success("Section updated successfully");
         setEditingSection(null);
         fetchSections();
+        resetSection();
       } catch (error) {
         toast.error("Failed to update section");
       }
@@ -333,7 +337,12 @@ const ServicePage: React.FC = () => {
                 )}
               </CardContent>
               <CardFooter>
-                <Button onClick={() => setIsEditServiceDialogOpen(true)}>
+                <Button
+                  onClick={() => {
+                    setIsEditServiceDialogOpen(true);
+                    reset(service);
+                  }}
+                >
                   Edit Service
                 </Button>
               </CardFooter>
@@ -400,7 +409,10 @@ const ServicePage: React.FC = () => {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
                         <DropdownMenuItem
-                          onClick={() => setEditingSection(section)}
+                          onClick={() => {
+                            setEditingSection(section);
+                            resetSection(section);
+                          }}
                         >
                           Edit
                         </DropdownMenuItem>
@@ -430,7 +442,10 @@ const ServicePage: React.FC = () => {
           </div>
 
           <Button
-            onClick={() => setIsAddSectionDialogOpen(true)}
+            onClick={() => {
+              setIsAddSectionDialogOpen(true);
+              resetSection();
+            }}
             className="mb-8"
           >
             <Plus className="mr-2 h-4 w-4" /> Add Section
@@ -448,7 +463,12 @@ const ServicePage: React.FC = () => {
                         <MoreVertical className="h-5 w-5" />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
-                        <DropdownMenuItem onClick={() => setEditingCard(card)}>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setEditingCard(card);
+                            resetCard(card);
+                          }}
+                        >
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem
@@ -474,13 +494,24 @@ const ServicePage: React.FC = () => {
             ))}
           </div>
 
-          <Button onClick={() => setIsAddCardDialogOpen(true)} className="mt-4">
+          <Button
+            onClick={() => {
+              setIsAddCardDialogOpen(true);
+              resetCard();
+            }}
+            className="mt-4"
+          >
             <Plus className="mr-2 h-4 w-4" /> Add Card
           </Button>
 
           <Dialog
             open={isEditServiceDialogOpen}
-            onOpenChange={setIsEditServiceDialogOpen}
+            onOpenChange={(open) => {
+              setIsEditServiceDialogOpen(open);
+              if (!open) {
+                reset();
+              }
+            }}
           >
             <DialogContent>
               <DialogHeader>

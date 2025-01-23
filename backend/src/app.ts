@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import cors from "cors"; // Ensure CORS is imported
 import routes from "./routers";
 import cookieParser from "cookie-parser";
+import { BASE_URL, environment } from "./config/uploadConstants";
 
 const app = express();
 app.use(cookieParser());
@@ -18,7 +19,18 @@ declare global {
 app.use(express.json({ limit: "50mb" })); // Increase the limit to 50mb for JSON payloads
 app.use(express.urlencoded({ extended: true, limit: "50mb" })); // Increase the limit to 50mb for URL-encoded payloads
 
-app.use(cors());
+const corsOptions =
+  environment === "production"
+    ? {
+        origin: BASE_URL,
+        methods: ["GET", "POST", "PUT", "DELETE"],
+      }
+    : {
+        origin: "*",
+        methods: ["GET", "POST", "PUT", "DELETE"],
+      };
+
+app.use(cors(corsOptions));
 // Route handlers
 app.use("/api", routes);
 

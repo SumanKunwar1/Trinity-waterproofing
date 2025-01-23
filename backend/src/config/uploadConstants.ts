@@ -24,3 +24,7 @@ export const MAX_IMAGE_SIZE = process.env.IMAGE_SIZE_LIMIT
 export const MAX_VIDEO_SIZE = process.env.VIDEO_SIZE_LIMIT
   ? parseInt(process.env.VIDEO_SIZE_LIMIT) * 1024 * 1024
   : 10 * 1024 * 1024;
+
+export const BASE_URL = process.env.BASE_URL || "http://localhost:5000";
+
+export const environment = process.env.NODE_ENV || "development";

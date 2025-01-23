@@ -123,7 +123,7 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
   }, [selectedCategory, categories]);
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-white rounded-lg shadow-md p-6 max-h-screen h-full overflow-y-auto">
       <h2 className="text-xl font-semibold mb-4">Filter Products</h2>
       <Formik<FilterValues>
         initialValues={{

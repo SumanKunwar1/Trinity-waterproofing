@@ -52,15 +52,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       className="h-full flex flex-col bg-white rounded-lg shadow-md overflow-hidden relative"
     >
       <Link to={`/product/${product._id}`}>
-        <div className="aspect-square relative rounded-lg overflow-hidden">
+        <div className="w-full h-48 relative rounded-lg overflow-hidden flex items-center justify-center">
           <img
             src={product.productImage}
             alt={product.name}
-            className="object-cover w-full h-full"
+            className="object-contain max-w-full max-h-full"
             loading="lazy"
           />
         </div>
       </Link>
+
       <div className="p-4 flex-grow flex flex-col">
         <div className="flex justify-between items-start mb-2">
           <Link to={`/product/${product._id}`}>
