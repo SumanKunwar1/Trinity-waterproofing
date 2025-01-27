@@ -9,10 +9,10 @@ const validateSlider = (
   next: NextFunction
 ): void => {
   const schema = Joi.object({
-    title: Joi.string().optional().messages({
+    title: Joi.string().optional().allow("").messages({
       "string.base": "Title must be a string",
     }),
-    description: Joi.string().optional().messages({
+    description: Joi.string().optional().allow("").messages({
       "string.base": "Description must be a string",
     }),
     // Ensure either image or video is provided
@@ -31,7 +31,6 @@ const validateSlider = (
     .messages({
       "object.missing": "Either 'image' or 'video' is required",
     });
-
   const { error } = schema.validate(req.body, { abortEarly: false });
   if (error) {
     const errors = error.details.map((err) => ({

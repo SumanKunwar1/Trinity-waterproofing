@@ -9,10 +9,10 @@ const validateEditSlider = (
   next: NextFunction
 ): void => {
   const schema = Joi.object({
-    title: Joi.string().optional().messages({
+    title: Joi.string().optional().allow("").messages({
       "string.base": "Title must be a string",
     }),
-    description: Joi.string().optional().messages({
+    description: Joi.string().optional().allow("").messages({
       "string.base": "Description must be a string",
     }),
     image: Joi.string().optional().allow("").messages({
@@ -40,7 +40,6 @@ const validateEditSlider = (
       "object.min":
         "At least one field must be provided to update the product image",
     });
-
   const { error } = schema.validate(req.body, { abortEarly: false });
   if (error) {
     const errors = error.details.map((err) => ({

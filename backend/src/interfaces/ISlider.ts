@@ -4,4 +4,8 @@ export interface ISlider {
   image?: string;
   video?: string;
   isvisible: boolean;
+  media?: {
+    type: string;
+    url: string;
+  };
 }

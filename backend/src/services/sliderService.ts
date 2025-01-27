@@ -90,44 +90,38 @@ export class SliderService {
 
   public async editSlider(sliderData: Partial<ISlider>, sliderId: string) {
     try {
-      const { title, description, image, video, isvisible } = sliderData;
       const slider = await Slider.findById(sliderId);
 
       if (!slider) {
         throw httpMessages.NOT_FOUND("Slider");
       }
 
-      let media;
-
-      if (image) {
+      // Handle media updates (if image or video is provided)
+      if (sliderData.image || sliderData.video) {
         if (slider.media) {
-          await deleteImages([slider.media.url]);
+          await deleteImages([slider.media.url]); // Delete old media
         }
-        media = { type: "image", url: image };
-      } else if (video) {
-        if (slider.media) {
-          await deleteImages([slider.media.url]);
-        }
-        media = { type: "video", url: video };
-      } else {
-        media = slider.media;
+
+        sliderData.media = sliderData.image
+          ? { type: "image", url: sliderData.image as string }
+          : { type: "video", url: sliderData.video as string };
+
+        // Remove image and video from the data after setting media
+        delete sliderData.image;
+        delete sliderData.video;
       }
 
-      if (media) {
-        slider.media = media;
-      }
+      // Use findByIdAndUpdate to apply updates
+      const updatedSlider = await Slider.findByIdAndUpdate(
+        sliderId,
+        sliderData,
+        {
+          new: true, // Return the updated document
+          runValidators: true, // Ensure validation rules are applied
+        }
+      );
 
-      if (title) {
-        slider.title = title;
-      }
-      if (description) {
-        slider.description = description;
-      }
-      if (typeof isvisible !== "undefined") {
-        slider.isvisible = isvisible;
-      }
-      await slider.save();
-      return slider;
+      return updatedSlider;
     } catch (error) {
       throw error;
     }
