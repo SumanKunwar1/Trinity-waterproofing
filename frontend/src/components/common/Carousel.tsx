@@ -1,3 +1,4 @@
+import type React from "react";
 import {
   useState,
   useEffect,
@@ -30,7 +31,6 @@ const Carousel: React.FC<CarouselProps> = ({
   const [dragOffset, setDragOffset] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
 
-  // Previous handlers remain the same...
   const minSwipeDistance = 50;
 
   useEffect(() => {
@@ -55,7 +55,6 @@ const Carousel: React.FC<CarouselProps> = ({
     setIsPlaying(!isPlaying);
   };
 
-  // Previous touch and mouse handlers remain the same...
   const onTouchStart = (e: TouchEvent) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
@@ -134,7 +133,11 @@ const Carousel: React.FC<CarouselProps> = ({
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
         onMouseLeave={onMouseUp}
-        style={{ height: "600px" }} // or '700px' based on your needs
+        style={{
+          height: "calc(100vw * (600 / 1920))",
+          maxHeight: "600px",
+          minHeight: "400px",
+        }}
       >
         <div
           ref={carouselRef}
@@ -149,12 +152,43 @@ const Carousel: React.FC<CarouselProps> = ({
           {items.map((item, index) => (
             <div
               key={index}
-              className="w-full flex-shrink-0 select-none h-full"
+              className="w-full flex-shrink-0 select-none h-full relative"
               style={{ touchAction: "pan-y pinch-zoom" }}
             >
               {item}
             </div>
           ))}
+        </div>
+
+        {/* Indicators Inside the Carousel */}
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-3">
+          <button
+            onClick={handlePlayPause}
+            className="p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transform transition-transform hover:scale-110"
+            aria-label={isPlaying ? "Pause" : "Play"}
+          >
+            {isPlaying ? (
+              <FaPause className="h-3 w-3 md:h-4 md:w-4" />
+            ) : (
+              <FaPlay className="h-3 w-3 md:h-4 md:w-4" />
+            )}
+          </button>
+
+          <div className="flex gap-2">
+            {items.map((_, i) => (
+              <button
+                key={i}
+                className={cn(
+                  "w-2 h-2 md:h-3 md:w-3 rounded-full transition-all duration-300 transform",
+                  currentIndex === i
+                    ? "bg-white scale-110"
+                    : "bg-white/50 hover:bg-white/70"
+                )}
+                onClick={() => setCurrentIndex(i)}
+                aria-label={`Go to slide ${i + 1}`}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Navigation arrows */}
@@ -174,37 +208,6 @@ const Carousel: React.FC<CarouselProps> = ({
           >
             <FaChevronRight className="h-6 w-6" />
           </button>
-        </div>
-
-        {/* Bottom indicators */}
-        <div className="absolute z-20 bottom-8 left-0 right-0 flex justify-center items-center gap-4">
-          <button
-            onClick={handlePlayPause}
-            className="p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transform transition-transform hover:scale-110"
-            aria-label={isPlaying ? "Pause" : "Play"}
-          >
-            {isPlaying ? (
-              <FaPause className="h-2 w-2 md:h-4 md:w-4" />
-            ) : (
-              <FaPlay className="h-2 w-2 md:h-4 md:w-4" />
-            )}
-          </button>
-
-          <div className="flex gap-2">
-            {items.map((_, index) => (
-              <button
-                key={index}
-                className={cn(
-                  "w-2 h-2 md:h-3 md:w-3 rounded-full transition-all duration-300 transform",
-                  currentIndex === index
-                    ? "bg-white scale-110"
-                    : "bg-white/50 hover:bg-white/70"
-                )}
-                onClick={() => setCurrentIndex(index)}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
-          </div>
         </div>
       </div>
     </div>

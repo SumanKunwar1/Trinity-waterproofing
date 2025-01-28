@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import type React from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -37,7 +38,7 @@ const HeroSection: React.FC = () => {
 
   useEffect(() => {
     fetchSliders();
-  }, []);
+  }, []); //Fixed: Added empty dependency array to only run on mount
 
   const carouselItems = sliders.map((item, index) => {
     const content = (
@@ -48,10 +49,12 @@ const HeroSection: React.FC = () => {
         transition={{ duration: 0.8 }}
         className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 bg-black/10 text-[#FEC615]"
       >
-        <h1 className="text-2xl md:text-6xl font-bold mb-2 md:mb-4">
+        <h1 className="text-2xl md:text-4xl lg:text-6xl font-bold mb-2 md:mb-4">
           {item.title}
         </h1>
-        <p className="text-lg md:text-2xl mb-4 md:mb-8">{item.description}</p>
+        <p className="text-sm md:text-lg lg:text-2xl mb-4 md:mb-8">
+          {item.description}
+        </p>
         <Link to="/products" className="inline-block">
           <Button className="cursor-pointer hover:bg-secondary transition-colors duration-300">
             Discover More
@@ -64,13 +67,18 @@ const HeroSection: React.FC = () => {
       <div key={index} className="relative w-full h-full">
         {item.mediaType === "image" ? (
           <img
-            src={item.media}
+            src={item.media || "/placeholder.svg"}
             alt={item.title}
-            className="w-full h-full"
-            style={{ objectPosition: "center" }}
+            className="w-full h-full object-contain md:object-fill"
           />
         ) : (
-          <video className="w-full h-full" autoPlay loop muted playsInline>
+          <video
+            className="w-full h-full object-contain md:object-fill"
+            autoPlay
+            loop
+            muted
+            playsInline
+          >
             <source src={item.media} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
