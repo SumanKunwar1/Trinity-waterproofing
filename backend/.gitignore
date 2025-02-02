@@ -3,6 +3,7 @@ node_modules/
 
 # TypeScript build output
 build/
+build.zip
 
 # TypeScript cache
 *.tsbuildinfo

@@ -15,7 +15,8 @@ const loginSchema = Yup.object().shape({
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-
+  const redirectPath =
+    new URLSearchParams(location.search).get("redirect") || "/";
   const handleSubmit = async (values: any) => {
     try {
       // Make the login request to your backend API
@@ -63,7 +64,7 @@ const Login: React.FC = () => {
             navigate("/admin/dashboard");
             window.location.reload();
           } else if (userRole === "b2c" || userRole === "b2b") {
-            navigate("/customer/dashboard");
+            navigate(redirectPath);
             window.location.reload();
           } else {
             navigate("/");

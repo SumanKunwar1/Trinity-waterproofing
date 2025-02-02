@@ -26,11 +26,12 @@ interface ProductFilterProps {
   onCategoryChange: (categoryId: string) => void;
   onSubcategoryChange: (subcategoryId: string) => void;
   getMaxPrice: (categoryId: string) => number;
+  currentFilters: FilterValues;
 }
 
 interface FilterValues {
-  category: string;
-  subcategory: string;
+  category: string | null;
+  subcategory: string | null; // Change to string | null
   minPrice: number;
   maxPrice: number;
   rating: number[];
@@ -47,6 +48,7 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
   onCategoryChange,
   onSubcategoryChange,
   getMaxPrice,
+  currentFilters,
 }) => {
   const [filteredSubcategories, setFilteredSubcategories] = useState<
     SubCategory[]
@@ -71,13 +73,15 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
       <h2 className="text-xl font-semibold mb-4">Filter Products</h2>
       <Formik<FilterValues>
         initialValues={{
-          category: selectedCategory || "",
-          subcategory: selectedSubcategory || "",
-          minPrice: 0,
-          maxPrice: selectedCategory ? getMaxPrice(selectedCategory) : 1000,
-          rating: [],
-          inStock: false,
-          brands: [],
+          category: currentFilters.category || selectedCategory || "",
+          subcategory: currentFilters.subcategory || selectedSubcategory || "",
+          minPrice: currentFilters.minPrice || 0,
+          maxPrice:
+            currentFilters.maxPrice ||
+            (selectedCategory ? getMaxPrice(selectedCategory) : 1000),
+          rating: currentFilters.rating || [],
+          inStock: currentFilters.inStock || false,
+          brands: currentFilters.brands || [],
         }}
         enableReinitialize
         onSubmit={(values) => {
@@ -92,7 +96,7 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
           const handleCategoryChange = (categoryId: string) => {
             setFieldValue("category", categoryId);
             setFieldValue("subcategory", "");
-            setFieldValue("minPrice", 0);
+            setFieldValue("minPrice", currentFilters.minPrice || 0);
             setFieldValue("maxPrice", getMaxPrice(categoryId));
             setFilteredSubcategories(getFilteredSubcategories(categoryId));
             onCategoryChange(categoryId);
@@ -117,7 +121,7 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
                 </label>
                 <Select
                   onValueChange={(value) => handleCategoryChange(value)}
-                  value={values.category}
+                  value={values.category || "all"}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="All Categories" />
@@ -144,7 +148,7 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
                   </label>
                   <Select
                     onValueChange={(value) => handleSubcategoryChange(value)}
-                    value={values.subcategory}
+                    value={values.subcategory || "all"}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="All Subcategories" />

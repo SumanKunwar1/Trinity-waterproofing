@@ -85,7 +85,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
 
   const handleBuyNow = () => {
     if (!isLoggedIn) {
-      navigate("/login");
+      navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`);
       return;
     }
     if (quantity <= product.inStock) {

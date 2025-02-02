@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
+import type React from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import ProductGrid from "../components/products/ProductGrid";
@@ -10,11 +11,20 @@ import Loader from "../components/common/Loader";
 import { Button } from "../components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "../components/ui/sheet";
 import { FilterIcon, ListOrderedIcon as SortIcon } from "lucide-react";
-import { IProduct } from "../types/product";
-import { Brand } from "../types/brand";
-import { Category } from "../types/category";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "../components/ui/pagination";
+import type { IProduct } from "../types/product";
+import type { Brand } from "../types/brand";
+import type { Category } from "../types/category";
 
-const ITEMS_PER_LOAD = 15;
+const ITEMS_PER_PAGE = 15;
 
 interface FilterOptions {
   category: string | null;
@@ -40,7 +50,17 @@ const ProductListing: React.FC = () => {
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(
     null
   );
-  const [hasMore, setHasMore] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [filters, setFilters] = useState<FilterOptions>({
+    category: null,
+    subcategory: null,
+    brands: [],
+    minPrice: 0,
+    maxPrice: 1000,
+    rating: [],
+    inStock: false,
+  });
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -59,12 +79,18 @@ const ProductListing: React.FC = () => {
 
   const getMaxPrice = useCallback(
     (categoryId: string): number => {
+      if (categoryId === "all" || !categoryId) {
+        return Math.max(
+          ...products.map((p) =>
+            userRole === "b2b" ? p.wholeSalePrice : p.retailPrice
+          )
+        );
+      }
       const subcategories = getFilteredSubcategories(categoryId);
       const priceKey = userRole === "b2b" ? "wholeSalePrice" : "retailPrice";
       let maxPrice = 0;
 
       subcategories.forEach((subcategory) => {
-        // console.log("subcategory", subcategory);
         subcategory.products.forEach((product) => {
           const price = product[priceKey as keyof IProduct] as number;
           if (price > maxPrice) {
@@ -73,62 +99,68 @@ const ProductListing: React.FC = () => {
         });
       });
 
-      return maxPrice || 1000; // Default to 1000 if no products found
+      return maxPrice || 1000;
     },
-    [getFilteredSubcategories, userRole]
+    [getFilteredSubcategories, userRole, products]
   );
 
   const applyFilters = useCallback(
-    (filters: FilterOptions) => {
+    (currentFilters: FilterOptions) => {
       let filtered = [...products];
 
-      if (filters.category && filters.category !== "all") {
+      if (currentFilters.category && currentFilters.category !== "all") {
         filtered = filtered.filter(
-          (product) => product.subCategory.category._id === filters.category
+          (product) =>
+            product.subCategory.category._id === currentFilters.category
         );
       }
 
-      if (filters.subcategory && filters.subcategory !== "all") {
+      if (currentFilters.subcategory && currentFilters.subcategory !== "all") {
         filtered = filtered.filter(
-          (product) => product.subCategory._id === filters.subcategory
+          (product) => product.subCategory._id === currentFilters.subcategory
         );
       }
 
-      if (filters.brands && filters.brands.length > 0) {
+      if (currentFilters.brands && currentFilters.brands.length > 0) {
         filtered = filtered.filter((product) =>
-          filters.brands.includes(product.brand._id)
+          currentFilters.brands.includes(product.brand._id)
         );
       }
 
-      if (filters.minPrice !== undefined && filters.maxPrice !== undefined) {
-        filtered = filtered.filter((product) => {
-          const price =
-            userRole === "b2b" ? product.wholeSalePrice : product.retailPrice;
-          return price >= filters.minPrice && price <= filters.maxPrice;
-        });
-      }
+      filtered = filtered.filter((product) => {
+        const price =
+          userRole === "b2b" ? product.wholeSalePrice : product.retailPrice;
+        return (
+          price >= currentFilters.minPrice && price <= currentFilters.maxPrice
+        );
+      });
 
-      if (filters.rating && filters.rating.length > 0) {
+      if (currentFilters.rating && currentFilters.rating.length > 0) {
         filtered = filtered.filter((product) => {
           if (product.review.length === 0) return false;
-
           const avgRating =
             product.review.reduce((acc, review) => acc + review.rating, 0) /
             product.review.length;
-          return filters.rating.some((rating) => avgRating >= rating);
+          return currentFilters.rating.some((rating) => avgRating >= rating);
         });
       }
 
-      if (filters.inStock) {
+      if (currentFilters.inStock) {
         filtered = filtered.filter((product) => product.inStock > 0);
       }
 
       setFilteredProducts(filtered);
-      setDisplayedProducts(filtered.slice(0, ITEMS_PER_LOAD));
-      setHasMore(filtered.length > ITEMS_PER_LOAD);
+      setTotalPages(Math.ceil(filtered.length / ITEMS_PER_PAGE));
+      setCurrentPage(1);
     },
     [products, userRole]
   );
+
+  const updateDisplayedProducts = useCallback(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    setDisplayedProducts(filteredProducts.slice(startIndex, endIndex));
+  }, [currentPage, filteredProducts]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -159,11 +191,8 @@ const ProductListing: React.FC = () => {
         ]);
 
         setProducts(productsRes.data);
-        setFilteredProducts(productsRes.data);
-        setDisplayedProducts(productsRes.data.slice(0, ITEMS_PER_LOAD));
         setCategories(categoriesRes.data);
         setBrands(brandsRes.data);
-        setHasMore(productsRes.data.length > ITEMS_PER_LOAD);
 
         setLoading(false);
       } catch (error) {
@@ -181,32 +210,32 @@ const ProductListing: React.FC = () => {
     const subcategory = searchParams.get("subcategory");
     const brands = searchParams.getAll("brand");
 
-    if (category && category !== "all") {
-      setSelectedCategory(category);
-    } else {
-      setSelectedCategory(null);
-    }
-    if (subcategory && subcategory !== "all") {
-      setSelectedSubcategory(subcategory);
-    } else {
-      setSelectedSubcategory(null);
-    }
-
-    const filters: FilterOptions = {
-      category: category || null,
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      category: category || "all", // Default to "all" if `null`
       subcategory: subcategory || null,
-      minPrice: 0,
-      maxPrice: category ? getMaxPrice(category) : 1000,
-      rating: [],
-      inStock: false,
-      brands: brands || [],
-    };
+      brands: brands,
+      maxPrice: category ? getMaxPrice(category) : getMaxPrice("all"),
+    }));
 
-    applyFilters(filters);
-  }, [location, applyFilters, getMaxPrice]);
+    setSelectedCategory(category && category !== "all" ? category : null);
+    setSelectedSubcategory(
+      subcategory && subcategory !== "all" ? subcategory : null
+    );
+  }, [location, getMaxPrice]);
 
-  const handleFilter = (filters: FilterOptions) => {
-    applyFilters(filters);
+  useEffect(() => {
+    if (products.length > 0) {
+      applyFilters(filters);
+    }
+  }, [products, filters, applyFilters]);
+
+  useEffect(() => {
+    updateDisplayedProducts();
+  }, [currentPage, filteredProducts, updateDisplayedProducts]);
+
+  const handleFilter = (newFilters: FilterOptions) => {
+    setFilters(newFilters);
     setIsFilterOpen(false);
   };
 
@@ -262,52 +291,42 @@ const ProductListing: React.FC = () => {
     }
 
     setFilteredProducts(sorted);
-    setDisplayedProducts(sorted.slice(0, ITEMS_PER_LOAD));
-    setHasMore(sorted.length > ITEMS_PER_LOAD);
+    setCurrentPage(1);
     setIsSortOpen(false);
   };
 
-  const handleLoadMore = () => {
-    const currentLength = displayedProducts.length;
-    const nextBatch = filteredProducts.slice(
-      currentLength,
-      currentLength + ITEMS_PER_LOAD
-    );
-    setDisplayedProducts([...displayedProducts, ...nextBatch]);
-    setHasMore(currentLength + ITEMS_PER_LOAD < filteredProducts.length);
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   const handleCategoryChange = (categoryId: string) => {
-    setSelectedCategory(categoryId);
+    const isAllCategories = categoryId === "all";
+    setSelectedCategory(isAllCategories ? null : categoryId);
     setSelectedSubcategory(null);
-    navigate(categoryId ? `/products?category=${categoryId}` : "/products");
-    applyFilters({
-      category: categoryId,
+    navigate(
+      isAllCategories ? "/products" : `/products?category=${categoryId}`
+    );
+
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      category: isAllCategories ? "all" : categoryId, // Default to "all" if `null`
       subcategory: null,
-      minPrice: 0,
       maxPrice: getMaxPrice(categoryId),
-      rating: [],
-      inStock: false,
-      brands: [],
-    });
+    }));
   };
 
   const handleSubcategoryChange = (subcategoryId: string) => {
     setSelectedSubcategory(subcategoryId);
     navigate(
-      subcategoryId
+      subcategoryId && subcategoryId !== "all"
         ? `/products?category=${selectedCategory}&subcategory=${subcategoryId}`
         : `/products?category=${selectedCategory}`
     );
-    applyFilters({
-      category: selectedCategory,
-      subcategory: subcategoryId,
-      minPrice: 0,
-      maxPrice: selectedCategory ? getMaxPrice(selectedCategory) : 1000,
-      rating: [],
-      inStock: false,
-      brands: [],
-    });
+
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      subcategory: subcategoryId !== "all" ? subcategoryId : null,
+    }));
   };
 
   if (loading) return <Loader />;
@@ -341,6 +360,7 @@ const ProductListing: React.FC = () => {
                       onCategoryChange={handleCategoryChange}
                       onSubcategoryChange={handleSubcategoryChange}
                       getMaxPrice={getMaxPrice}
+                      currentFilters={filters}
                     />
                   </SheetContent>
                 </Sheet>
@@ -368,6 +388,7 @@ const ProductListing: React.FC = () => {
                   onCategoryChange={handleCategoryChange}
                   onSubcategoryChange={handleSubcategoryChange}
                   getMaxPrice={getMaxPrice}
+                  currentFilters={filters}
                 />
               </div>
             </div>
@@ -377,11 +398,52 @@ const ProductListing: React.FC = () => {
                 <ProductSort onSort={handleSort} />
               </div>
               <ProductGrid products={displayedProducts} />
-              {hasMore && (
-                <div className="mt-8 flex justify-center">
-                  <Button onClick={handleLoadMore}>Load More</Button>
-                </div>
-              )}
+              <div className="mt-8">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                      />
+                    </PaginationItem>
+                    {[...Array(totalPages)].map((_, index) => {
+                      const pageNumber = index + 1;
+                      if (
+                        pageNumber === 1 ||
+                        pageNumber === totalPages ||
+                        (pageNumber >= currentPage - 1 &&
+                          pageNumber <= currentPage + 1)
+                      ) {
+                        return (
+                          <PaginationItem key={pageNumber}>
+                            <PaginationLink
+                              onClick={() => handlePageChange(pageNumber)}
+                              isActive={pageNumber === currentPage}
+                            >
+                              {pageNumber}
+                            </PaginationLink>
+                          </PaginationItem>
+                        );
+                      }
+                      if (
+                        (pageNumber === currentPage - 2 && pageNumber > 2) ||
+                        (pageNumber === currentPage + 2 &&
+                          pageNumber < totalPages - 1)
+                      ) {
+                        return <PaginationEllipsis key={pageNumber} />;
+                      }
+                      return null;
+                    })}
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
             </div>
           </div>
         </div>
