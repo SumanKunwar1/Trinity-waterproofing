@@ -1,11 +1,10 @@
 import type React from "react";
-import { useState, useEffect } from "react";
-import { Formik, Form, Field } from "formik";
+import { useState, useEffect, useCallback } from "react";
+import { Formik, Form } from "formik";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import { Checkbox } from "../ui/checkbox";
 import { Input } from "../ui/input";
-import { Button } from "../ui/button";
 import {
   Select,
   SelectContent,
@@ -13,51 +12,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { Button } from "../ui/button";
 import type { Brand } from "../../types/brand";
+import type { Category } from "../../types/category";
+import type { SubCategory } from "../../types/subCategory";
 
-interface Category {
-  _id: string;
-  name: string;
-  description?: string;
-  subCategories: SubCategory[];
-}
-
-interface SubCategory {
-  _id: string;
-  name: string;
-  description?: string;
-  category: string;
-  products: Product[];
-}
-
-interface Product {
-  _id: string;
-  name: string;
-  description: string;
-  wholeSalePrice: number;
-  retailPrice: number;
-  retailDiscountedPrice?: number;
-  wholeSaleDiscountedPrice?: number;
-  productImage: string;
-  image: string[];
-  subCategory: string;
-  pdfUrl: string;
-  features: string[];
-  brand: string | Brand;
-  createdAt: string;
-  colors?: IColor[];
-  inStock: number;
-  review: IReview[];
-}
-
-interface IColor {
-  name: string;
-  hex: string;
-}
-
-interface IReview {
-  rating: number;
-  content: string;
+interface ProductFilterProps {
+  onFilter: (filters: FilterValues) => void;
+  categories: Category[];
+  brands: Brand[];
+  selectedCategory: string | null;
+  selectedSubcategory: string | null;
+  onCategoryChange: (categoryId: string) => void;
+  onSubcategoryChange: (subcategoryId: string) => void;
+  getMaxPrice: (categoryId: string) => number;
 }
 
 interface FilterValues {
@@ -70,16 +38,6 @@ interface FilterValues {
   brands: string[];
 }
 
-interface ProductFilterProps {
-  onFilter: (filters: FilterValues) => void;
-  categories: Category[];
-  brands: Brand[];
-  selectedCategory: string | null;
-  selectedSubcategory: string | null;
-  onCategoryChange: (categoryId: string) => void;
-  onSubcategoryChange: (subcategoryId: string) => void;
-}
-
 const ProductFilter: React.FC<ProductFilterProps> = ({
   onFilter,
   categories,
@@ -88,39 +46,25 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
   selectedSubcategory,
   onCategoryChange,
   onSubcategoryChange,
+  getMaxPrice,
 }) => {
   const [filteredSubcategories, setFilteredSubcategories] = useState<
     SubCategory[]
   >([]);
-  const userRole = localStorage.getItem("userRole");
-  const priceKey = userRole === "b2b" ? "wholeSalePrice" : "retailPrice";
 
-  const getFilteredSubcategories = (categoryId: string) => {
-    const category = categories.find((cat) => cat._id === categoryId);
-    return category ? category.subCategories : [];
-  };
-
-  const getMaxPrice = (categoryId: string) => {
-    const subcategories = getFilteredSubcategories(categoryId);
-    let maxPrice = 1000;
-
-    subcategories.forEach((subcategory) => {
-      subcategory.products.forEach((product) => {
-        const price = product[priceKey as keyof Product] as number;
-        if (price > maxPrice) {
-          maxPrice = price;
-        }
-      });
-    });
-
-    return maxPrice;
-  };
+  const getFilteredSubcategories = useCallback(
+    (categoryId: string): SubCategory[] => {
+      const category = categories.find((cat) => cat._id === categoryId);
+      return category ? category.subCategories : [];
+    },
+    [categories]
+  );
 
   useEffect(() => {
     if (selectedCategory) {
       setFilteredSubcategories(getFilteredSubcategories(selectedCategory));
     }
-  }, [selectedCategory, categories]);
+  }, [selectedCategory, getFilteredSubcategories]);
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 max-h-screen h-full overflow-y-auto">
@@ -140,7 +84,7 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
           onFilter(values);
         }}
       >
-        {({ values, setFieldValue }) => {
+        {({ values, setFieldValue, submitForm }) => {
           const maxPriceForCategory = values.category
             ? getMaxPrice(values.category)
             : 1000;
@@ -152,11 +96,13 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
             setFieldValue("maxPrice", getMaxPrice(categoryId));
             setFilteredSubcategories(getFilteredSubcategories(categoryId));
             onCategoryChange(categoryId);
+            submitForm(); // Apply filters immediately
           };
 
           const handleSubcategoryChange = (subcategoryId: string) => {
             setFieldValue("subcategory", subcategoryId);
             onSubcategoryChange(subcategoryId);
+            submitForm(); // Apply filters immediately
           };
 
           return (
@@ -247,41 +193,43 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
                 </div>
               </div>
 
-              {/* Price Range */}
+              {/* Price Range Slider */}
               <div>
                 <label
-                  htmlFor="priceRange"
+                  htmlFor="price"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
                   Price Range
                 </label>
-                <div className="flex items-center space-x-2 mb-2">
-                  <Field
-                    as={Input}
+                <div className="flex items-center space-x-2">
+                  <Input
                     type="number"
+                    id="minPrice"
                     name="minPrice"
-                    placeholder="Min"
-                    className="w-1/2"
-                    min={0}
-                    max={values.maxPrice}
+                    value={values.minPrice}
+                    onChange={(e) =>
+                      setFieldValue("minPrice", Number(e.target.value))
+                    }
+                    className="w-20"
                   />
-                  <span>-</span>
-                  <Field
-                    as={Input}
+                  <span className="text-gray-600">-</span>
+                  <Input
                     type="number"
+                    id="maxPrice"
                     name="maxPrice"
-                    placeholder="Max"
-                    className="w-1/2"
-                    min={values.minPrice}
-                    max={maxPriceForCategory}
+                    value={values.maxPrice}
+                    onChange={(e) =>
+                      setFieldValue("maxPrice", Number(e.target.value))
+                    }
+                    className="w-20"
                   />
                 </div>
                 <Slider
                   range
                   min={0}
                   max={maxPriceForCategory}
-                  value={[values.minPrice, values.maxPrice]}
-                  onChange={(value: number | number[]) => {
+                  defaultValue={[values.minPrice, values.maxPrice]}
+                  onChange={(value) => {
                     if (Array.isArray(value)) {
                       setFieldValue("minPrice", value[0]);
                       setFieldValue("maxPrice", value[1]);
@@ -291,7 +239,7 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
                 />
               </div>
 
-              {/* Rating Filters */}
+              {/* Rating Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Rating
@@ -335,12 +283,10 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
                 </label>
               </div>
 
-              {/* Submit Button */}
-              <div className="flex w-full justify-center">
-                <Button type="submit" className="w-full">
-                  Apply Filters
-                </Button>
-              </div>
+              {/* Apply Filters Button */}
+              <Button type="submit" className="w-full">
+                Apply Filters
+              </Button>
             </Form>
           );
         }}

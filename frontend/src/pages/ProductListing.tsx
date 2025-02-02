@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import ProductGrid from "../components/products/ProductGrid";
@@ -7,72 +7,26 @@ import ProductSort from "../components/products/ProductSort";
 import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
 import Loader from "../components/common/Loader";
-import type { IProduct } from "../types/product";
-import type { Brand } from "../types/brand";
 import { Button } from "../components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "../components/ui/sheet";
 import { FilterIcon, ListOrderedIcon as SortIcon } from "lucide-react";
+import { IProduct } from "../types/product";
+import { Brand } from "../types/brand";
+import { Category } from "../types/category";
 
 const ITEMS_PER_LOAD = 15;
 
-interface Category {
-  _id: string;
-  name: string;
-  description?: string;
-  subCategories: SubCategory[];
-}
-
-interface SubCategory {
-  _id: string;
-  name: string;
-  description?: string;
-  category: string;
-  products: Product[];
-}
-
-interface IColor {
-  name: string;
-  hex: string;
-}
-
-interface IReview {
-  rating: number;
-  content: string;
-}
-
-interface Product {
-  _id: string;
-  name: string;
-  description: string;
-  wholeSalePrice: number;
-  retailPrice: number;
-  retailDiscountedPrice?: number;
-  wholeSaleDiscountedPrice?: number;
-  productImage: string;
-  image: string[];
-  subCategory: string;
-  pdfUrl: string;
-  features: string[];
-  brand: string | Brand;
-  createdAt: string;
-  colors?: IColor[];
-  inStock: number;
-  review: IReview[];
-}
-
 interface FilterOptions {
-  category: string;
-  subcategory: string;
+  category: string | null;
+  subcategory: string | null;
+  brands: string[];
   minPrice: number;
   maxPrice: number;
   rating: number[];
   inStock: boolean;
-  brands: string[];
 }
 
 const ProductListing: React.FC = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
   const [products, setProducts] = useState<IProduct[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<IProduct[]>([]);
   const [displayedProducts, setDisplayedProducts] = useState<IProduct[]>([]);
@@ -88,16 +42,93 @@ const ProductListing: React.FC = () => {
   );
   const [hasMore, setHasMore] = useState(true);
 
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const userRole = localStorage.getItem("userRole");
   const isLoggedIn = !!localStorage.getItem("authToken");
-  const unParsedUserId = localStorage.getItem("userId");
-  let userId: string | null = null;
+  const userId = JSON.parse(localStorage.getItem("userId") || "null");
 
-  if (unParsedUserId) {
-    try {
-      userId = JSON.parse(unParsedUserId);
-    } catch (error) {}
-  }
+  const getFilteredSubcategories = useCallback(
+    (categoryId: string) => {
+      const category = categories.find((cat) => cat._id === categoryId);
+      return category ? category.subCategories : [];
+    },
+    [categories]
+  );
+
+  const getMaxPrice = useCallback(
+    (categoryId: string): number => {
+      const subcategories = getFilteredSubcategories(categoryId);
+      const priceKey = userRole === "b2b" ? "wholeSalePrice" : "retailPrice";
+      let maxPrice = 0;
+
+      subcategories.forEach((subcategory) => {
+        // console.log("subcategory", subcategory);
+        subcategory.products.forEach((product) => {
+          const price = product[priceKey as keyof IProduct] as number;
+          if (price > maxPrice) {
+            maxPrice = price;
+          }
+        });
+      });
+
+      return maxPrice || 1000; // Default to 1000 if no products found
+    },
+    [getFilteredSubcategories, userRole]
+  );
+
+  const applyFilters = useCallback(
+    (filters: FilterOptions) => {
+      let filtered = [...products];
+
+      if (filters.category && filters.category !== "all") {
+        filtered = filtered.filter(
+          (product) => product.subCategory.category._id === filters.category
+        );
+      }
+
+      if (filters.subcategory && filters.subcategory !== "all") {
+        filtered = filtered.filter(
+          (product) => product.subCategory._id === filters.subcategory
+        );
+      }
+
+      if (filters.brands && filters.brands.length > 0) {
+        filtered = filtered.filter((product) =>
+          filters.brands.includes(product.brand._id)
+        );
+      }
+
+      if (filters.minPrice !== undefined && filters.maxPrice !== undefined) {
+        filtered = filtered.filter((product) => {
+          const price =
+            userRole === "b2b" ? product.wholeSalePrice : product.retailPrice;
+          return price >= filters.minPrice && price <= filters.maxPrice;
+        });
+      }
+
+      if (filters.rating && filters.rating.length > 0) {
+        filtered = filtered.filter((product) => {
+          if (product.review.length === 0) return false;
+
+          const avgRating =
+            product.review.reduce((acc, review) => acc + review.rating, 0) /
+            product.review.length;
+          return filters.rating.some((rating) => avgRating >= rating);
+        });
+      }
+
+      if (filters.inStock) {
+        filtered = filtered.filter((product) => product.inStock > 0);
+      }
+
+      setFilteredProducts(filtered);
+      setDisplayedProducts(filtered.slice(0, ITEMS_PER_LOAD));
+      setHasMore(filtered.length > ITEMS_PER_LOAD);
+    },
+    [products, userRole]
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -106,18 +137,21 @@ const ProductListing: React.FC = () => {
 
         let productsRes;
         if (isLoggedIn && userId) {
-          productsRes = await axios.get(`/api/product/user/${userId}`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-            },
-          });
+          productsRes = await axios.get<IProduct[]>(
+            `/api/product/user/${userId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              },
+            }
+          );
         } else {
-          productsRes = await axios.get("/api/product");
+          productsRes = await axios.get<IProduct[]>("/api/product");
         }
 
         const [categoriesRes, brandsRes] = await Promise.all([
-          axios.get("/api/category"),
-          axios.get("/api/brand", {
+          axios.get<Category[]>("/api/category"),
+          axios.get<Brand[]>("/api/brand", {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("authToken")}`,
             },
@@ -158,87 +192,21 @@ const ProductListing: React.FC = () => {
       setSelectedSubcategory(null);
     }
 
-    if (category || subcategory || brands.length > 0) {
-      handleFilter({
-        category: category || "all",
-        subcategory: subcategory || "all",
-        minPrice: 0,
-        maxPrice: 1000,
-        rating: [],
-        inStock: false,
-        brands: brands || [],
-      });
-    } else {
-      setFilteredProducts(products);
-      setDisplayedProducts(products.slice(0, ITEMS_PER_LOAD));
-      setHasMore(products.length > ITEMS_PER_LOAD);
-    }
-  }, [location, products]);
+    const filters: FilterOptions = {
+      category: category || null,
+      subcategory: subcategory || null,
+      minPrice: 0,
+      maxPrice: category ? getMaxPrice(category) : 1000,
+      rating: [],
+      inStock: false,
+      brands: brands || [],
+    };
+
+    applyFilters(filters);
+  }, [location, applyFilters, getMaxPrice]);
 
   const handleFilter = (filters: FilterOptions) => {
-    let filtered = [...products];
-
-    const isFilterApplied =
-      filters.category !== "all" ||
-      filters.subcategory !== "all" ||
-      filters.brands.length > 0 ||
-      filters.minPrice > 0 ||
-      filters.maxPrice < 1000 ||
-      filters.rating.length > 0 ||
-      filters.inStock;
-
-    if (!isFilterApplied) {
-      setFilteredProducts(filtered);
-      setDisplayedProducts(filtered.slice(0, ITEMS_PER_LOAD));
-      setHasMore(filtered.length > ITEMS_PER_LOAD);
-      setIsFilterOpen(false);
-      return;
-    }
-
-    if (filters.category && filters.category !== "all") {
-      filtered = filtered.filter(
-        (product) => product.subCategory.category._id === filters.category
-      );
-    }
-
-    if (filters.subcategory && filters.subcategory !== "all") {
-      filtered = filtered.filter(
-        (product) => product.subCategory._id === filters.subcategory
-      );
-    }
-
-    if (filters.brands && filters.brands.length > 0) {
-      filtered = filtered.filter((product) =>
-        filters.brands.includes(product.brand._id)
-      );
-    }
-
-    if (filters.minPrice !== undefined && filters.maxPrice !== undefined) {
-      filtered = filtered.filter((product) => {
-        const price =
-          userRole === "b2b" ? product.wholeSalePrice : product.retailPrice;
-        return price >= filters.minPrice && price <= filters.maxPrice;
-      });
-    }
-
-    if (filters.rating && filters.rating.length > 0) {
-      filtered = filtered.filter((product) => {
-        if (product.review.length === 0) return false;
-
-        const avgRating =
-          product.review.reduce((acc, review) => acc + review.rating, 0) /
-          product.review.length;
-        return filters.rating.some((rating) => avgRating >= rating);
-      });
-    }
-
-    if (filters.inStock) {
-      filtered = filtered.filter((product) => product.inStock > 0);
-    }
-
-    setFilteredProducts(filtered);
-    setDisplayedProducts(filtered.slice(0, ITEMS_PER_LOAD));
-    setHasMore(filtered.length > ITEMS_PER_LOAD);
+    applyFilters(filters);
     setIsFilterOpen(false);
   };
 
@@ -313,6 +281,15 @@ const ProductListing: React.FC = () => {
     setSelectedCategory(categoryId);
     setSelectedSubcategory(null);
     navigate(categoryId ? `/products?category=${categoryId}` : "/products");
+    applyFilters({
+      category: categoryId,
+      subcategory: null,
+      minPrice: 0,
+      maxPrice: getMaxPrice(categoryId),
+      rating: [],
+      inStock: false,
+      brands: [],
+    });
   };
 
   const handleSubcategoryChange = (subcategoryId: string) => {
@@ -322,6 +299,15 @@ const ProductListing: React.FC = () => {
         ? `/products?category=${selectedCategory}&subcategory=${subcategoryId}`
         : `/products?category=${selectedCategory}`
     );
+    applyFilters({
+      category: selectedCategory,
+      subcategory: subcategoryId,
+      minPrice: 0,
+      maxPrice: selectedCategory ? getMaxPrice(selectedCategory) : 1000,
+      rating: [],
+      inStock: false,
+      brands: [],
+    });
   };
 
   if (loading) return <Loader />;
@@ -354,6 +340,7 @@ const ProductListing: React.FC = () => {
                       selectedSubcategory={selectedSubcategory}
                       onCategoryChange={handleCategoryChange}
                       onSubcategoryChange={handleSubcategoryChange}
+                      getMaxPrice={getMaxPrice}
                     />
                   </SheetContent>
                 </Sheet>
@@ -380,6 +367,7 @@ const ProductListing: React.FC = () => {
                   selectedSubcategory={selectedSubcategory}
                   onCategoryChange={handleCategoryChange}
                   onSubcategoryChange={handleSubcategoryChange}
+                  getMaxPrice={getMaxPrice}
                 />
               </div>
             </div>

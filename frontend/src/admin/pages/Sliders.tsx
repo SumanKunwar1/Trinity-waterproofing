@@ -102,12 +102,12 @@ const Sliders: React.FC = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.title.trim()) {
-      newErrors.title = "Title is required";
-    }
-    if (!formData.description.trim()) {
-      newErrors.description = "Description is required";
-    }
+    // if (!formData.title.trim()) {
+    //   newErrors.title = "Title is required";
+    // }
+    // if (!formData.description.trim()) {
+    //   newErrors.description = "Description is required";
+    // }
     if (!editingSlider && !formData.mediaFile) {
       newErrors.mediaFile = "Media file is required";
     }

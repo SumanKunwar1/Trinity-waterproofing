@@ -38,60 +38,53 @@ const HeroSection: React.FC = () => {
 
   useEffect(() => {
     fetchSliders();
-  }, []); //Fixed: Added empty dependency array to only run on mount
+  }, []); //Fixed: Added empty dependency array to useEffect
 
-  const carouselItems = sliders.map((item, index) => {
-    const content = (
+  const carouselItems = sliders.map((item, index) => (
+    <div key={index} className="relative w-full h-full">
+      {item.mediaType === "image" ? (
+        <img
+          src={item.media || "/placeholder.svg"}
+          alt={item.title}
+          className="w-full h-full object-contain md:object-cover"
+        />
+      ) : (
+        <video
+          className="w-full h-full object-contain md:object-cover"
+          autoPlay
+          loop
+          muted
+          playsInline
+        >
+          <source src={item.media} type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      )}
       <motion.div
-        key={index}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
         className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 bg-black/10 text-[#FEC615]"
       >
-        <h1 className="text-2xl md:text-4xl lg:text-6xl font-bold mb-2 md:mb-4">
+        <h1 className="text-xl md:text-2xl lg:text-4xl xl:text-6xl font-bold mb-2 md:mb-4">
           {item.title}
         </h1>
-        <p className="text-sm md:text-lg lg:text-2xl mb-4 md:mb-8">
+        <p className="text-xs md:text-sm lg:text-lg xl:text-2xl mb-4 md:mb-8">
           {item.description}
         </p>
         <Link to="/products" className="inline-block">
-          <Button className="cursor-pointer hover:bg-secondary transition-colors duration-300">
+          <Button className="text-sm md:text-base cursor-pointer hover:bg-secondary transition-colors duration-300">
             Discover More
           </Button>
         </Link>
       </motion.div>
-    );
-
-    return (
-      <div key={index} className="relative w-full h-full">
-        {item.mediaType === "image" ? (
-          <img
-            src={item.media || "/placeholder.svg"}
-            alt={item.title}
-            className="w-full h-full object-contain md:object-fill"
-          />
-        ) : (
-          <video
-            className="w-full h-full object-contain md:object-fill"
-            autoPlay
-            loop
-            muted
-            playsInline
-          >
-            <source src={item.media} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-        )}
-        {content}
-      </div>
-    );
-  });
+    </div>
+  ));
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-[600px]">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+      <div className="flex justify-center items-center h-[300px] md:h-[600px]">
+        <div className="animate-spin rounded-full h-16 w-16 md:h-32 md:w-32 border-t-2 border-b-2 border-gray-900"></div>
       </div>
     );
   }
@@ -99,9 +92,14 @@ const HeroSection: React.FC = () => {
   return (
     <section className="w-full flex justify-center">
       {sliders.length > 0 ? (
-        <Carousel items={carouselItems} autoPlay interval={5000} />
+        <Carousel
+          items={carouselItems}
+          autoPlay
+          interval={5000}
+          className="w-full max-w-[1920px]"
+        />
       ) : (
-        <div className="flex justify-center items-center h-[600px] text-white text-2xl max-w-[1920px] w-full">
+        <div className="flex justify-center items-center h-[300px] md:h-[600px] text-white text-xl md:text-2xl max-w-[1920px] w-full">
           No sliders available
         </div>
       )}

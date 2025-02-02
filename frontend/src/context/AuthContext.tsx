@@ -6,15 +6,7 @@ import React, {
   ReactNode,
 } from "react";
 import { jwtDecode } from "jwt-decode";
-import { useLogout } from "../utils/authUtils";
-
-const decodeToken = (token: string) => {
-  try {
-    return jwtDecode(token);
-  } catch (e) {
-    return null;
-  }
-};
+import { useNavigate } from "react-router-dom";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -39,8 +31,15 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+  const navigate = useNavigate();
 
-  const handleLogout = useLogout();
+  const decodeToken = (token: string) => {
+    try {
+      return jwtDecode(token);
+    } catch (e) {
+      return null;
+    }
+  };
 
   const checkTokenValidity = (token: string | null) => {
     if (!token) {
@@ -55,7 +54,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = () => {
-    handleLogout();
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userRole");
+    setIsAuthenticated(false);
+    setToken(null);
+    navigate("/login", { replace: true });
   };
 
   useEffect(() => {
@@ -65,9 +68,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setToken(storedToken);
       setIsAuthenticated(true);
     } else {
-      if (isAuthenticated) {
-        logout();
-      }
+      logout();
     }
   }, []);
 

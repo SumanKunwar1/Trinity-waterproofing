@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 export const useLogout = () => {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+  return () => {
     const keysToRemove = [
       "authToken",
       "userRole",
@@ -15,12 +15,9 @@ export const useLogout = () => {
       "userNumber",
     ];
 
-    keysToRemove.forEach((key) => {
-      localStorage.removeItem(key);
-    });
+    keysToRemove.forEach((key) => localStorage.removeItem(key));
 
-    navigate("/");
+    navigate("/login", { replace: true });
+    window.location.reload();
   };
-
-  return handleLogout;
 };

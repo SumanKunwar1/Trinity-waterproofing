@@ -120,12 +120,13 @@ const Carousel: React.FC<CarouselProps> = ({
   };
 
   return (
-    <div className="relative w-full flex justify-center">
+    <div className={cn("relative w-full", className)}>
       <div
-        className={cn(
-          "relative overflow-hidden group touch-pan-y w-full max-w-[1920px]",
-          className
-        )}
+        className="relative overflow-hidden group touch-pan-y w-full"
+        style={{
+          aspectRatio: "16/9",
+          maxHeight: "600px",
+        }}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
@@ -133,11 +134,6 @@ const Carousel: React.FC<CarouselProps> = ({
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
         onMouseLeave={onMouseUp}
-        style={{
-          height: "calc(100vw * (600 / 1920))",
-          maxHeight: "600px",
-          minHeight: "400px",
-        }}
       >
         <div
           ref={carouselRef}
@@ -161,25 +157,25 @@ const Carousel: React.FC<CarouselProps> = ({
         </div>
 
         {/* Indicators Inside the Carousel */}
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-3">
+        <div className="absolute bottom-2 md:bottom-4 left-0 right-0 flex justify-center items-center gap-2 md:gap-3">
           <button
             onClick={handlePlayPause}
-            className="p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transform transition-transform hover:scale-110"
+            className="p-1 md:p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transform transition-transform hover:scale-110"
             aria-label={isPlaying ? "Pause" : "Play"}
           >
             {isPlaying ? (
-              <FaPause className="h-3 w-3 md:h-4 md:w-4" />
+              <FaPause className="h-2 w-2 md:h-3 md:w-3 lg:h-4 lg:w-4" />
             ) : (
-              <FaPlay className="h-3 w-3 md:h-4 md:w-4" />
+              <FaPlay className="h-2 w-2 md:h-3 md:w-3 lg:h-4 lg:w-4" />
             )}
           </button>
 
-          <div className="flex gap-2">
+          <div className="flex gap-1 md:gap-2">
             {items.map((_, i) => (
               <button
                 key={i}
                 className={cn(
-                  "w-2 h-2 md:h-3 md:w-3 rounded-full transition-all duration-300 transform",
+                  "w-1.5 h-1.5 md:w-2 md:h-2 lg:h-3 lg:w-3 rounded-full transition-all duration-300 transform",
                   currentIndex === i
                     ? "bg-white scale-110"
                     : "bg-white/50 hover:bg-white/70"
@@ -192,21 +188,21 @@ const Carousel: React.FC<CarouselProps> = ({
         </div>
 
         {/* Navigation arrows */}
-        <div className="absolute z-20 inset-x-0 top-1/2 transform -translate-y-1/2 flex items-center justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute z-20 inset-x-0 top-1/2 transform -translate-y-1/2 flex items-center justify-between px-2 md:px-4 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={handlePrev}
-            className="p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transform transition-transform hover:scale-110"
+            className="p-1 md:p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transform transition-transform hover:scale-110"
             aria-label="Previous slide"
           >
-            <FaChevronLeft className="h-6 w-6" />
+            <FaChevronLeft className="h-3 w-3 md:h-4 md:w-4 lg:h-6 lg:w-6" />
           </button>
 
           <button
             onClick={handleNext}
-            className="p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transform transition-transform hover:scale-110"
+            className="p-1 md:p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transform transition-transform hover:scale-110"
             aria-label="Next slide"
           >
-            <FaChevronRight className="h-6 w-6" />
+            <FaChevronRight className="h-3 w-3 md:h-4 md:w-4 lg:h-6 lg:w-6" />
           </button>
         </div>
       </div>
