@@ -179,14 +179,10 @@ const Footer: React.FC = () => {
                   className="flex items-center space-x-2  hover:text-secondary hover:tracking-wider transform duration-300"
                 >
                   <FaAngleRight className="" />
-                  <Link to={`/${link}`} className=" transition-colors">
-                    {link
-                      .split("-")
-                      .map(
-                        (word) => word.charAt(0).toUpperCase() + word.slice(1)
-                      )
-                      .join(" ")}
-                  </Link>
+                  {link
+                    .split("-")
+                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(" ")}
                 </li>
               ))}
             </ul>

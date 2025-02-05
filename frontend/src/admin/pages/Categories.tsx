@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import type React from "react";
+import { useState, useEffect, useCallback } from "react";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
@@ -30,12 +31,11 @@ import FormikForm from "../components/FormikForm";
 import Table from "../components/ui/table";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
-import { FormikHelpers } from "formik";
+import type { FormikHelpers } from "formik";
 
-interface Category {
+interface Product {
   _id: string;
   name: string;
-  description: string;
 }
 
 interface Subcategory {
@@ -43,6 +43,14 @@ interface Subcategory {
   name: string;
   description: string;
   category: string;
+  product: Product[];
+}
+
+interface Category {
+  _id: string;
+  name: string;
+  description: string;
+  subCategories: Subcategory[];
 }
 
 const categorySchema = Yup.object().shape({
@@ -59,7 +67,6 @@ const subcategorySchema = Yup.object().shape({
 const getAuthToken = () => localStorage.getItem("authToken");
 
 const Categories: React.FC = () => {
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -75,20 +82,18 @@ const Categories: React.FC = () => {
   const [subcategoryToDelete, setSubcategoryToDelete] = useState<string | null>(
     null
   );
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
 
-  useEffect(() => {
-    fetchCategories();
-    fetchSubcategories();
-  }, []);
-
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const response = await axios.get("/api/category");
       setCategories(response.data);
+      const subcategoriesResponse = await axios.get("/api/subcategory");
+      setSubcategories(subcategoriesResponse.data);
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.error ||
@@ -96,20 +101,11 @@ const Categories: React.FC = () => {
         "Failed to fetch categories";
       toast.error(errorMessage);
     }
-  };
+  }, []);
 
-  const fetchSubcategories = async () => {
-    try {
-      const response = await axios.get("/api/subcategory");
-      setSubcategories(response.data);
-    } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.error ||
-        error.message ||
-        "Failed to fetch subcategories";
-      toast.error(errorMessage);
-    }
-  };
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   const sanitizeData = (data: any) => {
     const sanitized = { ...data };
@@ -120,13 +116,14 @@ const Categories: React.FC = () => {
     delete sanitized.subCategory;
     delete sanitized.subCategories;
     delete sanitized.product;
+    delete sanitized.products;
     delete sanitized.__v;
     return sanitized;
   };
 
   const handleCategorySubmit = async (
-    values: Omit<Category, "_id">,
-    { resetForm }: FormikHelpers<Omit<Category, "_id">>
+    values: Omit<Category, "_id" | "subCategories">,
+    { resetForm }: FormikHelpers<Omit<Category, "_id" | "subCategories">>
   ) => {
     try {
       const sanitizedValues = sanitizeData(values);
@@ -163,8 +160,8 @@ const Categories: React.FC = () => {
   };
 
   const handleSubcategorySubmit = async (
-    values: Omit<Subcategory, "_id">,
-    { resetForm }: FormikHelpers<Omit<Subcategory, "_id">>
+    values: Omit<Subcategory, "_id" | "product">,
+    { resetForm }: FormikHelpers<Omit<Subcategory, "_id" | "product">>
   ) => {
     try {
       const sanitizedValues = sanitizeData(values);
@@ -197,7 +194,7 @@ const Categories: React.FC = () => {
         );
         toast.success("Subcategory added successfully");
       }
-      fetchSubcategories();
+      fetchCategories();
       setEditingSubcategory(null);
       setIsSubcategoryDialogOpen(false);
       resetForm();
@@ -210,7 +207,7 @@ const Categories: React.FC = () => {
     }
   };
 
-  const handleDeleteCategory = (id: string) => {
+  const handleDeleteCategory = async (id: string) => {
     setCategoryToDelete(id);
     setIsDeleteCategoryDialogOpen(true);
   };
@@ -225,7 +222,6 @@ const Categories: React.FC = () => {
         });
         toast.success("Category deleted successfully");
         fetchCategories();
-        fetchSubcategories();
       } catch (error: any) {
         const errorMessage =
           error.response?.data?.error ||
@@ -238,7 +234,7 @@ const Categories: React.FC = () => {
     setCategoryToDelete(null);
   };
 
-  const handleDeleteSubcategory = (id: string) => {
+  const handleDeleteSubcategory = async (id: string) => {
     setSubcategoryToDelete(id);
     setIsDeleteSubcategoryDialogOpen(true);
   };
@@ -252,7 +248,7 @@ const Categories: React.FC = () => {
           },
         });
         toast.success("Subcategory deleted successfully");
-        fetchSubcategories();
+        fetchCategories();
       } catch (error: any) {
         const errorMessage =
           error.response?.data?.error ||
@@ -307,11 +303,13 @@ const Categories: React.FC = () => {
                               </Button>
                             </DialogTrigger>
                             <DialogContent>
-                              <DialogTitle>
-                                {editingCategory
-                                  ? "Edit Category"
-                                  : "Add New Category"}
-                              </DialogTitle>
+                              <DialogHeader>
+                                <DialogTitle>
+                                  {editingCategory
+                                    ? "Edit Category"
+                                    : "Add New Category"}
+                                </DialogTitle>
+                              </DialogHeader>
                               <FormikForm
                                 initialValues={
                                   editingCategory || {
@@ -349,7 +347,14 @@ const Categories: React.FC = () => {
                             { header: "Actions", accessor: "actions" },
                           ]}
                           data={categories.map((category) => ({
-                            ...category,
+                            name: `${category.name} (${
+                              category.subCategories?.reduce(
+                                (total, subCategory) =>
+                                  total + (subCategory.product?.length || 0),
+                                0
+                              ) || 0
+                            })`,
+                            description: category.description,
                             actions: (
                               <div className="flex space-x-2">
                                 <Button
@@ -393,11 +398,13 @@ const Categories: React.FC = () => {
                               </Button>
                             </DialogTrigger>
                             <DialogContent>
-                              <DialogTitle>
-                                {editingSubcategory
-                                  ? "Edit Subcategory"
-                                  : "Add New Subcategory"}
-                              </DialogTitle>
+                              <DialogHeader>
+                                <DialogTitle>
+                                  {editingSubcategory
+                                    ? "Edit Subcategory"
+                                    : "Add New Subcategory"}
+                                </DialogTitle>
+                              </DialogHeader>
                               <FormikForm
                                 initialValues={
                                   editingSubcategory || {
@@ -440,44 +447,48 @@ const Categories: React.FC = () => {
                         </div>
                         <Table
                           columns={[
-                            {
-                              header: `Subcategory Name`,
-                              accessor: "name",
-                            },
+                            { header: "Subcategory Name", accessor: "name" },
                             { header: "Category", accessor: "category" },
                             { header: "Description", accessor: "description" },
                             { header: "Actions", accessor: "actions" },
                           ]}
-                          data={subcategories.map((subcategory) => ({
-                            ...subcategory,
-                            category: categories.find(
+                          data={subcategories.map((subcategory) => {
+                            const category = categories.find(
                               (category) =>
                                 category._id === subcategory.category
-                            )?.name,
-                            actions: (
-                              <div className="flex space-x-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => {
-                                    setEditingSubcategory(subcategory);
-                                    setIsSubcategoryDialogOpen(true);
-                                  }}
-                                >
-                                  <FaEdit className="mr-2" /> Edit
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    handleDeleteSubcategory(subcategory._id)
-                                  }
-                                >
-                                  <FaTrash className="mr-2" /> Delete
-                                </Button>
-                              </div>
-                            ),
-                          }))}
+                            );
+
+                            return {
+                              name: `${subcategory.name} (${
+                                subcategory.product?.length || 0
+                              })`,
+                              category: category?.name,
+                              description: subcategory.description,
+                              actions: (
+                                <div className="flex space-x-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      setEditingSubcategory(subcategory);
+                                      setIsSubcategoryDialogOpen(true);
+                                    }}
+                                  >
+                                    <FaEdit className="mr-2" /> Edit
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      handleDeleteSubcategory(subcategory._id);
+                                    }}
+                                  >
+                                    <FaTrash className="mr-2" /> Delete
+                                  </Button>
+                                </div>
+                              ),
+                            };
+                          })}
                           itemsPerPage={10}
                         />
                       </TabsContent>

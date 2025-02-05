@@ -9,7 +9,8 @@ import {
 import { io, Socket } from "socket.io-client";
 
 // Define the socket URL
-const SOCKET_URL = "http://localhost:5000"; // Replace with your socket server URL
+const base_url = window.location.origin;
+const SOCKET_URL = base_url; // Replace with your socket server URL
 // Define the context for the socket
 const SocketContext = createContext<Socket | null>(null);
 
