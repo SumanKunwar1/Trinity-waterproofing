@@ -53,11 +53,16 @@ const Footer: React.FC = () => {
         </div>
 
         <div className="py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div>
+          <div className="space-y-4">
             <h3 className="text-white text-lg font-semibold mb-4">
               {companyDetails.name}
             </h3>
             <p className="mb-4">{companyDetails.description}</p>
+            <ul className="space-y-2">
+              <li>{companyDetails.location}</li>
+              <li>Phone: {companyDetails.phoneNumber}</li>
+              <li>Email: {companyDetails.email}</li>
+            </ul>
             <div className="flex space-x-4">
               {companyDetails.facebook && (
                 <a
@@ -154,12 +159,36 @@ const Footer: React.FC = () => {
 
           <div>
             <h3 className="text-white text-lg font-semibold mb-4">
-              Contact Us
+              Our Location
             </h3>
             <ul className="space-y-2">
-              <li>{companyDetails.location}</li>
-              <li>Phone: {companyDetails.phoneNumber}</li>
-              <li>Email: {companyDetails.email}</li>
+              {[
+                "Kathmandu",
+                "Pokhara",
+                "Biratnagar",
+                "Birgunj",
+                "Hetauda",
+                "Narayangarh",
+                "Butwal",
+                "Bhairahawa",
+                "Dang",
+                "Nepalgunj",
+              ].map((link) => (
+                <li
+                  key={link}
+                  className="flex items-center space-x-2  hover:text-secondary hover:tracking-wider transform duration-300"
+                >
+                  <FaAngleRight className="" />
+                  <Link to={`/${link}`} className=" transition-colors">
+                    {link
+                      .split("-")
+                      .map(
+                        (word) => word.charAt(0).toUpperCase() + word.slice(1)
+                      )
+                      .join(" ")}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         </div>

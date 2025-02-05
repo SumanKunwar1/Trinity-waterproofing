@@ -440,7 +440,10 @@ const Categories: React.FC = () => {
                         </div>
                         <Table
                           columns={[
-                            { header: "Subcategory Name", accessor: "name" },
+                            {
+                              header: `Subcategory Name`,
+                              accessor: "name",
+                            },
                             { header: "Category", accessor: "category" },
                             { header: "Description", accessor: "description" },
                             { header: "Actions", accessor: "actions" },

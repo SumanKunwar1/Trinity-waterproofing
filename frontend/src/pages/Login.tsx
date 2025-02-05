@@ -67,7 +67,7 @@ const Login: React.FC = () => {
             navigate(redirectPath);
             window.location.reload();
           } else {
-            navigate("/");
+            navigate("/customer/dashboard");
             window.location.reload();
           }
         } else {

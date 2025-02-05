@@ -153,13 +153,9 @@ const Contact: React.FC = () => {
 
             <div className="w-full md:w-1/2">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3531.378895097639!2d85.33917937370974!3d27.736457124210116!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb19d0c66673dd%3A0x28357de4f722f34d!2swaterproofing%20house(trinity%20waterproofing%20and%20suppliers)!5e0!3m2!1sen!2snp!4v1736315630592!5m2!1sen!2snp"
-                width="100%"
-                height="450"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
+                src="https://www.google.com/maps/d/embed?mid=1WYlRNgOPE9NHY6Wk_mrhYJWCTXDjffM&ehbc=2E312F&noprof=1"
+                width="640"
+                height="480"
               ></iframe>
             </div>
           </div>

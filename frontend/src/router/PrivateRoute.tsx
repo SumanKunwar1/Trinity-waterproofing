@@ -19,7 +19,7 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({
 
   if (!isAuthenticated && !hasRedirected) {
     setHasRedirected(true);
-    navigate("/login");
+    navigate("/");
     return null;
   }
 

@@ -107,7 +107,13 @@ export const ProductDropdown: React.FC<ProductDropdownProps> = ({
             </button>
           </div>
 
-          {loading && <p>Loading...</p>}
+          {loading && (
+            <p>
+              <div className="flex items-center justify-center h-32">
+                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+              </div>
+            </p>
+          )}
 
           {!loading && categories.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -158,7 +164,9 @@ export const ProductDropdown: React.FC<ProductDropdownProps> = ({
                               className="p-3 cursor-pointer flex items-center justify-between"
                               onClick={onClose}
                             >
-                              <span className="text-gray-700">{sub.name}</span>
+                              <span className="text-gray-700">
+                                {sub.name} ({sub.products.length})
+                              </span>
                             </Link>
                           </div>
                         ))}

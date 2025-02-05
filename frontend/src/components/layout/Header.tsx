@@ -240,9 +240,7 @@ const Header: React.FC = () => {
               />
             </Link>
             <Link to="/" className="hidden md:block">
-              <span className="text-2xl font-bold text-hover">
-                Trinity Waterproofing
-              </span>
+              <span className="text-2xl font-bold text-hover">Trinity</span>
             </Link>
           </div>
 
