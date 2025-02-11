@@ -29,6 +29,7 @@ import {
   DialogTitle,
 } from "../components/ui/dialog";
 import { Switch } from "../components/ui/switch";
+import { Input } from "../components/ui/input";
 
 interface Color {
   name: string;
@@ -77,7 +78,8 @@ const Products: React.FC = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<IProduct | null>(null);
   const [isUpdating, setIsUpdating] = useState<{ [key: string]: boolean }>({});
-
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredProducts, setFilteredProducts] = useState<IProduct[]>([]);
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
@@ -110,6 +112,20 @@ const Products: React.FC = () => {
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
+  useEffect(() => {
+    const filtered = products.filter((product) =>
+      [
+        product.name.toLowerCase(),
+        product.brand.name.toLowerCase(),
+        product.subCategory.name.toLowerCase(),
+        product.subCategory.category.name.toLowerCase(),
+      ].some((field) => field.includes(searchTerm.toLowerCase()))
+    );
+    setFilteredProducts(filtered);
+  }, [searchTerm, products]);
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
 
   const handleDelete = (id: string) => {
     setProductToDelete(id);
@@ -311,7 +327,20 @@ const Products: React.FC = () => {
                 </Link>
               </CardHeader>
               <CardContent>
-                <Table columns={columns} data={products} itemsPerPage={10} />
+                <div className="mb-4">
+                  <Input
+                    type="text"
+                    placeholder="Search by name, brand, category, or subcategory"
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    className="w-full"
+                  />
+                </div>
+                <Table
+                  columns={columns}
+                  data={filteredProducts}
+                  itemsPerPage={10}
+                />
               </CardContent>
             </Card>
           </motion.div>

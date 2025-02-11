@@ -187,6 +187,7 @@ function App() {
                         </PrivateRoute>
                       }
                     />
+                    {/* Protect admin pages */}
                     <Route
                       path="/admin/dashboard"
                       element={
@@ -324,7 +325,7 @@ function App() {
                       }
                     />
                     <Route
-                      path="/admin/admin-team"
+                      path="/admin/team"
                       element={
                         <PrivateRoute requiredRoles={["admin"]}>
                           <AdminTeamPage />

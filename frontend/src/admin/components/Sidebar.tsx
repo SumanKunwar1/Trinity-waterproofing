@@ -44,7 +44,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     },
     { icon: MdReviews, text: "Reviews", link: "/admin/reviews" },
     { icon: FaUsers, text: "Users", link: "/admin/users" },
-    { icon: FaUsers, text: "Teams", link: "/admin/admin-team" },
     { icon: FaNewspaper, text: "Newsletters", link: "/admin/newsletter" },
     { icon: FaQuestionCircle, text: "Enquiries", link: "/admin/enquiries" },
     { icon: GrGallery, text: "Gallery", link: "/admin/gallery" },
@@ -55,6 +54,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     { icon: FaLifeRing, text: "Help", link: "/admin/help" },
     { icon: FaInfoCircle, text: "About", link: "/admin/about" },
     { icon: FaInfoCircle, text: "Services", link: "/admin/services" },
+    // { icon: FaUsers, text: "Teams", link: "/admin/team" },
     {
       icon: FaShieldAlt,
       text: "Privacy Policy",

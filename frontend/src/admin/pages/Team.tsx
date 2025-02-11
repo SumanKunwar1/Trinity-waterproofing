@@ -19,14 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../../components/ui/dropdown-menu";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "../components/ui/pagination";
+
 import { useForm } from "react-hook-form";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
@@ -45,11 +38,9 @@ interface ITeam {
 const AdminTeam: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [teamMembers, setTeamMembers] = useState<ITeam[]>([]);
-  const [totalPages, setTotalPages] = useState<number>(1); // Added state for totalPages
   const [isFormDialogOpen, setIsFormDialogOpen] = useState<boolean>(false);
   const [editingMember, setEditingMember] = useState<ITeam | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [currentPage, setCurrentPage] = useState<number>(1);
 
   const {
     register,
@@ -64,18 +55,18 @@ const AdminTeam: React.FC = () => {
 
   useEffect(() => {
     fetchTeamMembers();
-  }, [currentPage]);
+  }, []);
 
   const fetchTeamMembers = async () => {
     setIsLoading(true);
     try {
       const response = await fetch(`/api/team`);
+      console.log("Token", localStorage.getItem("authToken"));
       if (!response.ok) {
         throw new Error("Failed to fetch team members");
       }
       const data = await response.json();
       setTeamMembers(data);
-      setTotalPages(data.totalPages); // Assuming API provides totalPages
     } catch (error) {
       // console.error("Error fetching team members:", error);
       toast.error("Failed to fetch team members");
@@ -236,38 +227,6 @@ const AdminTeam: React.FC = () => {
                   ) : (
                     <>
                       <Table data={teamMembers} columns={columns} />
-                      <Pagination className="mt-4">
-                        <PaginationContent>
-                          <PaginationItem>
-                            <PaginationPrevious
-                              onClick={() =>
-                                setCurrentPage((prev) => Math.max(1, prev - 1))
-                              }
-                              disabled={currentPage === 1}
-                            />
-                          </PaginationItem>
-                          {[...Array(totalPages)].map((_, index) => (
-                            <PaginationItem key={index}>
-                              <PaginationLink
-                                onClick={() => setCurrentPage(index + 1)}
-                                isActive={currentPage === index + 1}
-                              >
-                                {index + 1}
-                              </PaginationLink>
-                            </PaginationItem>
-                          ))}
-                          <PaginationItem>
-                            <PaginationNext
-                              onClick={() =>
-                                setCurrentPage((prev) =>
-                                  Math.min(totalPages, prev + 1)
-                                )
-                              }
-                              disabled={currentPage === totalPages}
-                            />
-                          </PaginationItem>
-                        </PaginationContent>
-                      </Pagination>
                     </>
                   )}
                 </CardContent>
