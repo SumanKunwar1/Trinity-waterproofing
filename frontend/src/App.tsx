@@ -1,5 +1,5 @@
-import { Suspense, lazy } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Suspense, lazy, useEffect } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { CartProvider } from "./context/CartContext";
@@ -14,7 +14,6 @@ import { HelmetProvider } from "react-helmet-async";
 import Loader from "./components/common/Loader";
 import EmailForm from "./pages/EmailForm";
 import ResetPasswordForm from "./pages/ResetPassword";
-
 // Lazy-loaded components
 const Home = lazy(() => import("./pages/Home"));
 const ProductListing = lazy(() => import("./pages/ProductListing"));
@@ -27,6 +26,7 @@ const About = lazy(() => import("./pages/About"));
 const Contact = lazy(() => import("./pages/Contact"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Wishlist = lazy(() => import("./pages/Wishlist"));
+
 const DashboardPage = lazy(
   () => import("./pages/customer-profile/dashboard/page")
 );
@@ -55,6 +55,8 @@ const Notification = lazy(
 const ServicesPage = lazy(() => import("./pages/Services"));
 const TeamPage = lazy(() => import("./pages/Teams"));
 const UserGallery = lazy(() => import("./pages/Gallery"));
+
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 
 // Lazy load admin components
 const AdminDashboard = lazy(() => import("./admin/pages/Dashboard"));
@@ -90,6 +92,19 @@ const AdminPrivacyPolicyForm = lazy(
 );
 const AdminTeamPage = lazy(() => import("./admin/pages/Team"));
 
+// Debug component to log current route
+function RouteDebugger() {
+  const location = useLocation();
+  
+  useEffect(() => {
+    console.log("Current Route:", location.pathname);
+    console.log("Current Search:", location.search);
+    console.log("Current Hash:", location.hash);
+  }, [location]);
+  
+  return null;
+}
+
 function App() {
   return (
     <ErrorBoundary>
@@ -99,6 +114,7 @@ function App() {
             <CartProvider>
               <WishlistProvider>
                 <SocketProvider>
+                  <RouteDebugger />
                   <Suspense fallback={<Loader />}>
                     <Routes>
                       <Route path="/" element={<Home />} />

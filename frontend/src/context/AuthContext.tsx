@@ -31,6 +31,7 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
   const navigate = useNavigate();
 
   const decodeToken = (token: string) => {
@@ -56,11 +57,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = () => {
     localStorage.removeItem("authToken");
     localStorage.removeItem("userRole");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("user");
     setIsAuthenticated(false);
     setToken(null);
-    navigate("/", { replace: true });
+    
+    // Only navigate to home if we're already initialized
+    // This prevents redirect on initial page load
+    if (isInitialized) {
+      navigate("/", { replace: true });
+    }
   };
 
+  // Initial authentication check
   useEffect(() => {
     const storedToken = localStorage.getItem("authToken");
 
@@ -68,10 +77,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setToken(storedToken);
       setIsAuthenticated(true);
     } else {
-      logout();
+      // Clear invalid token but DON'T navigate
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("userRole");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("user");
+      setIsAuthenticated(false);
+      setToken(null);
     }
+    
+    // Mark as initialized after first check
+    setIsInitialized(true);
   }, []);
 
+  // Token expiry timer
   useEffect(() => {
     if (token) {
       const decoded: any = decodeToken(token);
@@ -84,7 +103,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return () => clearTimeout(timeoutId);
       }
     }
-  }, [token]);
+  }, [token, isInitialized]);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, token, logout }}>
