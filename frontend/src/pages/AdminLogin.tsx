@@ -50,19 +50,20 @@ const AdminLogin: React.FC = () => {
           const decoded = decodeToken(data.token);
           const userRole = decoded?.role;
 
-          // Store the token in localStorage for persistent login
-          localStorage.setItem("authToken", data.token);
-          localStorage.setItem("userRole", userRole);
-          localStorage.setItem("user", JSON.stringify(data.user));
-          
-          toast.success("Admin login successful!");
-
+          // Check if user is admin BEFORE storing anything
           if (userRole === "admin") {
+            // Store the token in localStorage for persistent login
+            localStorage.setItem("authToken", data.token);
+            localStorage.setItem("userRole", userRole);
+            localStorage.setItem("user", JSON.stringify(data.user));
+            
+            toast.success("Admin login successful!");
+            
+            // Navigate to admin dashboard - removed window.location.reload()
             navigate("/admin/dashboard");
-            window.location.reload();
           } else {
+            // Not an admin
             toast.error("Access denied. Admin privileges required.");
-            localStorage.clear();
           }
         } else {
           toast.error("Invalid response from the server.");
@@ -74,6 +75,7 @@ const AdminLogin: React.FC = () => {
         );
       }
     } catch (error) {
+      console.error("Login error:", error);
       toast.error("An unexpected error occurred. Please try again.");
     }
   };

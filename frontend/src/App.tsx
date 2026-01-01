@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Link } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { CartProvider } from "./context/CartContext";
@@ -14,6 +14,7 @@ import { HelmetProvider } from "react-helmet-async";
 import Loader from "./components/common/Loader";
 import EmailForm from "./pages/EmailForm";
 import ResetPasswordForm from "./pages/ResetPassword";
+
 // Lazy-loaded components
 const Home = lazy(() => import("./pages/Home"));
 const ProductListing = lazy(() => import("./pages/ProductListing"));
@@ -105,6 +106,35 @@ function RouteDebugger() {
   return null;
 }
 
+// 🔓 Development Admin Access Button
+function DevAdminAccessButton() {
+  const location = useLocation();
+  
+  // Only show on homepage
+  if (location.pathname !== "/") return null;
+  
+  return (
+    <div style={{
+      position: "fixed",
+      bottom: "20px",
+      right: "20px",
+      zIndex: 9999,
+      backgroundColor: "#ff4444",
+      color: "white",
+      padding: "15px 25px",
+      borderRadius: "8px",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+      fontWeight: "bold",
+      textDecoration: "none",
+      cursor: "pointer"
+    }}>
+      <Link to="/admin/dashboard" style={{ color: "white", textDecoration: "none" }}>
+        🔓 Admin Dashboard (Dev Mode)
+      </Link>
+    </div>
+  );
+}
+
 function App() {
   return (
     <ErrorBoundary>
@@ -115,6 +145,7 @@ function App() {
               <WishlistProvider>
                 <SocketProvider>
                   <RouteDebugger />
+                  <DevAdminAccessButton />
                   <Suspense fallback={<Loader />}>
                     <Routes>
                       <Route path="/" element={<Home />} />
@@ -146,6 +177,9 @@ function App() {
                       <Route path="/faq" element={<FAQPage />} />
                       <Route path="/about" element={<About />} />
                       <Route path="/contact" element={<Contact />} />
+
+                      {/* Admin Login Route */}
+                      <Route path="/admin/login" element={<AdminLogin />} />
 
                       {/* Protect customer profile pages */}
                       <Route
@@ -205,7 +239,7 @@ function App() {
                         }
                       />
 
-                      {/* Protect admin pages */}
+                      {/* Protect admin pages - NOW WITH BYPASS MODE */}
                       <Route
                         path="/admin/dashboard"
                         element={
